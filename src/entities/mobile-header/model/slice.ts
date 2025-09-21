@@ -10,10 +10,13 @@ const mobileHeaderSlice = createSlice({
   reducers: {
     toggleHeader: (state) => {
       state.showLinks = !state.showLinks
+    },
+    closeHeader: (state) => {
+      state.showLinks = false
     }
   }
 })
 
-export const { toggleHeader } = mobileHeaderSlice.actions
+export const { toggleHeader, closeHeader } = mobileHeaderSlice.actions
 
 export default mobileHeaderSlice.reducer

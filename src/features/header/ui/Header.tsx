@@ -19,7 +19,7 @@ const Header = () => {
               alt={""}
               width={100}
               height={19}
-              className="dark:invert w-[7vw] 2xl:scale-120"
+              className="dark:invert w-[7vw] h-auto 2xl:scale-120"
             ></Image>
           </Link>
         </div>

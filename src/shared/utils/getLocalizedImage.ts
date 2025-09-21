@@ -32,13 +32,13 @@ export const getLocalizedImage = (basePath: string, locale: string): string => {
  * @param locale - текущая локаль
  * @returns путь к локализованному изображению
  */
-export const getLocalizedImagePath = (baseImage: any, locale: string): string => {
+export const getLocalizedImagePath = (baseImage: string | { src: string }, locale: string): string => {
   // Если это импортированное изображение Next.js, получаем его src
   const imageSrc = typeof baseImage === 'string' ? baseImage : baseImage.src || baseImage;
   
   if (typeof imageSrc !== 'string') {
     console.warn('getLocalizedImagePath: baseImage is not a string or valid image object');
-    return baseImage;
+    return typeof baseImage === 'string' ? baseImage : baseImage.src || '';
   }
   
   return getLocalizedImage(imageSrc, locale);

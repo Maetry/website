@@ -33,7 +33,25 @@ const config: Config = {
         lightText: "#13131A",
         bg: "#fdfdfd",
         dark: { text: "#fdfdfd", bg: "#13131A", formbg: "#fdfdfd" }
-      }
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+      animation: {
+        'slide-down': 'slideDown 0.3s ease-out',
+        'slide-in-left': 'slideInLeft 0.3s ease-out',
+        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        slideDown: {
+          'from': { opacity: '0', transform: 'translateY(-10px) scale(0.95)' },
+          'to': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        slideInLeft: {
+          'from': { opacity: '0', transform: 'translateX(-20px)' },
+          'to': { opacity: '1', transform: 'translateX(0)' },
+        },
+      },
     }
   },
   plugins: []

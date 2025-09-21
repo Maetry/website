@@ -68,8 +68,8 @@ const ScrollingText = () => {
   }, [])
 
   return (
-    <>
-      <div className="overflow-x-hidden w-full text-[8vw] xl:text-[6vw]">
+    <div className="space-y-[2vh] py-[3vh]">
+      <div className="overflow-x-hidden w-full text-[6vw] xl:text-[4vw] 2xl:text-[100px] pb-[0.5em]" style={{lineHeight: '1.45'}}>
         <div className="whitespace-nowrap">
           <div className="flex justify-center" ref={firstRef}>
             <span className={styles.gradient__scrolling__text}>
@@ -82,8 +82,8 @@ const ScrollingText = () => {
           </div>
         </div>
       </div>
-      <div className="overflow-hidden w-full text-[8vw] xl:text-[6vw]">
-        <div className="whitespace-nowrap ">
+      <div className="overflow-hidden w-full text-[6vw] xl:text-[4vw] 2xl:text-[100px] pb-[0.5em]" style={{lineHeight: '1.45'}}>
+        <div className="whitespace-nowrap">
           <div className="flex justify-center" ref={secondRef}>
             <span className={styles.gradient__scrolling__text}>
               <RepeatText 
@@ -95,7 +95,7 @@ const ScrollingText = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

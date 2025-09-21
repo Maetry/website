@@ -14,9 +14,13 @@ import block4thTextLightRu from "@/public/images/4th_block_bg_text_light_ru.svg"
 import darkBlockText from "@/public/images/dark1stBlockText.svg"
 import darkBlockTextRu from "@/public/images/dark1stBlockText_ru.svg"
 import darkMonbile1stBlockText from "@/public/images/darkMobile1stBlockText.svg"
+import darkMonbile1stBlockTextRu from "@/public/images/darkMobile1stBlockText_ru.svg"
 import monbile1stBlockText from "@/public/images/mobile1stBlockText.svg"
+import monbile1stBlockTextRu from "@/public/images/mobile1stBlockText_ru.svg"
 import mobileBlock4Dark from "@/public/images/mobileDark4.svg"
+import mobileBlock4DarkRu from "@/public/images/mobileDark4_ru.svg"
 import mobileBlock4Light from "@/public/images/mobileLight4.svg"
+import mobileBlock4LightRu from "@/public/images/mobileLight4_ru.svg"
 
 import { useParams } from "next/navigation"
 
@@ -32,7 +36,7 @@ const ImageTextFabric = ({ id }: ImageTextFabricProps) => {
   const locale = (params?.locale as string) || 'en'
   
   // Выбираем изображения в зависимости от локали
-  const getImage = (enImage: any, ruImage: any) => {
+  const getImage = (enImage: string, ruImage: string) => {
     return locale === 'ru' ? ruImage : enImage
   }
 
@@ -46,7 +50,7 @@ const ImageTextFabric = ({ id }: ImageTextFabricProps) => {
             className={`w-[70vw] hidden xl:flex`}
           ></Image>
           <Image
-            src={isDark ? darkMonbile1stBlockText : monbile1stBlockText}
+            src={isDark ? getImage(darkMonbile1stBlockText, darkMonbile1stBlockTextRu) : getImage(monbile1stBlockText, monbile1stBlockTextRu)}
             alt={""}
             className={`scale-135 md:scale-150 md:py-[10%] xl:hidden`}
           ></Image>
@@ -61,7 +65,7 @@ const ImageTextFabric = ({ id }: ImageTextFabricProps) => {
             className={`w-[70vw] hidden xl:flex  `}
           ></Image>
           <Image
-            src={isDark ? mobileBlock4Dark : mobileBlock4Light}
+            src={isDark ? getImage(mobileBlock4Dark, mobileBlock4DarkRu) : getImage(mobileBlock4Light, mobileBlock4LightRu)}
             alt={""}
             className={`w-[80vw] xl:hidden`}
           />

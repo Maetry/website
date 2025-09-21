@@ -1,4 +1,3 @@
-import { Manrope } from "next/font/google";
 import { notFound } from 'next/navigation';
 
 import type { Metadata } from "next";
@@ -8,14 +7,6 @@ import { getMessages } from 'next-intl/server';
 import { StoreProvider } from "@/shared/store";
 
 import { locales } from '../../i18n';
-
-import "@/styles/globals.css";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-})
 
 export const metadata: Metadata = {
   title: "Maetry",
@@ -45,16 +36,8 @@ export default async function LocaleLayout({
   const messages = await getMessages({ locale });
 
   return (
-    <html className={manrope.className} lang={locale}>
-      <head>
-        <link rel="icon" sizes="16x16" href="/images/favicon.png" />
-        <link rel="icon" sizes="32x32" href="/images/favicon.png" />
-      </head>
-      <body className="dark:bg-dark-bg dark:text-dark-text flex flex-col relative">
-        <NextIntlClientProvider messages={messages} locale={locale}>
-          <StoreProvider>{children}</StoreProvider>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider messages={messages} locale={locale}>
+      <StoreProvider>{children}</StoreProvider>
+    </NextIntlClientProvider>
   )
 }

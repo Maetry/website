@@ -44,8 +44,8 @@ const LandingLayout = () => {
         <FAQSection />
 
         <section id={"prefooter"} className="w-full px-[3.5%] h-[70vh] ">
-          <div className="w-full h-full dark:bg-white rounded-[21px] flex items-center justify-center shadow-xl relative">
-            <div className="z-[1000] flex text-invert items-center text-center flex flex-col w-[80%] xl:w-[40%] gap-y-3 xl:gap-y-0 dark:text-black text-[#fdfdfd]">
+          <div className="w-full h-full bg-dark-bg dark:bg-white rounded-[21px] flex items-center justify-center shadow-xl relative">
+            <div className="z-[1000] flex text-invert items-center text-center flex-col w-[80%] xl:w-[40%] gap-y-3 xl:gap-y-0 dark:text-black text-[#fdfdfd]">
               <LocalizedTextFabric 
                 id={7} 
                 translationKey="prefooter.title" 
