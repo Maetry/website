@@ -1,1 +1,1 @@
-export { getLocalizedImage, getLocalizedImagePath } from './getLocalizedImage';
+export { getLocalizedImage, getLocalizedImagePath } from "./getLocalizedImage";

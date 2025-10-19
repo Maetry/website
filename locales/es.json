@@ -48,6 +48,21 @@
       "role": "Propietaria de la cadena PROmanicure",
       "text": "Maetry me ayuda a planificar cada día en el salón. Entiendo cuántos clientes están registrados y para qué servicios, quién es nuevo y quién es regular. La base de clientes se forma sin mi participación"
     },
+    "nikita": {
+      "name": "Nikita",
+      "role": "fundador Lui Philipp",
+      "text": "Conozco muchos salones de belleza que no usan reservas en línea. Necesitamos ver qué errores cometen nuestros competidores y hacerlo mejor. Nuestro flujo principal de clientes viene a través de maetry"
+    },
+    "sofia": {
+      "name": "Sofia",
+      "role": "Gerente del salón de belleza Bonny",
+      "text": "La aplicación se mejora constantemente junto con nuestra red de salones. En maetry, seguimos la analítica y monitoreamos la retroalimentación. Esto nos ayuda a trabajar en la calidad del servicio y mejorar el nivel de servicio"
+    },
+    "irina": {
+      "name": "Irina",
+      "role": "Especialista en extensión de pestañas",
+      "text": "Empecé a gastar menos tiempo analizando el rendimiento financiero del salón. Esta opción me permite determinar qué servicios generan más ganancias y cuáles necesitan ser ajustados o mejorados"
+    },
     "vitaliy": {
       "name": "Vitaliy",
       "role": "Fundador de Maetry",
@@ -55,8 +70,20 @@
     }
   },
   "features": {
-    "subtitle": "características",
-    "title": "todo lo que necesitas para hacer crecer tu negocio",
+    "subtitle": "características de maetry",
+    "title": "nos adaptamos a cualquier tamaño de negocio",
+    "management": {
+      "title": "gestión de horarios",
+      "description": "Agrega nuevos empleados y haz horarios de trabajo flexibles sin superposición"
+    },
+    "notifications": {
+      "title": "notificaciones de reserva",
+      "description": "Los recordatorios automáticos de citas a los clientes ayudarán a mantener el contacto y aumentar la rentabilidad"
+    },
+    "onlineBooking": {
+      "title": "reserva en línea para clientes",
+      "description": "la reserva sin llamada te permitirá procesar más solicitudes y no perder tiempo confirmando visitas"
+    },
     "schedulePlanning": {
       "title": "Planificación de horarios",
       "description": "Organiza tu tiempo y el de tu equipo de manera eficiente"
@@ -80,7 +107,27 @@
   },
   "faq": {
     "subtitle": "preguntas frecuentes",
-    "title": "todo lo que necesitas saber",
+    "title": "preguntas frecuentes",
+    "q1": {
+      "question": "¿Qué características proporciona la aplicación?",
+      "answer": "Para optimizar el trabajo de los salones de belleza, maetry ofrece las siguientes características: reserva en línea, envío automático de notificaciones, formación de base de clientes, análisis de indicadores financieros e integración con otros servicios"
+    },
+    "q2": {
+      "question": "¿Podré trabajar en el salón de otra persona y al mismo tiempo ser propietario del mío?",
+      "answer": "Sí, podrás"
+    },
+    "q3": {
+      "question": "¿Podré invitar a un empleado a mi salón?",
+      "answer": "Sí, podrás. Para esto necesitarás ir al salón y crear una invitación, luego enviar el enlace al empleado"
+    },
+    "q4": {
+      "question": "¿Podré crear una reserva para un cliente que no tiene la aplicación?",
+      "answer": "Sí, podrás. Para esto no elijas un cliente inmediatamente. Después de crear la reserva tendrás un enlace que puedes enviar al cliente"
+    },
+    "q5": {
+      "question": "¿Podré agregar un enlace a una publicación en redes sociales a través de maetry?",
+      "answer": "Sí, podrás"
+    },
     "questions": [
       {
         "question": "¿Qué es Maetry?",
@@ -120,17 +167,185 @@
     "licenseAgreement": "Acuerdo de Licencia",
     "allRightsReserved": "© 2025 Maetry LLC. Todos los derechos reservados."
   },
-  "ambassadors": {
+  "ambassador": {
     "title": "Programa de Socios",
-    "subtitle": "Únete a nuestro programa de socios",
-    "description": "Conviértete en socio de Maetry y ayuda a otros emprendedores a hacer crecer sus negocios mientras ganas comisiones.",
-    "benefits": [
-      "Comisiones atractivas",
-      "Materiales de marketing",
-      "Soporte dedicado",
-      "Acceso a herramientas exclusivas"
-    ],
-    "joinNow": "Únete Ahora",
-    "learnMore": "Aprende Más"
+    "subtitle": "Gana ayudando a los salones de belleza a automatizar su negocio",
+    "aboutTitle": "Maetry — servicio de gestión de salones de belleza",
+    "aboutDescription": "Maetry ayuda a automatizar procesos, atraer clientes y controlar el negocio en una aplicación.",
+    "becomePartner": "Convertirse en Socio",
+    "readyToPartner": "¿Listo para convertirte en socio?",
+    "startEarning": "Comenzar a Ganar",
+    "partnerDescription": "Únete a nuestro programa de socios y gana ayudando a los salones de belleza a crecer",
+    "labels": {
+      "problem": "Problema:",
+      "solution": "Solución Maetry:",
+      "benefit": "Valor para el Salón:"
+    },
+    "features": {
+      "appointments": {
+        "title": "Citas de Clientes",
+        "problems": [
+          "Las citas se mantienen en cuadernos y calendarios, se pierden",
+          "No se ven los espacios libres",
+          "Es difícil distribuir citas entre maestros"
+        ],
+        "solutions": [
+          "Todas las citas centralizadas en la aplicación",
+          "Horario diario visual",
+          "Mostrar todos los maestros en una pantalla"
+        ],
+        "benefits": [
+          "Ahorro de tiempo del administrador",
+          "Más clientes a través de la organización",
+          "Control del negocio desde el teléfono"
+        ]
+      },
+      "schedule": {
+        "title": "Horario de Trabajo",
+        "problems": [
+          "Los clientes llaman para verificar el horario",
+          "Es difícil configurar turnos de maestros",
+          "Los cambios de horario toman mucho tiempo"
+        ],
+        "solutions": [
+          "Configuración flexible de días laborales",
+          "Horarios individuales de empleados",
+          "Editar solo los días necesarios"
+        ],
+        "benefits": [
+          "Menos llamadas al salón",
+          "Carga de trabajo clara de maestros",
+          "El salón funciona sin superposiciones"
+        ]
+      },
+      "services": {
+        "title": "Catálogo de Servicios",
+        "problems": [
+          "Los servicios se mantienen en memoria o cuaderno",
+          "No está claro quién proporciona el servicio y a qué precio",
+          "Los clientes no están preparados para los procedimientos"
+        ],
+        "solutions": [
+          "Agregar servicios de lista lista o manualmente",
+          "Precios y descripciones individuales para maestros",
+          "Consejos de preparación para clientes"
+        ],
+        "benefits": [
+          "Ahorro de tiempo del administrador",
+          "Eliminación de errores",
+          "Mejora de la calidad del servicio"
+        ]
+      },
+      "clients": {
+        "title": "Base de Datos de Clientes",
+        "problems": [
+          "No hay historial de clientes y contactos",
+          "No se puede entender quién dejó de venir",
+          "Todo se mantiene en memoria"
+        ],
+        "solutions": [
+          "Agregar clientes manualmente o a través de invitaciones",
+          "Seguimiento del historial de visitas y servicios"
+        ],
+        "benefits": [
+          "Análisis de actividad de clientes",
+          "Aumento de lealtad",
+          "Base de datos para boletines y marketing"
+        ]
+      },
+      "employees": {
+        "title": "Empleados",
+        "problems": [
+          "No hay control sobre el trabajo de maestros",
+          "Posiciones y salarios poco claros",
+          "Es difícil rastrear la carga de trabajo"
+        ],
+        "solutions": [
+          "Crear roles y posiciones",
+          "Configurar acceso y salarios",
+          "Rastrear clientes para maestros específicos"
+        ],
+        "benefits": [
+          "Transparencia y control",
+          "Automatización de salarios",
+          "Distribución conveniente de clientes"
+        ]
+      },
+      "salon": {
+        "title": "Configuración del Salón",
+        "problems": [
+          "Los clientes no conocen contactos y dirección",
+          "No hay información centralizada",
+          "Los nuevos clientes no pueden encontrar el salón"
+        ],
+        "solutions": [
+          "Tarjeta del salón con descripción y contactos",
+          "Dirección en mapa y ruta",
+          "Mostrar en búsqueda de Maetry"
+        ],
+        "benefits": [
+          "Más confianza de clientes",
+          "Menos llamadas",
+          "Flujo adicional de clientes"
+        ]
+      },
+      "attraction": {
+        "title": "Atracción de Clientes",
+        "problems": [
+          "Es difícil hablar de uno mismo y atraer nuevos clientes",
+          "Es inconveniente para los clientes llamar"
+        ],
+        "solutions": [
+          "Enlace de reserva en redes sociales y sitio web",
+          "Código QR para atracción offline"
+        ],
+        "benefits": [
+          "Flujo adicional de clientes sin costos",
+          "El cliente se reserva solo",
+          "Herramienta moderna y conveniente"
+        ]
+      },
+      "workspaces": {
+        "title": "Espacios de Trabajo",
+        "problems": [
+          "Los maestros trabajan en diferentes lugares y pierden citas",
+          "Los propietarios de salones gastan tiempo en diferentes sistemas"
+        ],
+        "solutions": [
+          "Cambiar entre salones en un toque",
+          "Sincronización de citas",
+          "Gestión de redes de salones"
+        ],
+        "benefits": [
+          "Ahorro de tiempo",
+          "Control del negocio en un lugar",
+          "Versatilidad para maestros"
+        ]
+      },
+      "support": {
+        "title": "Soporte",
+        "problems": [
+          "Los propietarios temen a las nuevas aplicaciones",
+          "No hay tiempo para buscar instrucciones",
+          "El personal se pierde al trabajar"
+        ],
+        "solutions": [
+          "Chat de soporte en vivo dentro de la aplicación",
+          "Tutoriales para cada pantalla",
+          "Base de conocimientos con instrucciones"
+        ],
+        "benefits": [
+          "Inicio rápido sin entrenamiento",
+          "Mínimo estrés",
+          "Confianza en el trabajo con el sistema"
+        ]
+      }
+    }
+  },
+  "vitaliy": {
+    "question": "¿Tienes preguntas?",
+    "supportTeam": "Equipo de soporte",
+    "company": "Maetry",
+    "askQuestions": "hacer preguntas"
   }
 }

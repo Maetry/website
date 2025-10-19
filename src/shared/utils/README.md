@@ -28,11 +28,11 @@ import logo from '@/public/images/logo.svg';
 const MyComponent = () => {
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
-  
+
   return (
-    <Image 
-      src={getLocalizedImagePath(logo, locale)} 
-      alt="Logo" 
+    <Image
+      src={getLocalizedImagePath(logo, locale)}
+      alt="Logo"
     />
   );
 };
@@ -46,11 +46,11 @@ import logo from '@/public/images/logo.svg';
 
 const MyComponent = () => {
   const localizedLogo = useLocalizedImage(logo);
-  
+
   return (
-    <Image 
-      src={localizedLogo} 
-      alt="Logo" 
+    <Image
+      src={localizedLogo}
+      alt="Logo"
     />
   );
 };
