@@ -20,4 +20,5 @@ const questionSlice = createSlice({
 
 export const { toggleShowQuestion } = questionSlice.actions
 export const { setQuestion } = questionSlice.actions
+
 export default questionSlice.reducer

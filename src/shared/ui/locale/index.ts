@@ -1,2 +1,1 @@
-export { LanguageSwitcher } from './LanguageSwitcher';
-export { LanguageSelector } from './LanguageSelector';
+export { default as LanguageSwitcher } from './LanguageSwitcher';

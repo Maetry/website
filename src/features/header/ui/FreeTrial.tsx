@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 
 import { useTranslations } from 'next-intl'
 
-import styles from "@/styles/GradientAnimation.module.css"
+// Стили подключены глобально в globals.css
 
 interface TrialProps {
   type: string
@@ -23,7 +23,7 @@ const FreeTrial = ({ type }: TrialProps) => {
           }
           className="w-full cursor-pointer dark:active:bg-lightText/60 active:bg-dark-bg/10 transition-all duration-100 h-[50px] md:h-[70px] rounded-[10px] text-[14px] md:text-[20px] bg-white dark:bg-dark-bg"
         >
-          <label className={`${styles.gradient__text} cursor-pointer`}>{t('header.freeTrial')}</label>
+          <label className={`gradient__text cursor-pointer`}>{t('header.freeTrial')}</label>
         </button>
       )
     case "pc":
@@ -34,7 +34,7 @@ const FreeTrial = ({ type }: TrialProps) => {
           }
           className="mr-[3%] cursor-pointer"
         >
-          <label className={`${styles.gradient__text} cursor-pointer`}>{t('header.freeTrial')}</label>
+          <label className={`gradient__text cursor-pointer`}>{t('header.freeTrial')}</label>
         </button>
       )
   }

@@ -4,7 +4,7 @@ import React, { useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 
-import { setPrivacy } from "@/entities/privacy"
+// import { setPrivacy } from "@/entities/privacy" // Удалено - entity больше не существует
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import closebutton from "@/public/images/closeImage.svg"
 import { TextFabric } from "@/shared/ui"
@@ -12,7 +12,7 @@ import { TextFabric } from "@/shared/ui"
 
 const PrivacyPolicy = () => {
   const dispatch = useAppDispatch()
-  const showPrivacy = useAppSelector((state) => state.privacySlice.showPrivacy)
+  const showPrivacy = false // Заглушка - entity больше не существует
   const router = useRouter()
   useEffect(() => {
     if (showPrivacy) {
@@ -27,7 +27,7 @@ const PrivacyPolicy = () => {
   }, [showPrivacy])
 
   function closePop() {
-    dispatch(setPrivacy(false))
+    // dispatch(setPrivacy(false)) // Удалено - entity больше не существует
     router.push("/")
   }
 

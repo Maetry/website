@@ -15,8 +15,8 @@ interface QuestionProps {
 }
 
 const Question = ({ id, title, answer }: QuestionProps) => {
-  const show = useAppSelector((state) => state.questionSlice.show)
-  const question = useAppSelector((state) => state.questionSlice.question)
+  const show = useAppSelector((state) => state.question.show)
+  const question = useAppSelector((state) => state.question.question)
   const dispatch = useAppDispatch()
   const contentRef = useRef<HTMLDivElement>(null)
   const [maxHeight, setMaxHeight] = useState(0)

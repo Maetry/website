@@ -1,6 +1,6 @@
 import React from "react"
 
-import styles from "@/styles/GradientAnimation.module.css"
+// Стили подключены глобально в globals.css
 
 interface TextParams {
   text: string
@@ -39,7 +39,7 @@ const TextFabric = ({ id, text }: TextParams) => {
 
     case 5:
       return (
-        <div className={styles.gradient__text}>
+        <div className="gradient__text">
           <p className="xl:text-[1.1vw] text-[3vw]">{text}</p>
         </div>
       )

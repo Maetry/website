@@ -31,7 +31,7 @@ interface ImageTextFabricProps {
 }
 
 const ImageTextFabric = ({ id }: ImageTextFabricProps) => {
-  const isDark = useAppSelector((state) => state.blackTheme.blackTheme)
+  const isDark = useAppSelector((state) => state.theme.blackTheme)
   const params = useParams()
   const locale = (params?.locale as string) || 'en'
   

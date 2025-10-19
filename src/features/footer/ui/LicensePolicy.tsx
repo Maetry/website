@@ -4,7 +4,7 @@ import React, { useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 
-import { setLicense } from "@/entities/license"
+// import { setLicense } from "@/entities/license" // Удалено - entity больше не существует
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import closebutton from "@/public/images/closeImage.svg"
 import { TextFabric } from "@/shared/ui"
@@ -12,7 +12,7 @@ import { TextFabric } from "@/shared/ui"
 
 const LicensePolicy = () => {
   const dispatch = useAppDispatch()
-  const showLicense = useAppSelector((state) => state.licenseSlice.showLicense)
+  const showLicense = false // Заглушка - entity больше не существует
   const router = useRouter()
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const LicensePolicy = () => {
   }, [showLicense])
 
   function closePop() {
-    dispatch(setLicense(false))
+    // dispatch(setLicense(false)) // Удалено - entity больше не существует
     router.push("/")
   }
   return (

@@ -17,7 +17,7 @@ import phonesAboutRightLightRu from "@/public/images/phones_about_right_light_ru
 
 const ScrollingImage = () => {
   const ref = useRef<HTMLDivElement>(null)
-  const isDark = useAppSelector((state) => state.blackTheme.blackTheme)
+  const isDark = useAppSelector((state) => state.theme.blackTheme)
   const params = useParams()
   const locale = (params?.locale as string) || 'en'
   

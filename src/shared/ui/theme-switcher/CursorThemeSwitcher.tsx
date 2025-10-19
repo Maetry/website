@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { setTheme } from "@/entities/theme"
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 
-const ThemeSwitcher: React.FC = () => {
+const AdvancedThemeSwitcher: React.FC = () => {
   const dispatch = useAppDispatch()
   const isDarkMode = useAppSelector((state) => state.theme.blackTheme)
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('light')
@@ -122,4 +122,4 @@ const ThemeSwitcher: React.FC = () => {
   )
 }
 
-export default ThemeSwitcher
+export default AdvancedThemeSwitcher

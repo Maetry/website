@@ -5,8 +5,8 @@ import React, { useEffect, useState } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 
 // Статические импорты для отладки
-import enMessages from '../../../messages/en.json';
-import ruMessages from '../../../messages/ru.json';
+import enMessages from '../../../locales/en.json';
+import ruMessages from '../../../locales/ru.json';
 
 interface IntlProviderProps {
   children: React.ReactNode

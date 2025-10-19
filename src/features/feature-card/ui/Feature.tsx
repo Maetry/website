@@ -8,7 +8,7 @@ import notice from "@/public/images/notice.svg"
 import online from "@/public/images/online.svg"
 import schedule from "@/public/images/schedule.svg"
 import { LocalizedTextFabric } from "@/shared/ui"
-import styles from "@/styles/GradientAnimation.module.css"
+// Стили подключены глобально в globals.css
 
 interface FeatureTextProps {
   titleKey: string
@@ -32,15 +32,15 @@ const ImageFeature = ({ title }: ImageFetureProps) => {
 }
 
 const Feature = ({ titleKey, titleFallback, descriptionKey, descriptionFallback }: FeatureTextProps) => {
-  const DarkTheme = useAppSelector((state) => state.blackTheme.blackTheme)
+  const DarkTheme = useAppSelector((state) => state.theme.blackTheme)
 
   return (
     <div className="w-full xl:w-1/3 rounded-[26px] flex shadow-lg relative">
       <div className="w-full h-full absolute ">
         {DarkTheme ? (
-          <div className={styles.feature_gradient_dark}></div>
+          <div className="feature_gradient_dark"></div>
         ) : (
-          <div className={styles.feature_gradient}></div>
+          <div className="feature_gradient"></div>
         )}
       </div>
       <div className="flex z-[1000] w-full h-full flex-col px-[2em] py-[2em]">

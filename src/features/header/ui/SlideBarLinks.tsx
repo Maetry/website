@@ -1,13 +1,13 @@
 import React from "react"
 
 import { useAppSelector } from "@/lib/hooks"
-import styles from "@/styles/GradientAnimation.module.css"
+// Стили подключены глобально в globals.css
 
 import { MobileNav } from "./MobileNav"
 
 const SlideBarLinks = () => {
-  const showLinks = useAppSelector((state) => state.mobileHeader.showLinks)
-  const Theme = useAppSelector((state) => state.blackTheme.blackTheme)
+  const showLinks = useAppSelector((state) => state.mobileMenu.showLinks)
+  const Theme = useAppSelector((state) => state.theme.blackTheme)
 
   return (
     <div
@@ -17,11 +17,11 @@ const SlideBarLinks = () => {
     >
 
       {Theme ? (
-        <div className={styles.darkAnimatedGradient}>
+        <div className="darkAnimatedGradient">
           <MobileNav />
         </div>
       ) : (
-        <div className={styles.animatedGradient}>
+        <div className="animatedGradient">
           <MobileNav />
         </div>
       )}

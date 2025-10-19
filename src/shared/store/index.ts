@@ -1,18 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit"
 
-import { licenseReducer } from "@/entities/license"
 import { mobileHeaderReducer } from "@/entities/mobile-header"
-import { privacyReducer } from "@/entities/privacy"
 import { questionReducer } from "@/entities/question"
 import { themeReducer } from "@/entities/theme"
 
 const store = configureStore({
   reducer: {
-    mobileHeader: mobileHeaderReducer,
-    blackTheme: themeReducer,
-    privacySlice: privacyReducer,
-    licenseSlice: licenseReducer,
-    questionSlice: questionReducer
+    mobileMenu: mobileHeaderReducer,
+    theme: themeReducer,
+    question: questionReducer
   }
 })
 

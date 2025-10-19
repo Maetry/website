@@ -295,7 +295,17 @@
   },
   "footer": {
     "privacyPolicy": "privacy policy",
-    "licenseAgreement": "license agreement"
+    "licenseAgreement": "license agreement",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "connect": "Connect",
+    "careers": "Careers",
+    "partnershipProgram": "Partnership Program",
+    "allRightsReserved": "All rights reserved.",
+    "settings": "Settings",
+    "theme": "Theme",
+    "language": "Language"
   },
   "scrolling": {
     "schedulePlanning": "schedule planning",

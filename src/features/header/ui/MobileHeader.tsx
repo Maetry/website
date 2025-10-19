@@ -9,14 +9,14 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import closeImage from "@/public/images/closeImage.svg"
 import logo from "@/public/images/logo.svg"
 import mobileMenu from "@/public/images/mobile_menu.svg"
-import { ThemeSwitcher, LocalizedTextFabric, LanguageSelector } from "@/shared/ui"
+import { LocalizedTextFabric } from "@/shared/ui"
 
 import LinksBar from "./SlideBarLinks"
 
 
 const MobileHeader = () => {
   const dispatch = useAppDispatch()
-  const showLinks = useAppSelector((state) => state.mobileHeader.showLinks)
+  const showLinks = useAppSelector((state) => state.mobileMenu.showLinks)
 
 
   return (
@@ -52,14 +52,9 @@ const MobileHeader = () => {
             </button>
           </>
         ) : (
-          // Открытое состояние: переключатель темы слева, локализация и кнопка закрытия справа
+          // Открытое состояние: только кнопка закрытия справа
           <>
-            <div className="flex h-full items-center">
-              <ThemeSwitcher></ThemeSwitcher>
-            </div>
-
-            <div className="flex h-full items-center flex-1 justify-end gap-x-2 md:gap-x-4">
-              <LanguageSelector variant="mobile" />
+            <div className="flex h-full items-center flex-1 justify-end">
               <button
                 onClick={() => dispatch(toggleHeader())}
                 className="flex h-full items-center ml-2"

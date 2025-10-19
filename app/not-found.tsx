@@ -3,7 +3,7 @@ import React from "react"
 import Link from "next/link"
 
 import { TextFabric } from "@/shared/ui"
-import styles from "@/styles/GradientAnimation.module.css"
+import styles from "@/styles/components.css"
 
 const NotFound = () => {
   return (

@@ -1,97 +1,165 @@
 import React from "react"
 
-import Image from "next/image"
 import Link from "next/link"
 
-import Instagram from "@/public/images/Instagram.svg"
-import logo from "@/public/images/logo.svg"
-import Mail from "@/public/images/Mail.svg"
-import Telegram from "@/public/images/Telegram.svg"
 import { LocalizedTextFabric } from "@/shared/ui"
-
-import LicenseButton from "./LicenseButton"
-import PrivacyButton from "./PrivacyButton"
+import ThemeSwitcher from "@/shared/ui/theme-switcher/ThemeSwitcher"
+import LanguageSwitcher from "@/shared/ui/locale/LanguageSwitcher"
 
 const Footer = () => {
   return (
-    <footer className="w-full px-[3.5%] mt-[10vh]  md:text-[23px] lg:text-[25px] xl:text-[20px]">
-      <div className="border rounded-[21px] w-full py-[5vh] flex flex-col xl:flex-row items-center px-[3.5%] gap-y-5 justify-center xl:justify-between">
-        <div className="flex flex-col items-center xl:items-start">
-          <Image
-            src={logo}
-            alt={""}
-            width={210}
-            height={42}
-            className="md:w-[35vw] xl:w-[19vw] dark:invert"
-          />
-          <nav className="font-thin gap-x-6 flex mt-3 ">
-            <Link
-              href={"#about"}
-              className="relative dark:hover:border-white hover:border-black/50 transition-all duration-200 border-b border-transparent"
-            >
-              <LocalizedTextFabric translationKey="navigation.about" id={2} fallback="about" />
-            </Link>
-            <Link
-              href={"#reviews"}
-              className="relative dark:hover:border-white hover:border-black/50 transition-all duration-200 border-b border-transparent"
-            >
-              <LocalizedTextFabric translationKey="navigation.reviews" id={2} fallback="reviews" />
-            </Link>
-            <Link
-              href={"#features"}
-              className="relative dark:hover:border-white hover:border-black/50 transition-all duration-200 border-b border-transparent"
-            >
-              <LocalizedTextFabric translationKey="navigation.features" id={2} fallback="features" />
-            </Link>
-          </nav>
+    <footer className="w-full bg-white dark:bg-dark-bg">
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        {/* Main footer content */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          {/* Product */}
+          <div className="col-span-1">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
+              <span className="font-bold">
+                <LocalizedTextFabric translationKey="footer.product" id={2} fallback="Product" />
+              </span>
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  href="#features"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  <LocalizedTextFabric translationKey="navigation.features" id={2} fallback="Features" />
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#about"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  <LocalizedTextFabric translationKey="navigation.about" id={2} fallback="About" />
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#reviews"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  <LocalizedTextFabric translationKey="navigation.reviews" id={2} fallback="Reviews" />
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div className="col-span-1">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
+              <LocalizedTextFabric translationKey="footer.company" id={2} fallback="Company" />
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  href="https://www.linkedin.com/company/108155469/admin/posted-jobs/open/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  <LocalizedTextFabric translationKey="footer.careers" id={2} fallback="Careers" />
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/ambassadors"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  <LocalizedTextFabric translationKey="footer.partnershipProgram" id={2} fallback="Partnership Program" />
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div className="col-span-1">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
+              <LocalizedTextFabric translationKey="footer.legal" id={2} fallback="Legal" />
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link 
+                  href="/privacy.html" 
+                  target="_blank"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  <LocalizedTextFabric 
+                    translationKey="footer.privacyPolicy" 
+                    id={2} 
+                    fallback="Privacy Policy" 
+                  />
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/eula.html" 
+                  target="_blank"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  <LocalizedTextFabric 
+                    translationKey="footer.licenseAgreement" 
+                    id={2} 
+                    fallback="License Agreement" 
+                  />
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Connect */}
+          <div className="col-span-1">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
+              <LocalizedTextFabric translationKey="footer.connect" id={2} fallback="Connect" />
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  href="https://t.me/maetry_app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  Telegram
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="https://instagram.com/maetry.co"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  Instagram
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="mailto:support@maetry.com"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  support@maetry.com
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <div className="flex flex-col gap-y-2 xl:flex-row items-center gap-x-4">
-          <Link
-            href="mailto:support@maetry.com"
-            className="flex gap-x-1 items-center"
-          >
-            <Image
-              src={Mail}
-              alt={"Mail"}
-              width={24}
-              height={24}
-              className="dark:invert xl:w-[2vw] md:w-[4vw]"
-            />{" "}
-            support@maetry.com
-          </Link>
-          <Link
-            href={"https://t.me/maetry_app"}
-            className="flex gap-x-1 items-center"
-          >
-            <Image
-              src={Telegram}
-              alt={"Telegram"}
-              width={24}
-              height={24}
-              className="dark:invert xl:w-[2vw] md:w-[4vw]"
-            />{" "}
-            @maetry_app
-          </Link>
-          <Link
-            href={"https://instagram.com/maetry.co"}
-            className="flex gap-x-1 items-center"
-          >
-            <Image
-              src={Instagram}
-              alt={"Instagram"}
-              width={24}
-              height={24}
-              className="dark:invert xl:w-[2vw] md:w-[4vw]"
-            />{" "}
-            @maetry.co
-          </Link>
+        {/* Bottom section */}
+        <div className="pt-8 border-t border-gray-200 dark:border-gray-800">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+              <LocalizedTextFabric translationKey="footer.allRightsReserved" id={2} fallback="© 2025 Maetry LLC. All rights reserved." />
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <ThemeSwitcher />
+              <LanguageSwitcher />
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="w-full flex justify-between px-[3.5%] xl:text-[20px] font-thin my-[3vh]">
-        <PrivacyButton></PrivacyButton>
-        <LicenseButton></LicenseButton>
       </div>
     </footer>
   )

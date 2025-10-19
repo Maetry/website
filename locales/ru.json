@@ -295,7 +295,17 @@
   },
   "footer": {
     "privacyPolicy": "политика конфиденциальности",
-    "licenseAgreement": "лицензионное соглашение"
+    "licenseAgreement": "лицензионное соглашение",
+    "product": "Продукт",
+    "company": "Компания",
+    "legal": "Правовая информация",
+    "connect": "Связь",
+    "careers": "Карьера",
+    "partnershipProgram": "Партнёрская программа",
+    "allRightsReserved": "Все права защищены.",
+    "settings": "Настройки",
+    "theme": "Тема",
+    "language": "Язык"
   },
   "scrolling": {
     "schedulePlanning": "планирование расписания",

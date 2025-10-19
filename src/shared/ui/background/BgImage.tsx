@@ -3,16 +3,16 @@
 import React from "react"
 
 import { useAppSelector } from "@/lib/hooks"
-import styles from "@/styles/GradientAnimation.module.css"
+// Стили подключены глобально в globals.css
 
 const BgImage = () => {
-  const DarkTheme = useAppSelector((state) => state.blackTheme.blackTheme)
+  const DarkTheme = useAppSelector((state) => state.theme.blackTheme)
   return (
     <>
       {DarkTheme ? (
-        <div className={styles.darkAnimatedGradient}></div>
+        <div className="darkAnimatedGradient"></div>
       ) : (
-        <div className={styles.animatedGradient}></div>
+        <div className="animatedGradient"></div>
       )}
     </>
   )

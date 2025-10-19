@@ -1,0 +1,136 @@
+{
+  "common": {
+    "title": "Maetry",
+    "description": "Automatiza tus procesos de negocio",
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "confirm": "Confirmar"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "features": "Características",
+    "pricing": "Precios",
+    "contact": "Contacto",
+    "ambassadors": "Socios",
+    "clients": "Clientes",
+    "employees": "Empleados",
+    "reviews": "Reseñas",
+    "menu": "Menú"
+  },
+  "header": {
+    "freeTrial": "Prueba Gratuita"
+  },
+  "hero": {
+    "subtitle": "múltiples tareas — un ecosistema",
+    "description": "Crea tu propio ecosistema para la automatización de registros"
+  },
+  "about": {
+    "mission": "nuestra misión",
+    "title": "libera tu tiempo de la rutina y tu negocio de los errores",
+    "description": "maetry permite a los emprendedores hacer crecer su negocio desde cualquier parte del mundo a través de una aplicación móvil"
+  },
+  "reviews": {
+    "subtitle": "por qué elegirnos",
+    "title": "haz el negocio más fácil",
+    "julia": {
+      "name": "Julia",
+      "role": "Propietaria de la cadena PROmanicure",
+      "text": "Maetry me ayuda a planificar cada día en el salón. Entiendo cuántos clientes están registrados y para qué servicios, quién es nuevo y quién es regular. La base de clientes se forma sin mi participación"
+    },
+    "vitaliy": {
+      "name": "Vitaliy",
+      "role": "Fundador de Maetry",
+      "text": "Maetry nació de la necesidad de automatizar procesos en mi propio negocio. Ahora ayudamos a otros emprendedores a hacer crecer sus negocios de manera eficiente"
+    }
+  },
+  "features": {
+    "subtitle": "características",
+    "title": "todo lo que necesitas para hacer crecer tu negocio",
+    "schedulePlanning": {
+      "title": "Planificación de horarios",
+      "description": "Organiza tu tiempo y el de tu equipo de manera eficiente"
+    },
+    "analyticsIntegration": {
+      "title": "Análisis e integración",
+      "description": "Obtén insights valiosos sobre tu negocio"
+    },
+    "clientManagement": {
+      "title": "Gestión de clientes",
+      "description": "Mantén un registro completo de tus clientes"
+    },
+    "automation": {
+      "title": "Automatización",
+      "description": "Automatiza procesos repetitivos y ahorra tiempo"
+    }
+  },
+  "scrolling": {
+    "schedulePlanning": "planificación de horarios",
+    "analyticsIntegration": "análisis e integración"
+  },
+  "faq": {
+    "subtitle": "preguntas frecuentes",
+    "title": "todo lo que necesitas saber",
+    "questions": [
+      {
+        "question": "¿Qué es Maetry?",
+        "answer": "Maetry es una plataforma integral que automatiza los procesos de negocio, permitiendo a los emprendedores gestionar sus operaciones de manera eficiente desde cualquier lugar."
+      },
+      {
+        "question": "¿Cómo puedo empezar?",
+        "answer": "Puedes comenzar con una prueba gratuita. Simplemente regístrate en nuestra plataforma y comienza a automatizar tus procesos de negocio en minutos."
+      },
+      {
+        "question": "¿Es seguro usar Maetry?",
+        "answer": "Sí, la seguridad es nuestra prioridad. Utilizamos encriptación de extremo a extremo y cumplimos con los estándares internacionales de seguridad de datos."
+      },
+      {
+        "question": "¿Puedo integrar Maetry con otros sistemas?",
+        "answer": "Absolutamente. Maetry ofrece integraciones con las principales herramientas de negocio y APIs para conectar con tus sistemas existentes."
+      },
+      {
+        "question": "¿Qué tipo de soporte ofrecen?",
+        "answer": "Ofrecemos soporte 24/7 a través de chat en vivo, email y documentación completa. Nuestro equipo está aquí para ayudarte a tener éxito."
+      }
+    ]
+  },
+  "prefooter": {
+    "title": "prueba gratuita",
+    "subtitle": "comienza a hacer crecer tu negocio hoy",
+    "description": "implementación rápida - te ayudaremos a transferir los datos necesarios y personalizar el servicio para tus tareas"
+  },
+  "footer": {
+    "product": "Producto",
+    "company": "Empresa",
+    "legal": "Legal",
+    "connect": "Conectar",
+    "careers": "Carreras",
+    "partnershipProgram": "Programa de Socios",
+    "privacyPolicy": "Política de Privacidad",
+    "licenseAgreement": "Acuerdo de Licencia",
+    "allRightsReserved": "© 2025 Maetry LLC. Todos los derechos reservados."
+  },
+  "ambassadors": {
+    "title": "Programa de Socios",
+    "subtitle": "Únete a nuestro programa de socios",
+    "description": "Conviértete en socio de Maetry y ayuda a otros emprendedores a hacer crecer sus negocios mientras ganas comisiones.",
+    "benefits": [
+      "Comisiones atractivas",
+      "Materiales de marketing",
+      "Soporte dedicado",
+      "Acceso a herramientas exclusivas"
+    ],
+    "joinNow": "Únete Ahora",
+    "learnMore": "Aprende Más"
+  }
+}

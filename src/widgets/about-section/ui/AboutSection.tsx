@@ -13,7 +13,7 @@ import phonesAboutCenterLightRu from "@/public/images/phones_about_center_light_
 import { ScrollingImage, ScrollingText, LocalizedTextFabric } from "@/shared/ui"
 
 const AboutSection = () => {
-  const isDark = useAppSelector((state) => state.blackTheme.blackTheme)
+  const isDark = useAppSelector((state) => state.theme.blackTheme)
   const params = useParams()
   const locale = (params?.locale as string) || 'en'
   

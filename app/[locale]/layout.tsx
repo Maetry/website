@@ -6,7 +6,7 @@ import { getMessages } from 'next-intl/server';
 
 import { StoreProvider } from "@/shared/store";
 
-import { locales } from '../../i18n';
+import { locales } from '../../config/i18n';
 
 export const metadata: Metadata = {
   title: "Maetry",

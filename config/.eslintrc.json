@@ -1,0 +1,115 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
+  "plugins": ["import"],
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    
+    // FSD Layer Import Rules - запрещаем импорты из верхних слоев в нижние
+    "import/no-restricted-paths": [
+      "error",
+      {
+        "zones": [
+          {
+            "target": "./src/entities/**/*",
+            "from": "./src/features/**/*"
+          },
+          {
+            "target": "./src/entities/**/*",
+            "from": "./src/widgets/**/*"
+          },
+          {
+            "target": "./src/entities/**/*",
+            "from": "./src/pages/**/*"
+          },
+          {
+            "target": "./src/entities/**/*",
+            "from": "./src/app/**/*"
+          },
+          {
+            "target": "./src/features/**/*",
+            "from": "./src/widgets/**/*"
+          },
+          {
+            "target": "./src/features/**/*",
+            "from": "./src/pages/**/*"
+          },
+          {
+            "target": "./src/features/**/*",
+            "from": "./src/app/**/*"
+          },
+          {
+            "target": "./src/widgets/**/*",
+            "from": "./src/pages/**/*"
+          },
+          {
+            "target": "./src/widgets/**/*",
+            "from": "./src/app/**/*"
+          },
+          {
+            "target": "./src/pages/**/*",
+            "from": "./src/app/**/*"
+          }
+        ]
+      }
+    ],
+    
+    // Public API Rules - разрешаем импорты только через index.ts (отключено для совместимости)
+    "import/no-internal-modules": "off",
+    
+    // Import Order Rules
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "pathGroups": [
+          {
+            "pattern": "react",
+            "group": "external",
+            "position": "before"
+          },
+          {
+            "pattern": "next/**",
+            "group": "external",
+            "position": "before"
+          },
+          {
+            "pattern": "@/**",
+            "group": "internal",
+            "position": "before"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["react", "next"],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ],
+    
+    // TypeScript Rules
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-empty-function": "warn"
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": "./tsconfig.json"
+      }
+    }
+  }
+}

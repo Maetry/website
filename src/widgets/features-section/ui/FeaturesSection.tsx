@@ -1,6 +1,6 @@
 import React from "react"
 
-import { Feature } from "@/features/features"
+import { Feature } from "@/features/feature-card"
 import { LocalizedTextFabric } from "@/shared/ui"
 
 const FeaturesSection = () => {

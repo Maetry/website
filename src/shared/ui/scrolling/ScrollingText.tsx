@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from "react";
 
 import { useTranslations } from 'next-intl';
 
-import styles from "@/styles/GradientAnimation.module.css";
+// Стили подключены глобально в globals.css
 
 const ScrollingText = () => {
   const firstRef = useRef<HTMLDivElement>(null)
@@ -68,11 +68,11 @@ const ScrollingText = () => {
   }, [])
 
   return (
-    <div className="space-y-[2vh] py-[3vh]">
-      <div className="overflow-x-hidden w-full text-[6vw] xl:text-[4vw] 2xl:text-[100px] pb-[0.5em]" style={{lineHeight: '1.45'}}>
+    <div className="space-y-[1vh] py-[1vh] h-[20vh] overflow-hidden">
+      <div className="overflow-x-hidden w-full text-[5vw] xl:text-[4vw] 2xl:text-[100px] pb-[0.2em]" style={{lineHeight: '1.2'}}>
         <div className="whitespace-nowrap">
           <div className="flex justify-center" ref={firstRef}>
-            <span className={styles.gradient__scrolling__text}>
+            <span className="gradient__scrolling__text">
               <RepeatText 
                 translationKey="scrolling.schedulePlanning" 
                 fallback="schedule planning"
@@ -82,10 +82,10 @@ const ScrollingText = () => {
           </div>
         </div>
       </div>
-      <div className="overflow-hidden w-full text-[6vw] xl:text-[4vw] 2xl:text-[100px] pb-[0.5em]" style={{lineHeight: '1.45'}}>
+      <div className="overflow-hidden w-full text-[5vw] xl:text-[4vw] 2xl:text-[100px] pb-[0.2em]" style={{lineHeight: '1.2'}}>
         <div className="whitespace-nowrap">
           <div className="flex justify-center" ref={secondRef}>
-            <span className={styles.gradient__scrolling__text}>
+            <span className="gradient__scrolling__text">
               <RepeatText 
                 translationKey="scrolling.analyticsIntegration" 
                 fallback="analytics and integration"

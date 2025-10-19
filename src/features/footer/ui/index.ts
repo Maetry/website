@@ -1,5 +1,3 @@
 export { default as Footer } from './Footer'
-export { default as PrivacyButton } from './PrivacyButton'
-export { default as LicenseButton } from './LicenseButton'
 export { default as PrivacyPolicy } from './PrivacyPolicy'
 export { default as LicensePolicy } from './LicensePolicy'
