@@ -29,7 +29,7 @@
     "menu": "Menu"
   },
   "header": {
-    "freeTrial": "Free Trial"
+    "freeTrial": "Sign In"
   },
   "hero": {
     "subtitle": "multiple tasks — one ecosystem",
@@ -105,7 +105,7 @@
     }
   },
   "prefooter": {
-    "title": "free trial",
+    "title": "sign in",
     "subtitle": "start growing your business today",
     "description": "fast implementation - we will help you transfer the necessary data and customize the service for your tasks"
   },

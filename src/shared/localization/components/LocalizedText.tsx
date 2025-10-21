@@ -1,21 +1,30 @@
+"use client"
+
 import React from "react";
 
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 
-interface ServerTextFabricProps {
+// Стили подключены глобально в globals.css
+
+interface LocalizedTextProps {
   translationKey: string
   id: number
   fallback?: string
 }
 
-const ServerTextFabric = async ({ id, translationKey, fallback }: ServerTextFabricProps) => {
+const LocalizedText = ({ id, translationKey, fallback }: LocalizedTextProps) => {
   let text: string
-  
+
   try {
-    const t = await getTranslations()
+    const t = useTranslations()
     text = t(translationKey)
+    
+    // Проверяем, получили ли мы fallback или реальный перевод
+    if (text === translationKey) {
+      text = fallback || translationKey
+    }
   } catch {
-    // Если getTranslations не работает, используем fallback
+    // Если useTranslations не работает, используем fallback
     text = fallback || translationKey
   }
 
@@ -79,4 +88,4 @@ const ServerTextFabric = async ({ id, translationKey, fallback }: ServerTextFabr
   }
 }
 
-export default ServerTextFabric
+export default LocalizedText

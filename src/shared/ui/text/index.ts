@@ -1,3 +1,3 @@
 export { default as TextFabric } from './TextFabric'
-export { default as LocalizedTextFabric } from './LocalizedTextFabric'
-export { default as ServerTextFabric } from './ServerTextFabric'
+// LocalizedText перенесен в src/shared/localization/components
+export { LocalizedText } from '../../localization'

@@ -39,3 +39,4 @@ yarn-error.log*
 next-env.d.ts
 .DS_Store
 public/.DS_Store
+/.build

@@ -1,7 +1,7 @@
 import React from "react"
 
 import { Question, Vitaliy } from "@/features/faq"
-import { LocalizedTextFabric } from "@/shared/ui"
+import { LocalizedText } from "@/shared/ui"
 
 const FAQSection = () => {
   return (
@@ -10,12 +10,12 @@ const FAQSection = () => {
       className="w-[93%] px-[3.5%] flex flex-col gap-y-[5vh] xl:gap-y-[8vh] justify-center"
     >
       <div className="w-full flex flex-col">
-        <LocalizedTextFabric 
+        <LocalizedText 
           id={3} 
           translationKey="faq.subtitle" 
           fallback="faq" 
         />
-        <LocalizedTextFabric 
+        <LocalizedText 
           id={1} 
           translationKey="faq.title" 
           fallback="frequent questions" 

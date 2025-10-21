@@ -9,9 +9,9 @@ export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = 'ru';
 
 // Статические импорты локализации
-import ruMessages from '../locales/ru.json';
-import enMessages from '../locales/en.json';
-import esMessages from '../locales/es.json';
+import ruMessages from './locales/ru.json';
+import enMessages from './locales/en.json';
+import esMessages from './locales/es.json';
 
 export default getRequestConfig(async ({ locale }) => {
   // Проверяем, что локаль поддерживается

@@ -1,1 +1,0 @@
-export { useLocalizedImage } from './useLocalizedImage';

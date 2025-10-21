@@ -5,10 +5,10 @@ import { useTranslations } from 'next-intl'
 
 // Стили подключены глобально в globals.css
 
-interface TrialProps {
+interface SignInProps {
   type: string
 }
-const FreeTrial = ({ type }: TrialProps) => {
+const SignIn = ({ type }: SignInProps) => {
   const t = useTranslations()
 
   switch (type) {
@@ -33,4 +33,4 @@ const FreeTrial = ({ type }: TrialProps) => {
   }
 }
 
-export default FreeTrial
+export default SignIn

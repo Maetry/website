@@ -4,9 +4,9 @@ import Image from "next/image"
 import Link from "next/link"
 
 import logo from "@/public/images/logo.svg"
-import { LocalizedTextFabric } from "@/shared/ui"
+import { LocalizedText } from "@/shared/ui"
 
-import FreeTrial from "./FreeTrial"
+import SignIn from "./SignIn"
 
 const Header = () => {
   return (
@@ -28,7 +28,7 @@ const Header = () => {
             href={"/#about"}
             className="relative dark:hover:border-white hover:border-black/50 transition-all duration-200 border-b border-transparent"
           >
-            <LocalizedTextFabric 
+            <LocalizedText 
               translationKey="navigation.about" 
               id={2} 
               fallback="About" 
@@ -38,7 +38,7 @@ const Header = () => {
             href={"/#reviews"}
             className="relative dark:hover:border-white hover:border-black/50 transition-all duration-200 border-b border-transparent"
           >
-            <LocalizedTextFabric 
+            <LocalizedText 
               translationKey="navigation.reviews" 
               id={2} 
               fallback="Reviews" 
@@ -48,7 +48,7 @@ const Header = () => {
             href={"/#features"}
             className="relative dark:hover:border-white hover:border-black/50 transition-all duration-200 border-b border-transparent"
           >
-            <LocalizedTextFabric 
+            <LocalizedText 
               translationKey="navigation.features" 
               id={2} 
               fallback="Features" 
@@ -56,7 +56,7 @@ const Header = () => {
           </Link>
         </nav>
         <div className="flex-1 hidden items-center xl:flex justify-end gap-x-4">
-          <FreeTrial type="pc"></FreeTrial>
+          <SignIn type="pc"></SignIn>
         </div>
       </div>
     </header>

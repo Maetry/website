@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import closeImage from "@/public/images/closeImage.svg"
 import logo from "@/public/images/logo.svg"
 import mobileMenu from "@/public/images/mobile_menu.svg"
-import { LocalizedTextFabric } from "@/shared/ui"
+import { LocalizedText } from "@/shared/ui"
 
 import LinksBar from "./SlideBarLinks"
 
@@ -40,7 +40,7 @@ const MobileHeader = () => {
               className="flex gap-x-2 h-full items-center ml-auto"
             >
               <label className="text-[14px] md:text-[16px] lg:text-[22px] dark:text-dark-text flex">
-                <LocalizedTextFabric translationKey="navigation.menu" id={2} fallback="menu" />
+                <LocalizedText translationKey="navigation.menu" id={2} fallback="menu" />
               </label>
               <Image
                 src={mobileMenu}

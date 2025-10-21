@@ -1,7 +1,7 @@
 import React from "react"
 
 import { Review } from "@/features/reviews"
-import { LocalizedTextFabric } from "@/shared/ui"
+import { LocalizedText } from "@/shared/ui"
 
 const ReviewsSection = () => {
   return (
@@ -10,12 +10,12 @@ const ReviewsSection = () => {
       className="w-[93%] px-[3.5%] flex flex-col justify-center xl:justify-center items-center gap-y-[5vh] xl:gap-y-[8vh] scroll-mt-[100px]"
     >
       <div className="w-full flex flex-col">
-        <LocalizedTextFabric 
+        <LocalizedText 
           id={3} 
           translationKey="reviews.subtitle"
           fallback="why choose us"
         />
-        <LocalizedTextFabric 
+        <LocalizedText 
           id={1} 
           translationKey="reviews.title"
           fallback="make business easier"

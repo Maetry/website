@@ -7,7 +7,7 @@ import first from "@/public/images/1.png"
 import second from "@/public/images/2.png"
 import third from "@/public/images/3.png"
 import fourth from "@/public/images/4.png"
-import { LocalizedTextFabric } from "@/shared/ui"
+import { LocalizedText } from "@/shared/ui"
 
 interface ReviewDataProps {
   id: number
@@ -73,11 +73,11 @@ const Review = ({ id, titleKey, titleFallback, roleKey, roleFallback, descriptio
         </div>
 
         <div>
-          <LocalizedTextFabric translationKey={titleKey} fallback={titleFallback} id={4} />
-          <LocalizedTextFabric translationKey={roleKey} fallback={roleFallback} id={5} />
+          <LocalizedText translationKey={titleKey} fallback={titleFallback} id={4} />
+          <LocalizedText translationKey={roleKey} fallback={roleFallback} id={5} />
         </div>
       </div>
-      <LocalizedTextFabric translationKey={descriptionKey} fallback={descriptionFallback} id={2} />
+      <LocalizedText translationKey={descriptionKey} fallback={descriptionFallback} id={2} />
     </div>
   )
 }

@@ -14,7 +14,7 @@
     "type-check": "tsc --noEmit",
     "check-all": "npm run lint:check && npm run format:check && npm run type-check",
     "fix-all": "npm run lint:fix && npm run format:fix",
-    "postbuild": "next-sitemap --config config/next-sitemap.config.js"
+    "postbuild": "next-sitemap --config next-sitemap.config.js"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.3.0",

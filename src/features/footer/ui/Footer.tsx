@@ -2,9 +2,9 @@ import React from "react"
 
 import Link from "next/link"
 
-import { LocalizedTextFabric } from "@/shared/ui"
-import ThemeSwitcher from "@/shared/ui/theme-switcher/ThemeSwitcher"
+import { LocalizedText } from "@/shared/ui"
 import LanguageSwitcher from "@/shared/ui/locale/LanguageSwitcher"
+import ThemeSwitcher from "@/shared/ui/theme-switcher/ThemeSwitcher"
 
 const Footer = () => {
   return (
@@ -16,7 +16,7 @@ const Footer = () => {
           <div className="col-span-1">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
               <span className="font-bold">
-                <LocalizedTextFabric translationKey="footer.product" id={2} fallback="Product" />
+                <LocalizedText translationKey="footer.product" id={2} fallback="Product" />
               </span>
             </h3>
             <ul className="space-y-3">
@@ -25,7 +25,7 @@ const Footer = () => {
                   href="#features"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedTextFabric translationKey="navigation.features" id={2} fallback="Features" />
+                  <LocalizedText translationKey="navigation.features" id={2} fallback="Features" />
                 </Link>
               </li>
               <li>
@@ -33,7 +33,7 @@ const Footer = () => {
                   href="#about"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedTextFabric translationKey="navigation.about" id={2} fallback="About" />
+                  <LocalizedText translationKey="navigation.about" id={2} fallback="About" />
                 </Link>
               </li>
               <li>
@@ -41,7 +41,7 @@ const Footer = () => {
                   href="#reviews"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedTextFabric translationKey="navigation.reviews" id={2} fallback="Reviews" />
+                  <LocalizedText translationKey="navigation.reviews" id={2} fallback="Reviews" />
                 </Link>
               </li>
             </ul>
@@ -50,7 +50,7 @@ const Footer = () => {
           {/* Company */}
           <div className="col-span-1">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
-              <LocalizedTextFabric translationKey="footer.company" id={2} fallback="Company" />
+              <LocalizedText translationKey="footer.company" id={2} fallback="Company" />
             </h3>
             <ul className="space-y-3">
               <li>
@@ -60,7 +60,7 @@ const Footer = () => {
                   rel="noopener noreferrer"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedTextFabric translationKey="footer.careers" id={2} fallback="Careers" />
+                  <LocalizedText translationKey="footer.careers" id={2} fallback="Careers" />
                 </Link>
               </li>
               <li>
@@ -68,7 +68,7 @@ const Footer = () => {
                   href="/ambassadors"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedTextFabric translationKey="footer.partnershipProgram" id={2} fallback="Partnership Program" />
+                  <LocalizedText translationKey="footer.partnershipProgram" id={2} fallback="Partnership Program" />
                 </Link>
               </li>
             </ul>
@@ -77,7 +77,7 @@ const Footer = () => {
           {/* Legal */}
           <div className="col-span-1">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
-              <LocalizedTextFabric translationKey="footer.legal" id={2} fallback="Legal" />
+              <LocalizedText translationKey="footer.legal" id={2} fallback="Legal" />
             </h3>
             <ul className="space-y-3">
               <li>
@@ -86,7 +86,7 @@ const Footer = () => {
                   target="_blank"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedTextFabric 
+                  <LocalizedText 
                     translationKey="footer.privacyPolicy" 
                     id={2} 
                     fallback="Privacy Policy" 
@@ -99,7 +99,7 @@ const Footer = () => {
                   target="_blank"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedTextFabric 
+                  <LocalizedText 
                     translationKey="footer.licenseAgreement" 
                     id={2} 
                     fallback="License Agreement" 
@@ -112,7 +112,7 @@ const Footer = () => {
           {/* Connect */}
           <div className="col-span-1">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
-              <LocalizedTextFabric translationKey="footer.connect" id={2} fallback="Connect" />
+              <LocalizedText translationKey="footer.connect" id={2} fallback="Connect" />
             </h3>
             <ul className="space-y-3">
               <li>
@@ -151,7 +151,7 @@ const Footer = () => {
         <div className="pt-8 border-t border-gray-200 dark:border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-              <LocalizedTextFabric translationKey="footer.allRightsReserved" id={2} fallback="© 2025 Maetry LLC. All rights reserved." />
+              <LocalizedText translationKey="footer.allRightsReserved" id={2} fallback="© 2025 Maetry LLC. All rights reserved." />
             </div>
             
             <div className="flex items-center gap-4">

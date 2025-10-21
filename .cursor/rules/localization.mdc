@@ -1,0 +1,206 @@
+---
+alwaysApply: true
+---
+
+# Правила локализации для Maetry Landing
+
+## Общие принципы
+- **Простота превыше всего** - минимум абстракций для текста и изображений
+- **Готовые решения** - используем next-intl для переводов
+- **Fallback на английском** - английский язык по умолчанию
+- **Плоская структура** - избегаем глубокой вложенности в JSON
+
+## Работа с текстом
+
+### Структура переводов
+```json
+{
+  "section": {
+    "key": "Переведенный текст"
+  }
+}
+```
+
+### Правила именования ключей
+- Используем **camelCase** для ключей
+- Группируем по секциям: `hero`, `features`, `footer` и т.д.
+- Избегаем глубокой вложенности (максимум 2 уровня)
+- Описательные имена: `title`, `description`, `buttonText`
+
+### Использование в компонентах
+```tsx
+import { useTranslations } from 'next-intl';
+
+const MyComponent = () => {
+  const t = useTranslations('section');
+  
+  return (
+    <h1>{t('title')}</h1>
+    <p>{t('description')}</p>
+  );
+};
+```
+
+### Простые хуки для текста
+```tsx
+// Для простых случаев - прямое использование
+const t = useTranslations('hero');
+const title = t('title');
+
+// Для сложных случаев - создаем простой хук
+const useHeroText = () => {
+  const t = useTranslations('hero');
+  return {
+    title: t('title'),
+    subtitle: t('subtitle'),
+    description: t('description')
+  };
+};
+```
+
+## Работа с изображениями
+
+### Структура файлов
+```
+public/images/
+├── logo.svg          # Английская версия (по умолчанию)
+├── logo_ru.svg       # Русская версия
+├── logo_es.svg       # Испанская версия
+├── hero-bg.svg
+├── hero-bg_ru.svg
+└── hero-bg_es.svg
+```
+
+### Правила именования
+- **Базовое имя** без суффикса = английская версия
+- **Суффикс `_ru`** = русская версия  
+- **Суффикс `_es`** = испанская версия
+- Используем **kebab-case** для имен файлов
+
+### Использование в компонентах
+```tsx
+import { useLocalizedImage } from '@/shared/hooks/useLocalizedImage';
+import baseImage from '/public/images/logo.svg';
+
+const MyComponent = () => {
+  const localizedImage = useLocalizedImage(baseImage);
+  
+  return <img src={localizedImage} alt="Logo" />;
+};
+```
+
+### Для Next.js Image
+```tsx
+import Image from 'next/image';
+import { useLocalizedImage } from '@/shared/hooks/useLocalizedImage';
+import baseImage from '/public/images/hero-bg.svg';
+
+const MyComponent = () => {
+  const localizedImage = useLocalizedImage(baseImage);
+  
+  return (
+    <Image 
+      src={localizedImage} 
+      alt="Hero background"
+      width={800}
+      height={600}
+    />
+  );
+};
+```
+
+## Простые компоненты
+
+### LocalizedText компонент
+```tsx
+interface LocalizedTextProps {
+  section: string;
+  key: string;
+  className?: string;
+}
+
+export const LocalizedText = ({ section, key, className }: LocalizedTextProps) => {
+  const t = useTranslations(section);
+  return <span className={className}>{t(key)}</span>;
+};
+
+// Использование
+<LocalizedText section="hero" key="title" className="text-2xl" />
+```
+
+### LocalizedImage компонент
+```tsx
+interface LocalizedImageProps {
+  baseImage: string;
+  alt: string;
+  className?: string;
+  width?: number;
+  height?: number;
+}
+
+export const LocalizedImage = ({ baseImage, alt, className, width, height }: LocalizedImageProps) => {
+  const localizedImage = useLocalizedImage(baseImage);
+  
+  return (
+    <Image 
+      src={localizedImage}
+      alt={alt}
+      className={className}
+      width={width}
+      height={height}
+    />
+  );
+};
+
+// Использование
+<LocalizedImage 
+  baseImage="/images/logo.svg"
+  alt="Logo"
+  width={200}
+  height={50}
+/>
+```
+
+## Что НЕ делать
+- ❌ Не создавать сложные системы локализации
+- ❌ Не делать глубокую вложенность в JSON файлах
+- ❌ Не создавать избыточные абстракции для простых случаев
+- ❌ Не усложнять работу с изображениями
+- ❌ Не создавать сложные типы для переводов
+
+## Что делать
+- ✅ Использовать next-intl для переводов
+- ✅ Создавать простые хуки для частых случаев
+- ✅ Использовать плоскую структуру в JSON
+- ✅ Следовать конвенциям именования файлов
+- ✅ Создавать переиспользуемые компоненты для частых случаев
+- ✅ Документировать только сложную логику
+
+## Примеры использования
+
+### Простой текст
+```tsx
+const t = useTranslations('hero');
+return <h1>{t('title')}</h1>;
+```
+
+### Простое изображение
+```tsx
+const image = useLocalizedImage('/images/logo.svg');
+return <img src={image} alt="Logo" />;
+```
+
+### Компонент с несколькими переводами
+```tsx
+const HeroSection = () => {
+  const t = useTranslations('hero');
+  const bgImage = useLocalizedImage('/images/hero-bg.svg');
+  
+  return (
+    <section style={{ backgroundImage: `url(${bgImage})` }}>
+      <h1>{t('title')}</h1>
+      <p>{t('description')}</p>
+    </section>
+  );
+};
+```

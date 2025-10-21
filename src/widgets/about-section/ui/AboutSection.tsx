@@ -2,29 +2,12 @@
 
 import React from "react"
 
-import Image from "next/image"
-import { useParams } from "next/navigation"
-
 import { useAppSelector } from "@/lib/hooks"
-import phonesAboutCenterDark from "@/public/images/phones_about_center_dark.svg"
-import phonesAboutCenterDarkRu from "@/public/images/phones_about_center_dark_ru.svg"
-import phonesAboutCenterLight from "@/public/images/phones_about_center_light.svg"
-import phonesAboutCenterLightRu from "@/public/images/phones_about_center_light_ru.svg"
-import { ScrollingImage, ScrollingText, LocalizedTextFabric } from "@/shared/ui"
+import { LocalizedImage } from "@/shared/localization"
+import { ScrollingImage, ScrollingText, LocalizedText } from "@/shared/ui"
 
 const AboutSection = () => {
   const isDark = useAppSelector((state) => state.theme.blackTheme)
-  const params = useParams()
-  const locale = (params?.locale as string) || 'en'
-  
-  // Выбираем изображения в зависимости от темы и локали
-  const getCenterImage = () => {
-    if (isDark) {
-      return locale === 'ru' ? phonesAboutCenterDarkRu : phonesAboutCenterDark
-    } else {
-      return locale === 'ru' ? phonesAboutCenterLightRu : phonesAboutCenterLight
-    }
-  }
 
   return (
     <section
@@ -33,28 +16,30 @@ const AboutSection = () => {
     >
       <div className="flex w-full flex-col items-center xl:text-start text-center xl:flex-row px-[3.5%]">
         <div className="w-[80%] xl:w-1/2 xl:h-full flex items-center justify-center relative">
-          <Image
-            src={getCenterImage()}
-            alt={""}
+          <LocalizedImage
+            baseImage={isDark ? "/images/phones_about_center_dark.svg" : "/images/phones_about_center_light.svg"}
+            alt=""
+            width={400}
+            height={600}
             className="w-[40vw] xl:w-[16vw] z-[1000]"
           />
           <ScrollingImage></ScrollingImage>
         </div>
         <div className="xl:w-1/2 items-center xl:items-start w-full flex flex-col gap-y-2 mt-[5vh] xl:px-0 px-[10%]">
-          <LocalizedTextFabric 
+          <LocalizedText 
             id={3} 
             translationKey="about.mission"
             fallback="our mission"
           />
 
-          <LocalizedTextFabric
+          <LocalizedText
             id={1}
             translationKey="about.title"
             fallback="free your time from routine and your business from mistakes"
           />
 
           <div className="mt-[5%]">
-            <LocalizedTextFabric
+            <LocalizedText
               id={2}
               translationKey="about.description"
               fallback="maetry allows entrepreneurs to grow their business from anywhere in the world via a mobile app"

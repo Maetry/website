@@ -29,7 +29,7 @@
     "menu": "Menú"
   },
   "header": {
-    "freeTrial": "Prueba Gratuita"
+    "freeTrial": "Iniciar Sesión"
   },
   "hero": {
     "subtitle": "múltiples tareas — un ecosistema",
@@ -152,7 +152,7 @@
     ]
   },
   "prefooter": {
-    "title": "prueba gratuita",
+    "title": "iniciar sesión",
     "subtitle": "comienza a hacer crecer tu negocio hoy",
     "description": "implementación rápida - te ayudaremos a transferir los datos necesarios y personalizar el servicio para tus tareas"
   },

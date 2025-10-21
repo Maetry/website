@@ -2,10 +2,10 @@ import React from "react"
 
 import Image from "next/image"
 
-import { Footer, PrivacyPolicy, LicensePolicy } from "@/features/footer"
+import { Footer } from "@/features/footer"
 import { Header, MobileHeader } from "@/features/header"
 import prefooter from "@/public/images/prefooterImage.svg"
-import { BgImage, LocalizedTextFabric, AppleButton, ImageTextFabric } from "@/shared/ui"
+import { BgImage, LocalizedText, AppleButton, ImageTextFabric } from "@/shared/ui"
 import { AboutSection } from "@/widgets/about-section"
 import { FAQSection } from "@/widgets/faq-section"
 import { FeaturesSection } from "@/widgets/features-section"
@@ -15,8 +15,6 @@ import { ReviewsSection } from "@/widgets/reviews-section"
 const LandingLayout = () => {
   return (
     <>
-      <PrivacyPolicy></PrivacyPolicy>
-      <LicensePolicy></LicensePolicy>
       <Header />
       <MobileHeader />
       <main className="w-full pt-[10vh] flex flex-col items-center bg-white dark:bg-dark-bg gap-y-[9vh] xl:gap-y-[15vh]">
@@ -46,20 +44,20 @@ const LandingLayout = () => {
         <section id={"prefooter"} className="w-full px-[3.5%] h-[70vh] ">
           <div className="w-full h-full bg-dark-bg dark:bg-white rounded-[21px] flex items-center justify-center shadow-xl relative">
             <div className="z-[1000] flex text-invert items-center text-center flex-col w-[80%] xl:w-[40%] gap-y-3 xl:gap-y-0 dark:text-black text-[#fdfdfd]">
-              <LocalizedTextFabric 
+              <LocalizedText 
                 id={7} 
                 translationKey="prefooter.title" 
                 fallback="free trial" 
               />
               <div className="mt-[1%]">
-                <LocalizedTextFabric
+                <LocalizedText
                   id={1}
                   translationKey="prefooter.subtitle"
                   fallback="start growing your business today"
                 />
               </div>
               <div className="mt-[5%] mb-[5%]">
-                <LocalizedTextFabric
+                <LocalizedText
                   id={2}
                   translationKey="prefooter.description"
                   fallback="fast implementation - we will help you transfer the necessary data and customize the service for your tasks"

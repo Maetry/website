@@ -7,7 +7,7 @@ import { useAppSelector } from "@/lib/hooks"
 import notice from "@/public/images/notice.svg"
 import online from "@/public/images/online.svg"
 import schedule from "@/public/images/schedule.svg"
-import { LocalizedTextFabric } from "@/shared/ui"
+import { LocalizedText } from "@/shared/ui"
 // Стили подключены глобально в globals.css
 
 interface FeatureTextProps {
@@ -47,8 +47,8 @@ const Feature = ({ titleKey, titleFallback, descriptionKey, descriptionFallback 
         <ImageFeature title={titleFallback}></ImageFeature>
 
         <div className="flex w-full flex-col gap-y-4 mt-[10%] xl:mt-[25%]">
-          <LocalizedTextFabric translationKey={titleKey} fallback={titleFallback} id={6} />
-          <LocalizedTextFabric translationKey={descriptionKey} fallback={descriptionFallback} id={2} />
+          <LocalizedText translationKey={titleKey} fallback={titleFallback} id={6} />
+          <LocalizedText translationKey={descriptionKey} fallback={descriptionFallback} id={2} />
         </div>
       </div>
     </div>
