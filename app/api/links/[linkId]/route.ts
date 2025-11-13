@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const resolveApiUrl = (): string => {
   const direct = process.env.SHORTLINK_API_URL ?? process.env.NEXT_PUBLIC_SHORTLINK_API_URL;
@@ -10,9 +11,13 @@ const resolveApiUrl = (): string => {
   return direct.replace(/\/+$/, "");
 };
 
-export async function GET(request: NextRequest, { params }: { params: { linkId: string } }) {
+type RouteParams = {
+  params: Promise<{ linkId: string }>;
+};
+
+export async function GET(request: NextRequest, context: RouteParams) {
   const apiUrl = resolveApiUrl();
-  const linkId = params.linkId;
+  const { linkId } = await context.params;
 
   try {
     const targetUrl = `${apiUrl}/api/links/${encodeURIComponent(linkId)}`;

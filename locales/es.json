@@ -220,7 +220,10 @@
     "partnershipProgram": "Programa de Socios",
     "privacyPolicy": "Política de Privacidad",
     "licenseAgreement": "Acuerdo de Licencia",
-    "allRightsReserved": "© 2025 Maetry LLC. Todos los derechos reservados."
+    "allRightsReserved": "© 2025 Maetry LLC. Todos los derechos reservados.",
+    "settings": "Configuración",
+    "theme": "Tema",
+    "language": "Idioma"
   },
   "ambassador": {
     "title": "Programa de Socios",

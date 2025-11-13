@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+
+import type { Metadata } from "next";
 
 import { InviteScreen } from "@/components/invite";
 import { fetchDirectLink, NotFoundError } from "@/lib/api/shortLink";
 
 interface InvitePageProps {
-  params: {
+  params: Promise<{
     linkId: string;
-  };
+  }>;
 }
 
 export const dynamic = "force-dynamic";
@@ -27,8 +28,10 @@ const getLinkData = async (linkId: string, userAgent?: string) => {
 };
 
 export async function generateMetadata({ params }: InvitePageProps): Promise<Metadata> {
+  const { linkId } = await params;
+
   try {
-    const data = await fetchDirectLink(params.linkId);
+    const data = await fetchDirectLink(linkId);
     const title = data.title ?? data.salon?.name ?? "Maetry";
     const description = data.description ?? data.salon?.description ?? "Maetry приглашает вас присоединиться.";
 
@@ -38,7 +41,7 @@ export async function generateMetadata({ params }: InvitePageProps): Promise<Met
       openGraph: {
         title: `Maetry — ${title}`,
         description,
-        url: `https://link.maetry.com/${params.linkId}`,
+        url: `https://link.maetry.com/${linkId}`,
         siteName: "Maetry",
         type: "website",
       },
@@ -69,8 +72,10 @@ export async function generateMetadata({ params }: InvitePageProps): Promise<Met
 }
 
 const InvitePage = async ({ params }: InvitePageProps) => {
-  const userAgent = headers().get("user-agent") ?? "";
-  const data = await getLinkData(params.linkId, userAgent);
+  const { linkId } = await params;
+  const headerList = await headers();
+  const userAgent = headerList.get("user-agent") ?? "";
+  const data = await getLinkData(linkId, userAgent);
 
   return <InviteScreen data={data} />;
 };

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const resolveApiUrl = (): string => {
   const direct = process.env.SHORTLINK_API_URL ?? process.env.NEXT_PUBLIC_SHORTLINK_API_URL;
@@ -10,19 +11,26 @@ const resolveApiUrl = (): string => {
   return direct.replace(/\/+$/, "");
 };
 
-export async function POST(request: NextRequest, { params }: { params: { linkId: string } }) {
+type RouteParams = {
+  params: Promise<{ linkId: string }>;
+};
+
+export async function POST(request: NextRequest, context: RouteParams) {
   const apiUrl = resolveApiUrl();
-  const linkId = params.linkId;
+  const { linkId } = await context.params;
 
   try {
     const body = await request.json();
     const targetUrl = `${apiUrl}/api/fingerprint/${encodeURIComponent(linkId)}`;
+    const forwardedFor = request.headers.get("x-forwarded-for");
+    const cfIp = request.headers.get("cf-connecting-ip");
+    const clientIp = forwardedFor?.split(",")[0]?.trim() ?? cfIp ?? "";
     const proxyResponse = await fetch(targetUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.headers.get("user-agent") ?? "",
-        "CF-Connecting-IP": request.headers.get("x-forwarded-for") ?? request.ip ?? "",
+        "CF-Connecting-IP": clientIp,
       },
       body: JSON.stringify(body),
     });

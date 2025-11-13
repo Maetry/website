@@ -5,11 +5,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import logo from "@/public/images/logo.svg";
-import phones from "@/public/images/phones_customer.png";
 import type { DirectLinkDTO, ShortLinkEventType } from "@/lib/api/shortLink";
 import { sendFingerprint } from "@/lib/fingerprint/collectFingerprint";
 import { detectPlatform } from "@/lib/userAgent/detectPlatform";
+import logo from "@/public/images/logo.svg";
+import phones from "@/public/images/phones_customer.png";
 
 type InviteScreenProps = {
   data: DirectLinkDTO;

@@ -6,7 +6,7 @@ import { type PublicTracking } from '@/lib/tracking/utm';
 const EMPTY_RESPONSE: PublicTracking = {};
 
 export async function GET() {
-  const tracking = getTrackingFromCookies();
+  const tracking = await getTrackingFromCookies();
 
   if (!tracking) {
     return NextResponse.json(EMPTY_RESPONSE);

@@ -6,14 +6,14 @@ import {
   type TrackingCookie
 } from './utm';
 
-export function getTrackingFromCookies(): TrackingCookie | null {
-  const cookieStore = cookies();
+export async function getTrackingFromCookies(): Promise<TrackingCookie | null> {
+  const cookieStore = await cookies();
   const raw = cookieStore.get(TRACKING_COOKIE_NAME)?.value;
   return decodeTrackingCookie(raw ?? null);
 }
 
-export function getTrackingFromRequestHeaders(): TrackingCookie | null {
-  const requestHeaders = headers();
+export async function getTrackingFromRequestHeaders(): Promise<TrackingCookie | null> {
+  const requestHeaders = await headers();
   const raw = requestHeaders.get(`cookie`);
 
   if (!raw) {
