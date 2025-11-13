@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { setTheme } from "@/entities/theme"
 import { useAppDispatch } from "@/lib/hooks"
@@ -8,40 +8,58 @@ const ThemeSwitcher: React.FC = () => {
   const dispatch = useAppDispatch()
   const [, setSystemTheme] = useState<'light' | 'dark'>('light')
   const [currentTheme, setCurrentTheme] = useState<'system' | 'light' | 'dark'>('system')
+  const mediaQueryRef = useRef<MediaQueryList | null>(null)
+
+  const applyDocumentTheme = useCallback((mode: 'light' | 'dark') => {
+    const isDark = mode === 'dark'
+    dispatch(setTheme(isDark))
+    if (isDark) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+  }, [dispatch])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     
-    const savedTheme = localStorage.getItem("Theme")
-    if (savedTheme === "dark") {
-      setCurrentTheme('dark')
-      dispatch(setTheme(true))
-      document.documentElement.classList.add("dark")
-    } else if (savedTheme === "light") {
-      setCurrentTheme('light')
-      dispatch(setTheme(false))
-      document.documentElement.classList.remove("dark")
-    } else {
-      setCurrentTheme('system')
-      // System theme - listen for changes
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      const updateSystemTheme = () => {
-        const prefersDark = mediaQuery.matches
-        setSystemTheme(prefersDark ? 'dark' : 'light')
-        dispatch(setTheme(prefersDark))
-        if (prefersDark) {
-          document.documentElement.classList.add("dark")
-        } else {
-          document.documentElement.classList.remove("dark")
-        }
-      }
-      
-      updateSystemTheme()
-      mediaQuery.addEventListener('change', updateSystemTheme)
-      
-      return () => mediaQuery.removeEventListener('change', updateSystemTheme)
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    mediaQueryRef.current = mediaQuery
+
+    const savedTheme = localStorage.getItem("Theme") as 'light' | 'dark' | null
+    if (savedTheme) {
+      setCurrentTheme(savedTheme)
+      applyDocumentTheme(savedTheme)
+      return
     }
-  }, [dispatch])
+
+    setCurrentTheme('system')
+    const systemMode = mediaQuery.matches ? 'dark' : 'light'
+    setSystemTheme(systemMode)
+    applyDocumentTheme(systemMode)
+  }, [applyDocumentTheme])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (currentTheme !== 'system') return
+
+    const mediaQuery = mediaQueryRef.current
+    if (!mediaQuery) return
+
+    const handleSystemThemeChange = (event: MediaQueryListEvent) => {
+      const mode = event.matches ? 'dark' : 'light'
+      setSystemTheme(mode)
+      applyDocumentTheme(mode)
+    }
+
+    const initialMode = mediaQuery.matches ? 'dark' : 'light'
+    setSystemTheme(initialMode)
+    applyDocumentTheme(initialMode)
+
+    mediaQuery.addEventListener('change', handleSystemThemeChange)
+
+    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange)
+  }, [applyDocumentTheme, currentTheme])
 
   const handleThemeChange = (theme: 'system' | 'light' | 'dark') => {
     if (typeof window === 'undefined') return
@@ -50,24 +68,16 @@ const ThemeSwitcher: React.FC = () => {
     
     if (theme === 'system') {
       localStorage.removeItem("Theme")
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      const mediaQuery = mediaQueryRef.current ?? window.matchMedia('(prefers-color-scheme: dark)')
+      mediaQueryRef.current = mediaQuery
       const prefersDark = mediaQuery.matches
-      setSystemTheme(prefersDark ? 'dark' : 'light')
-      dispatch(setTheme(prefersDark))
-      if (prefersDark) {
-        document.documentElement.classList.add("dark")
-      } else {
-        document.documentElement.classList.remove("dark")
-      }
+      const systemMode = prefersDark ? 'dark' : 'light'
+      setSystemTheme(systemMode)
+      applyDocumentTheme(systemMode)
     } else {
       localStorage.setItem("Theme", theme)
-      const isDark = theme === 'dark'
-      dispatch(setTheme(isDark))
-      if (isDark) {
-        document.documentElement.classList.add("dark")
-      } else {
-        document.documentElement.classList.remove("dark")
-      }
+      setSystemTheme(theme === 'dark' ? 'dark' : 'light')
+      applyDocumentTheme(theme)
     }
   }
 

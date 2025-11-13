@@ -6,7 +6,7 @@ import { getMessages } from 'next-intl/server';
 
 import { StoreProvider } from "@/shared/store";
 
-import { locales } from '../../i18n';
+import { locales, isSupportedLocale, type Locale } from '../../i18n';
 
 export const metadata: Metadata = {
   title: "Maetry",
@@ -16,23 +16,24 @@ export const metadata: Metadata = {
   },
 }
 
-export function generateStaticParams(): { locale: string }[] {
-  return locales.map((locale: string) => ({ locale }));
+export function generateStaticParams(): { locale: Locale }[] {
+  return locales.map((locale) => ({ locale }));
 }
 
 export default async function LocaleLayout({
   children,
-  params: {locale}
+  params,
 }: {
   children: React.ReactNode;
-  params: {locale: string};
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+
   // Проверяем, что локаль поддерживается
-  if (!locales.includes(locale as 'ru' | 'en')) {
+  if (!isSupportedLocale(locale)) {
     notFound();
   }
 
-  // Получаем сообщения для текущей локали
   const messages = await getMessages({ locale });
 
   return (

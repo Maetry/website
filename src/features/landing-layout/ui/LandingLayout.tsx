@@ -2,15 +2,15 @@ import React from "react"
 
 import Image from "next/image"
 
+import { AboutSection } from "@/features/about-section"
+import { FAQSection } from "@/features/faq-section"
+import { FeaturesSection } from "@/features/features-section"
 import { Footer } from "@/features/footer"
 import { Header, MobileHeader } from "@/features/header"
+import { HeroSection } from "@/features/hero-section"
+import { ReviewsSection } from "@/features/reviews-section"
 import prefooter from "@/public/images/prefooterImage.svg"
-import { BgImage, LocalizedText, AppleButton, ImageTextFabric } from "@/shared/ui"
-import { AboutSection } from "@/widgets/about-section"
-import { FAQSection } from "@/widgets/faq-section"
-import { FeaturesSection } from "@/widgets/features-section"
-import { HeroSection } from "@/widgets/hero-section"
-import { ReviewsSection } from "@/widgets/reviews-section"
+import { AppleButton, BgImage, ImageTextFabric, LocalizedText } from "@/shared/ui"
 
 const LandingLayout = () => {
   return (

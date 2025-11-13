@@ -9,6 +9,6 @@ declare module '*.module.css' {
 }
 
 declare module '*.json' {
-  const content: { [key: string]: any };
+  const content: Record<string, unknown>;
   export default content;
 }

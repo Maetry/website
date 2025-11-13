@@ -4,9 +4,9 @@ import React from "react";
 
 import { useTranslations } from 'next-intl';
 
+import { BentoGrid } from "@/features/ambassador-section"
 import { Footer } from "@/features/footer"
 import { Header, MobileHeader } from "@/features/header"
-import { BentoGrid } from "@/widgets/ambassador-section"
 // Стили подключены глобально в globals.css
 
 const AmbassadorPage = () => {

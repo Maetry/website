@@ -4,14 +4,14 @@ import Script from 'next/script';
 
 import type { Metadata } from 'next';
 
-import { LandingLayout } from "@/widgets/landing-layout";
+import { LandingLayout } from "@/features/landing-layout";
 
 export async function generateMetadata({
-  params
+  params,
 }: {
-  params: {locale: string};
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = params;
+  const { locale } = await params;
   
   // Простая локализация метаданных
   const metadata = {

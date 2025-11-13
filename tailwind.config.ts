@@ -41,6 +41,7 @@ const config: Config = {
         'slide-down': 'slideDown 0.3s ease-out',
         'slide-in-left': 'slideInLeft 0.3s ease-out',
         'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'gradient-slow': 'gradient 16s ease infinite',
       },
       keyframes: {
         slideDown: {
@@ -50,6 +51,11 @@ const config: Config = {
         slideInLeft: {
           'from': { opacity: '0', transform: 'translateX(-20px)' },
           'to': { opacity: '1', transform: 'translateX(0)' },
+        },
+        gradient: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
         },
       },
     }

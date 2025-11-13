@@ -16,6 +16,61 @@
     "submit": "Enviar",
     "confirm": "Confirmar"
   },
+  "booking": {
+    "metaTitle": "Maetry — Reserva en línea",
+    "metaDescription": "Agenda una visita al salón con Maetry en pocos pasos",
+    "headline": "Reserva tu visita en línea",
+    "subtitle": "Elige un servicio, un profesional y un horario conveniente",
+    "steps": {
+      "service": "Servicio",
+      "master": "Profesional",
+      "time": "Horario",
+      "details": "Contacto",
+      "success": "Listo"
+    },
+    "serviceTitle": "Elige un servicio",
+    "serviceHint": "Consulta el catálogo completo del salón sin iniciar sesión.",
+    "serviceDuration": "duración",
+    "servicePriceFrom": "desde {value}",
+    "servicePriceExact": "{value}",
+    "serviceSingleMaster": "El servicio lo realiza {name}.",
+    "masterTitle": "Elige un profesional",
+    "masterHint": "Los profesionales se muestran según disponibilidad.",
+    "masterAuto": "Profesional seleccionado automáticamente",
+    "timeTitle": "Selecciona fecha y hora",
+    "timeHint": "Los horarios se muestran en la zona horaria del salón.",
+    "timeReload": "Actualizar horarios",
+    "timeEmptyTitle": "No hay horarios disponibles",
+    "timeEmptyHint": "Prueba con otro día o servicio.",
+    "detailsTitle": "Déjanos tus datos",
+    "detailsHint": "Confirmaremos la reserva por teléfono.",
+    "fieldNameLabel": "Nombre",
+    "fieldNamePlaceholder": "¿Cómo te llamas?",
+    "fieldPhoneLabel": "Teléfono",
+    "fieldPhonePlaceholder": "+34 600 123 456",
+    "fieldPhoneHelper": "Usamos tu número solo para confirmar la reserva.",
+    "submitLabel": "Confirmar reserva",
+    "backLabel": "Atrás",
+    "successTitle": "Reserva confirmada",
+    "successSubtitle": "Enviamos los detalles a tu número.",
+    "successCreateAnother": "Crear otra reserva",
+    "successClose": "Cerrar",
+    "walletApple": "Añadir a Apple Wallet",
+    "walletGoogle": "Añadir a Google Wallet",
+    "errors": {
+      "loadProcedures": "No pudimos cargar los servicios. Vuelve a intentarlo.",
+      "loadSlots": "No encontramos horarios disponibles para este servicio.",
+      "createAppointment": "No pudimos crear la reserva. Inténtalo más tarde.",
+      "validationName": "Introduce tu nombre",
+      "validationPhone": "Introduce un teléfono válido",
+      "apiMessage": "{message}"
+    },
+    "loading": {
+      "procedures": "Cargando servicios...",
+      "slots": "Buscando horarios disponibles...",
+      "submit": "Creando reserva..."
+    }
+  },
   "navigation": {
     "home": "Inicio",
     "about": "Acerca de",
@@ -347,5 +402,15 @@
     "supportTeam": "Equipo de soporte",
     "company": "Maetry",
     "askQuestions": "hacer preguntas"
+  },
+  "invite": {
+    "followLink": "Seguir el enlace"
+  },
+  "meta": {
+    "ambassador": {
+      "title": "Programa de socios de Maetry - Gana con nosotros",
+      "description": "Únete al programa de socios de Maetry. Gana ayudando a los salones de belleza a automatizar el negocio y gestionar las citas de los clientes.",
+      "keywords": "programa de socios, maetry, salón de belleza, gestión, automatización, citas, horario de trabajo"
+    }
   }
 }
