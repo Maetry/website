@@ -18,7 +18,6 @@ import {
   type SlotInterval,
   type Step,
 } from "@/lib/api/booking";
-import { useAppSelector } from "@/lib/hooks";
 import { useTracking } from "@/lib/tracking/useTracking";
 
 type BookingClientProps = {
