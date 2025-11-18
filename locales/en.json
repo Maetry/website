@@ -19,7 +19,7 @@
   "booking": {
     "metaTitle": "Maetry — Online Booking",
     "metaDescription": "Book a visit to the salon powered by Maetry in a few steps",
-    "headline": "Book your visit online",
+    "headline": "Online booking",
     "subtitle": "Choose a service, a professional and a convenient time",
     "steps": {
       "service": "Service",
@@ -51,12 +51,16 @@
     "fieldPhoneHelper": "We only use the number to confirm your booking.",
     "submitLabel": "Confirm booking",
     "backLabel": "Back",
-    "successTitle": "Booking confirmed",
-    "successSubtitle": "We have sent the details to your phone number.",
+    "successTitle": "Booking created",
+    "successSubtitle": "Add the booking to your wallet so you don't lose the details or forget anything.",
     "successCreateAnother": "Create another booking",
     "successClose": "Close",
     "walletApple": "Add to Apple Wallet",
     "walletGoogle": "Add to Google Wallet",
+    "walletShare": {
+      "toastApple": "Open this page on iPhone or iPad to add to Apple Wallet",
+      "toastGoogle": "Open this page on an Android device to add to Google Wallet"
+    },
     "errors": {
       "loadProcedures": "We could not load the services. Please refresh the page.",
       "loadSlots": "We could not find available slots for this service.",

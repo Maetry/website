@@ -19,7 +19,7 @@
   "booking": {
     "metaTitle": "Maetry — Reserva en línea",
     "metaDescription": "Agenda una visita al salón con Maetry en pocos pasos",
-    "headline": "Reserva tu visita en línea",
+    "headline": "Reserva en línea",
     "subtitle": "Elige un servicio, un profesional y un horario conveniente",
     "steps": {
       "service": "Servicio",
@@ -51,12 +51,16 @@
     "fieldPhoneHelper": "Usamos tu número solo para confirmar la reserva.",
     "submitLabel": "Confirmar reserva",
     "backLabel": "Atrás",
-    "successTitle": "Reserva confirmada",
-    "successSubtitle": "Enviamos los detalles a tu número.",
+    "successTitle": "Reserva creada",
+    "successSubtitle": "Añade la reserva a tu cartera para no perder los detalles ni olvidar nada.",
     "successCreateAnother": "Crear otra reserva",
     "successClose": "Cerrar",
     "walletApple": "Añadir a Apple Wallet",
     "walletGoogle": "Añadir a Google Wallet",
+    "walletShare": {
+      "toastApple": "Abre esta página en iPhone o iPad para añadir a Apple Wallet",
+      "toastGoogle": "Abre esta página en un dispositivo Android para añadir a Google Wallet"
+    },
     "errors": {
       "loadProcedures": "No pudimos cargar los servicios. Vuelve a intentarlo.",
       "loadSlots": "No encontramos horarios disponibles para este servicio.",

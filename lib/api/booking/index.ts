@@ -140,5 +140,98 @@ export async function createSalonAppointment({
   return (await response.json()) as AppointmentResponse;
 }
 
+export type GetSalonAppointmentParams = FetchOptions & {
+  appointmentId: string;
+};
+
+export async function getSalonAppointment({
+  salonId,
+  appointmentId,
+}: GetSalonAppointmentParams): Promise<AppointmentResponse> {
+  const response = await fetch(
+    buildBookingUrl(`/public/booking/salon/${salonId}/appointment/${appointmentId}`),
+    {
+      method: 'GET',
+      cache: 'no-store',
+    },
+  );
+
+  if (!response.ok) {
+    const message = await extractErrorMessage(response);
+    throw new BookingApiError(response.status, message);
+  }
+
+  return (await response.json()) as AppointmentResponse;
+}
+
+export type GetAppointmentParams = {
+  appointmentId: string;
+};
+
+export async function getAppointment({
+  appointmentId,
+}: GetAppointmentParams): Promise<AppointmentResponse> {
+  const response = await fetch(
+    buildBookingUrl(`/public/booking/appointment/${appointmentId}`),
+    {
+      method: 'GET',
+      cache: 'no-store',
+    },
+  );
+
+  if (!response.ok) {
+    const message = await extractErrorMessage(response);
+    throw new BookingApiError(response.status, message);
+  }
+
+  return (await response.json()) as AppointmentResponse;
+}
+
+export type GetAppleWalletUrlParams = {
+  appointmentId: string;
+};
+
+export async function getAppleWalletUrl({
+  appointmentId,
+}: GetAppleWalletUrlParams): Promise<{ url: string }> {
+  const response = await fetch(
+    buildBookingUrl(`/wallet/apple?id=${encodeURIComponent(appointmentId)}`),
+    {
+      method: 'GET',
+      cache: 'no-store',
+    },
+  );
+
+  if (!response.ok) {
+    const message = await extractErrorMessage(response);
+    throw new BookingApiError(response.status, message);
+  }
+
+  return (await response.json()) as { url: string };
+}
+
+export type GetGoogleWalletUrlParams = {
+  appointmentId: string;
+};
+
+export async function getGoogleWalletUrl({
+  appointmentId,
+}: GetGoogleWalletUrlParams): Promise<{ url: string }> {
+  const response = await fetch(
+    buildBookingUrl(`/wallet/google?id=${encodeURIComponent(appointmentId)}`),
+    {
+      method: 'GET',
+      cache: 'no-store',
+    },
+  );
+
+  if (!response.ok) {
+    const message = await extractErrorMessage(response);
+    throw new BookingApiError(response.status, message);
+  }
+
+  return (await response.json()) as { url: string };
+}
+
 export * from './types';
 

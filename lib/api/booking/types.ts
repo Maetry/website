@@ -1,4 +1,4 @@
-export type Step = 'service' | 'master' | 'time' | 'details' | 'success';
+export type Step = 'service' | 'master' | 'time' | 'details';
 
 export type Procedure = {
   id: string;
@@ -54,6 +54,9 @@ export type SlotsResponse = {
 
 export type AppointmentResponse = {
   appointmentId?: string;
+  salonId?: string;
+  salonName?: string;
+  salonIcon?: string;
   procedureId?: string;
   time?: SlotInterval;
   price?: {

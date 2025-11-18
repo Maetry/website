@@ -6,19 +6,21 @@ import Image from "next/image";
 
 import { useTranslations } from "next-intl";
 
+
 import {
   BookingApiError,
   createSalonAppointment,
   getSalonProcedures,
   searchSalonSlots,
-  type AppointmentResponse,
   type CreateAppointmentPayload,
   type Procedure,
   type ProcedureGroup,
   type SlotInterval,
   type Step,
 } from "@/lib/api/booking";
+import { useRouter } from "next/navigation";
 import { useTracking } from "@/lib/tracking/useTracking";
+import { useAppSelector } from "@/lib/hooks";
 
 type BookingClientProps = {
   salonId: string;
@@ -92,26 +94,10 @@ const formatCurrency = (
   }
 };
 
-const getWalletUrl = (response: AppointmentResponse | null) => {
-  if (!response) {
-    return { apple: undefined, google: undefined };
-  }
-
-  const apple =
-    response.appleWalletUrl ??
-    response.wallet?.apple ??
-    response.walletLinks?.apple;
-  const google =
-    response.googleWalletUrl ??
-    response.wallet?.google ??
-    response.walletLinks?.google;
-
-  return { apple, google };
-};
-
 const BookingClient = ({ salonId, locale }: BookingClientProps) => {
   const t = useTranslations("booking");
   const tracking = useTracking();
+  const router = useRouter();
 
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [proceduresLoading, setProceduresLoading] = useState(true);
@@ -137,9 +123,9 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [appointment, setAppointment] = useState<AppointmentResponse | null>(
-    null
-  );
+  const [salonIcon, setSalonIcon] = useState<string | null>(null);
+  const [salonName, setSalonName] = useState<string | null>(null);
+  const isDarkTheme = useAppSelector((state) => state.theme.blackTheme);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -266,15 +252,11 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
       { id: "master", label: t("steps.master") },
       { id: "time", label: t("steps.time") },
       { id: "details", label: t("steps.details") },
-      { id: "success", label: t("steps.success") },
     ],
     [t]
   ) as Array<{ id: Step; label: string }>;
 
   const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
-
-  const isBackVisible =
-    currentStep !== "service" && currentStep !== "success" && currentStepIndex > 0;
 
   const resetSlotsState = () => {
     setSlots([]);
@@ -448,8 +430,15 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
         salonId,
         payload,
       });
-      setAppointment(data);
-      setCurrentStep("success");
+      
+      // Перенаправляем на страницу созданной записи
+      if (data.appointmentId) {
+        router.push(`/${locale}/appointment/${data.appointmentId}`);
+        return;
+      }
+      
+      // Если appointmentId нет, показываем ошибку (это не должно происходить)
+      setGlobalError(t("errors.createAppointment"));
     } catch (error) {
       console.error(error);
       const message =
@@ -486,6 +475,33 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
     }
   };
 
+  const handleStepClick = (stepId: Step, stepIndex: number) => {
+    if (stepIndex >= currentStepIndex) {
+      return;
+    }
+
+    setGlobalError(null);
+
+    if (stepId === "service") {
+      setCurrentStep("service");
+      setSelectedGroupId(null);
+      setSelectedProcedureId(null);
+      setSelectedSlot(null);
+      resetSlotsState();
+    } else if (stepId === "master") {
+      if (selectedGroup && selectedGroup.procedures.length > 1) {
+        setCurrentStep("master");
+      } else {
+        setCurrentStep("service");
+      }
+    } else if (stepId === "time") {
+      setCurrentStep("time");
+      setSelectedSlot(null);
+    } else if (stepId === "details") {
+      setCurrentStep("details");
+    }
+  };
+
   const handleCreateAnother = () => {
     setCurrentStep("service");
     setSelectedGroupId(null);
@@ -493,79 +509,93 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
     resetSlotsState();
     setClientName("");
     setClientPhone("");
-    setAppointment(null);
     setGlobalError(null);
     setFormErrors({});
   };
 
-  const { apple: appleWalletUrl, google: googleWalletUrl } =
-    getWalletUrl(appointment);
+  const renderHeader = () => {
+    const headline = salonName
+      ? `${t("headline")} в ${salonName}`
+      : t("headline");
 
-  const renderHeader = () => (
-    <header className="flex flex-col gap-3 text-white">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            {t("headline")}
-          </h1>
-          <p className="mt-1 text-sm text-white/70 sm:text-base">
-            {t("subtitle")}
-          </p>
+    return (
+      <header className="flex flex-col gap-5 text-slate-900">
+        <div className="flex items-center gap-3">
+          {salonIcon ? (
+            <div className="relative h-12 w-12 flex-shrink-0 aspect-square sm:h-10 sm:w-10">
+              <Image
+                src={salonIcon}
+                alt=""
+                fill
+                className="rounded-[20%] object-cover"
+                sizes="48px"
+                onError={() => setSalonIcon(null)}
+              />
+            </div>
+          ) : (
+            <div className="h-12 w-12 flex-shrink-0 aspect-square rounded-[20%] border border-slate-200 bg-slate-50 sm:h-10 sm:w-10" />
+          )}
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-xl">
+              {headline}
+            </h1>
+            <p className="text-sm text-slate-500 sm:text-xs">{t("subtitle")}</p>
+          </div>
         </div>
 
-        {isBackVisible && (
-          <button
-            type="button"
-            onClick={handleBack}
-            className="rounded-full border border-white/20 px-3 py-1 text-sm text-white/80 transition hover:border-white/40 hover:text-white"
-          >
-            {t("backLabel")}
-          </button>
-        )}
-      </div>
+        <div className="grid gap-2 sm:grid-cols-5">
+          {steps.map((step, index) => {
+            const isActive = step.id === currentStep;
+            const isCompleted = index < currentStepIndex;
+            const isClickable = index < currentStepIndex;
 
-      <ol className="flex flex-wrap gap-2 text-xs uppercase tracking-wide text-white/60">
-        {steps.map((step, index) => {
-          const isActive = step.id === currentStep;
-          const isCompleted = index < currentStepIndex;
-
-          return (
-            <li
-              key={step.id}
-              className={`flex items-center gap-2 rounded-full border px-3 py-1 transition ${
-                isActive
-                  ? "border-white/80 bg-white/10 text-white"
-                  : isCompleted
-                  ? "border-white/30 bg-white/5 text-white/80"
-                  : "border-white/10 bg-white/0"
-              }`}
-            >
-              <span className="h-2 w-2 rounded-full bg-white/70" />
-              {step.label}
-            </li>
-          );
-        })}
-      </ol>
-    </header>
-  );
+            return (
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => handleStepClick(step.id, index)}
+                disabled={!isClickable}
+                className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold uppercase tracking-wide transition sm:px-2 sm:py-1.5 ${
+                  isActive
+                    ? "bg-white/80 text-slate-900 shadow-sm"
+                    : isCompleted
+                    ? isClickable
+                      ? "bg-white/60 text-slate-600 cursor-pointer hover:bg-white/70"
+                      : "bg-white/60 text-slate-600"
+                    : "bg-white/40 text-slate-400 cursor-not-allowed"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    isActive || isCompleted ? "bg-slate-900" : "bg-slate-300"
+                  }`}
+                />
+                {step.label}
+              </button>
+            );
+          })}
+        </div>
+      </header>
+    );
+  };
 
   const renderProceduresStep = () => (
     <div className="mt-6 space-y-4">
       <div>
-        <h2 className="text-lg font-semibold text-white sm:text-xl">
+        <h2 className="text-xl font-semibold text-slate-900 sm:text-lg">
           {t("serviceTitle")}
         </h2>
-        <p className="mt-1 text-sm text-white/60">{t("serviceHint")}</p>
+        <p className="mt-1 text-base text-slate-500 sm:text-sm">{t("serviceHint")}</p>
       </div>
 
       {proceduresLoading && (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/70">
+        <div className="rounded-2xl border border-slate-100 bg-white/80 p-6 text-slate-500">
           {t("loading.procedures")}
         </div>
       )}
 
       {proceduresError && (
-        <div className="rounded-2xl border border-red-400/40 bg-red-500/10 p-4 text-sm text-red-50">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-base text-red-600 sm:text-sm">
           {proceduresError}
         </div>
       )}
@@ -586,19 +616,19 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
                 key={group.id}
                 type="button"
                 onClick={() => handleSelectGroup(group)}
-                className={`flex h-full flex-col rounded-3xl border p-4 text-left transition hover:border-white/50 hover:bg-white/10 ${
+                className={`flex h-full flex-col rounded-3xl border border-slate-100 p-5 text-left transition hover:border-slate-300 hover:bg-white ${
                   isSelected
-                    ? "border-white/70 bg-white/15 shadow-[0_0_25px_rgba(255,255,255,0.08)]"
-                    : "border-white/20 bg-white/5"
+                    ? "bg-white shadow-xl"
+                    : "bg-white/80"
                 }`}
               >
                 <div className="flex-1">
                   <div className="flex items-start justify-between gap-4">
-                    <h3 className="text-base font-semibold text-white">
+                    <h3 className="text-lg font-semibold text-slate-900 sm:text-base">
                       {group.title}
                     </h3>
                     {priceMinFormatted && (
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white">
+                      <span className="rounded-full bg-slate-900/5 px-3 py-1 text-xs font-medium text-slate-700">
                         {group.maxPrice !== null &&
                         group.minPrice !== null &&
                         group.maxPrice !== group.minPrice
@@ -613,19 +643,19 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
                   </div>
 
                   {group.description && (
-                    <p className="mt-2 text-sm text-white/70">
+                    <p className="mt-2 text-base text-slate-500 sm:text-sm">
                       {group.description}
                     </p>
                   )}
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-white/60">
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-slate-500">
                   {durationLabel && (
-                    <span className="rounded-full border border-white/20 px-3 py-1">
+                    <span className="rounded-full border border-slate-200 px-3 py-1">
                       {durationLabel}
                     </span>
                   )}
-                  <span className="rounded-full border border-white/10 px-3 py-1">
+                  <span className="rounded-full border border-slate-200 px-3 py-1">
                     {group.procedures.length > 1
                       ? `${group.procedures.length} ${t("steps.master").toLowerCase()}`
                       : t("masterAuto")}
@@ -647,10 +677,10 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
     return (
       <div className="mt-6 space-y-4">
         <div>
-          <h2 className="text-lg font-semibold text-white sm:text-xl">
+          <h2 className="text-xl font-semibold text-slate-900 sm:text-lg">
             {t("masterTitle")}
           </h2>
-          <p className="mt-1 text-sm text-white/60">{t("masterHint")}</p>
+          <p className="mt-1 text-base text-slate-500 sm:text-sm">{t("masterHint")}</p>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -668,10 +698,10 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
                 key={procedure.id}
                 type="button"
                 onClick={() => handleSelectProcedure(procedure)}
-                className={`flex h-full items-center gap-4 rounded-3xl border p-4 text-left transition hover:border-white/50 hover:bg-white/10 ${
+                className={`flex h-full items-center gap-4 rounded-3xl border border-slate-100 p-4 text-left transition hover:border-slate-300 hover:bg-white ${
                   isSelected
-                    ? "border-white/70 bg-white/15 shadow-[0_0_25px_rgba(255,255,255,0.08)]"
-                    : "border-white/20 bg-white/5"
+                    ? "bg-white shadow-xl"
+                    : "bg-white/80"
                 }`}
               >
                 {procedure.masterAvatar ? (
@@ -683,7 +713,7 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
                     className="h-16 w-16 rounded-2xl object-cover"
                   />
                 ) : (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-lg font-semibold text-white">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 text-lg font-semibold text-white">
                     {(procedure.masterNickname ?? procedure.alias ?? "M")
                       .slice(0, 2)
                       .toUpperCase()}
@@ -691,16 +721,16 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
                 )}
 
                 <div className="flex-1">
-                  <h3 className="text-base font-semibold text-white">
+                  <h3 className="text-lg font-semibold text-slate-900 sm:text-base">
                     {procedure.masterNickname ??
                       procedure.alias ??
                       t("steps.master")}
                   </h3>
                   {priceLabel && (
-                    <p className="mt-1 text-sm text-white/70">{priceLabel}</p>
+                    <p className="mt-1 text-base text-slate-500 sm:text-sm">{priceLabel}</p>
                   )}
                   {durationLabel && (
-                    <p className="mt-1 text-xs uppercase tracking-wide text-white/60">
+                    <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
                       {durationLabel}
                     </p>
                   )}
@@ -717,38 +747,38 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
     <div className="mt-6 space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-white sm:text-xl">
+          <h2 className="text-xl font-semibold text-slate-900 sm:text-lg">
             {t("timeTitle")}
           </h2>
-          <p className="text-sm text-white/60">{t("timeHint")}</p>
+          <p className="text-base text-slate-500 sm:text-sm">{t("timeHint")}</p>
         </div>
         <button
           type="button"
           onClick={() => selectedProcedure && fetchSlotsForProcedure(selectedProcedure.id)}
-          className="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 transition hover:border-white/40 hover:text-white"
+          className="inline-flex items-center justify-center rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
         >
           {t("timeReload")}
         </button>
       </div>
 
       {slotsLoading && (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/70">
+        <div className="rounded-2xl border border-slate-100 bg-white/80 p-6 text-slate-500">
           {t("loading.slots")}
         </div>
       )}
 
       {slotsError && (
-        <div className="rounded-2xl border border-red-400/40 bg-red-500/10 p-4 text-sm text-red-50">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-base text-red-600 sm:text-sm">
           {slotsError}
         </div>
       )}
 
       {!slotsLoading && !slots.length && !slotsError && (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/70">
-          <p className="text-base font-semibold text-white">
+        <div className="rounded-2xl border border-slate-100 bg-white/80 p-6 text-slate-500">
+          <p className="text-lg font-semibold text-slate-900">
             {t("timeEmptyTitle")}
           </p>
-          <p className="mt-1 text-sm text-white/60">{t("timeEmptyHint")}</p>
+          <p className="mt-1 text-base text-slate-500 sm:text-sm">{t("timeEmptyHint")}</p>
         </div>
       )}
 
@@ -756,9 +786,9 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
         {slotGroups.map((group) => (
           <div
             key={group.key}
-            className="rounded-3xl border border-white/15 bg-white/5 p-4"
+            className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm"
           >
-            <p className="text-sm font-semibold uppercase tracking-wide text-white/70">
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
               {group.label}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -772,10 +802,10 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
                     key={slot.start}
                     type="button"
                     onClick={() => handleSelectSlot(slot)}
-                    className={`min-w-[88px] rounded-full px-4 py-2 text-sm font-medium transition ${
+                    className={`min-w-[88px] rounded-full px-4 py-3 text-base font-semibold transition sm:text-sm sm:py-2.5 ${
                       isSelected
-                        ? "bg-white text-slate-900"
-                        : "border border-white/30 bg-white/10 text-white/80 hover:border-white/50 hover:text-white"
+                        ? "bg-slate-900 text-white shadow"
+                        : "border border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900"
                     }`}
                   >
                     {slot.label}
@@ -792,15 +822,15 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
   const renderDetailsStep = () => (
     <form onSubmit={handleSubmitAppointment} className="mt-6 space-y-4">
       <div>
-        <h2 className="text-lg font-semibold text-white sm:text-xl">
+        <h2 className="text-xl font-semibold text-slate-900 sm:text-lg">
           {t("detailsTitle")}
         </h2>
-        <p className="mt-1 text-sm text-white/60">{t("detailsHint")}</p>
+        <p className="mt-1 text-base text-slate-500 sm:text-sm">{t("detailsHint")}</p>
       </div>
 
       {selectedGroup && selectedProcedure && selectedSlot && (
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-          <p className="font-semibold text-white">{selectedGroup.title}</p>
+        <div className="rounded-3xl border border-slate-100 bg-white p-4 text-base text-slate-600 sm:text-sm">
+          <p className="text-lg font-semibold text-slate-900 sm:text-base">{selectedGroup.title}</p>
           {selectedProcedure.masterNickname && (
             <p className="mt-1">
               {t("serviceSingleMaster", {
@@ -808,7 +838,7 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
               })}
             </p>
           )}
-          <p className="mt-1">
+          <p className="mt-1 text-slate-500">
             {new Intl.DateTimeFormat(locale, {
               weekday: "long",
               day: "numeric",
@@ -822,14 +852,14 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
       )}
 
       {globalError && (
-        <div className="rounded-2xl border border-red-400/40 bg-red-500/10 p-4 text-sm text-red-50">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-base text-red-600 sm:text-sm">
           {globalError}
         </div>
       )}
 
       <div className="space-y-4">
-        <label className="block">
-          <span className="text-sm font-medium text-white">
+        <label htmlFor="clientName" className="block">
+          <span className="text-base font-medium text-slate-700 sm:text-sm">
             {t("fieldNameLabel")}
           </span>
           <input
@@ -838,22 +868,23 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
             type="text"
             name="clientName"
             autoComplete="name"
+            id="clientName"
             placeholder={t("fieldNamePlaceholder")}
-            className={`mt-2 w-full rounded-2xl border bg-white/10 px-4 py-3 text-base text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/60 ${
+            className={`mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 sm:py-3 sm:text-base ${
               formErrors.name
-                ? "border-red-400/70 focus:ring-red-400/70"
-                : "border-white/20"
+                ? "border-red-300 focus:ring-red-200"
+                : "border-slate-200"
             }`}
           />
           {formErrors.name && (
-            <span className="mt-1 block text-sm text-red-200">
+            <span className="mt-1 block text-sm text-red-500">
               {formErrors.name}
             </span>
           )}
         </label>
 
-        <label className="block">
-          <span className="text-sm font-medium text-white">
+        <label htmlFor="clientPhone" className="block">
+          <span className="text-base font-medium text-slate-700 sm:text-sm">
             {t("fieldPhoneLabel")}
           </span>
           <input
@@ -862,18 +893,20 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
             type="tel"
             name="clientPhone"
             autoComplete="tel"
+            id="clientPhone"
+            inputMode="tel"
             placeholder={t("fieldPhonePlaceholder")}
-            className={`mt-2 w-full rounded-2xl border bg-white/10 px-4 py-3 text-base text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/60 ${
+            className={`mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 sm:py-3 sm:text-base ${
               formErrors.phone
-                ? "border-red-400/70 focus:ring-red-400/70"
-                : "border-white/20"
+                ? "border-red-300 focus:ring-red-200"
+                : "border-slate-200"
             }`}
           />
-          <span className="mt-1 block text-xs text-white/60">
+          <span className="mt-1 block text-xs text-slate-500">
             {t("fieldPhoneHelper")}
           </span>
           {formErrors.phone && (
-            <span className="mt-1 block text-sm text-red-200">
+            <span className="mt-1 block text-sm text-red-500">
               {formErrors.phone}
             </span>
           )}
@@ -884,14 +917,14 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex min-h-[52px] flex-1 items-center justify-center rounded-full bg-white text-base font-semibold text-slate-900 transition hover:bg-white/90 disabled:cursor-not-allowed disabled:bg-white/50"
+          className="inline-flex min-h-[56px] flex-1 items-center justify-center rounded-full bg-slate-900 text-lg font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:min-h-[52px] sm:text-base"
         >
           {isSubmitting ? t("loading.submit") : t("submitLabel")}
         </button>
         <button
           type="button"
           onClick={() => setCurrentStep("time")}
-          className="inline-flex min-h-[52px] flex-1 items-center justify-center rounded-full border border-white/30 bg-transparent text-base font-semibold text-white/80 transition hover:border-white/50 hover:text-white sm:max-w-[180px]"
+          className="inline-flex min-h-[56px] flex-1 items-center justify-center rounded-full border border-slate-200 bg-transparent text-lg font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 sm:min-h-[52px] sm:max-w-[180px] sm:text-base"
         >
           {t("backLabel")}
         </button>
@@ -899,110 +932,19 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
     </form>
   );
 
-  const renderSuccessStep = () => (
-    <div className="mt-6 space-y-5 text-white">
-      <div>
-        <h2 className="text-lg font-semibold sm:text-xl">
-          {t("successTitle")}
-        </h2>
-        <p className="mt-1 text-sm text-white/70">{t("successSubtitle")}</p>
-      </div>
-
-      {selectedGroup && selectedProcedure && selectedSlot && (
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-          <p className="text-base font-semibold text-white">
-            {selectedGroup.title}
-          </p>
-          {selectedProcedure.masterNickname && (
-            <p className="mt-1 text-white/70">
-              {selectedProcedure.masterNickname}
-            </p>
-          )}
-          <p className="mt-2 text-sm text-white/70">
-            {new Intl.DateTimeFormat(locale, {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              hour: "2-digit",
-              minute: "2-digit",
-              timeZone: timeZoneId,
-            }).format(new Date(selectedSlot.start))}
-          </p>
-          {selectedProcedure.price?.amount && (
-            <p className="mt-2 text-sm text-white">
-              {formatCurrency(
-                selectedProcedure.price.amount,
-                selectedProcedure.price.currency,
-                locale
-              )}
-            </p>
-          )}
-        </div>
-      )}
-
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={() => {
-            if (appleWalletUrl) {
-              window.open(appleWalletUrl, "_blank", "noopener,noreferrer");
-            }
-          }}
-          disabled={!appleWalletUrl}
-          className="inline-flex min-h-[52px] flex-1 items-center justify-center rounded-full border border-white/50 bg-white/10 text-base font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:border-white/20 disabled:text-white/40"
-        >
-          {t("walletApple")}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (googleWalletUrl) {
-              window.open(googleWalletUrl, "_blank", "noopener,noreferrer");
-            }
-          }}
-          disabled={!googleWalletUrl}
-          className="inline-flex min-h-[52px] flex-1 items-center justify-center rounded-full border border-white/50 bg-white/10 text-base font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:border-white/20 disabled:text-white/40"
-        >
-          {t("walletGoogle")}
-        </button>
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={handleCreateAnother}
-          className="inline-flex min-h-[52px] flex-1 items-center justify-center rounded-full bg-white text-base font-semibold text-slate-900 transition hover:bg-white/90"
-        >
-          {t("successCreateAnother")}
-        </button>
-        <button
-          type="button"
-          onClick={() => window.close()}
-          className="inline-flex min-h-[52px] flex-1 items-center justify-center rounded-full border border-white/40 bg-transparent text-base font-semibold text-white/80 transition hover:border-white/60 hover:text-white"
-        >
-          {t("successClose")}
-        </button>
-      </div>
-    </div>
-  );
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 -z-20 bg-[#070815]" />
-      <div
-        className="absolute inset-0 -z-10 animate-gradient-slow rounded-none bg-gradient-to-br from-[#1F2A6B] via-[#412162] to-[#0A0C1F] opacity-90"
-        style={{ backgroundSize: "220% 220%" }}
-      />
-      <div className="pointer-events-none absolute inset-0 -z-5 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25)_0%,_transparent_60%)]" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[#f6b68e] via-[#cf9bff] to-[#6672ff] px-4 py-10 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 -z-10 opacity-80" style={{ background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 55%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.25), transparent 55%)" }} />
+      <div className="absolute inset-0 -z-20 bg-[url('/images/featureBG.svg')] bg-cover bg-center opacity-10" />
 
-      <div className="relative w-full max-w-[520px] rounded-[32px] border border-white/20 bg-white/10 p-6 shadow-[0_40px_120px_rgba(15,23,42,0.35)] backdrop-blur-2xl sm:p-8">
+      <div className="relative w-full min-w-[280px] max-w-[620px] rounded-[36px] border border-white/40 bg-white/80 p-6 text-slate-900 shadow-[0_55px_120px_rgba(49,45,105,0.35)] backdrop-blur-2xl sm:p-10">
         {renderHeader()}
 
         {currentStep === "service" && renderProceduresStep()}
         {currentStep === "master" && renderMastersStep()}
         {currentStep === "time" && renderSlotsStep()}
         {currentStep === "details" && renderDetailsStep()}
-        {currentStep === "success" && renderSuccessStep()}
       </div>
     </div>
   );

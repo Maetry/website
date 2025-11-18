@@ -19,7 +19,7 @@
   "booking": {
     "metaTitle": "Maetry — онлайн-запись",
     "metaDescription": "Запишитесь в салон Maetry за пару шагов",
-    "headline": "Онлайн-запись в салон",
+    "headline": "Онлайн запись",
     "subtitle": "Выберите услугу, мастера и удобное время",
     "steps": {
       "service": "Услуга",
@@ -51,12 +51,16 @@
     "fieldPhoneHelper": "Номер используется только для подтверждения записи.",
     "submitLabel": "Подтвердить запись",
     "backLabel": "Назад",
-    "successTitle": "Запись подтверждена",
-    "successSubtitle": "Мы отправили детали записи на указанный номер.",
+    "successTitle": "Запись создана",
+    "successSubtitle": "Добавьте запись в кошелёк, чтобы не потерять детали и ничего не забыть.",
     "successCreateAnother": "Создать ещё запись",
     "successClose": "Закрыть",
     "walletApple": "Добавить в Apple Wallet",
     "walletGoogle": "Добавить в Google Wallet",
+    "walletShare": {
+      "toastApple": "Откройте эту страницу на iPhone или iPad, чтобы добавить в Apple Wallet",
+      "toastGoogle": "Откройте эту страницу на Android-устройстве, чтобы добавить в Google Wallet"
+    },
     "errors": {
       "loadProcedures": "Не удалось загрузить услуги. Попробуйте обновить страницу.",
       "loadSlots": "Не удалось найти свободные слоты для выбранной услуги.",

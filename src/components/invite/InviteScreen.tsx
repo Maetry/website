@@ -7,7 +7,8 @@ import Link from "next/link";
 
 import type { DirectLinkDTO, ShortLinkEventType } from "@/lib/api/shortLink";
 import { sendFingerprint } from "@/lib/fingerprint/collectFingerprint";
-import { detectPlatform } from "@/lib/userAgent/detectPlatform";
+import { type PlatformInfo } from "@/lib/userAgent/detectPlatform";
+import { usePlatform } from "@/lib/userAgent/PlatformProvider";
 import logo from "@/public/images/logo.svg";
 import phones from "@/public/images/phones_customer.png";
 
@@ -48,12 +49,12 @@ const resolveSubheading = (eventType: ShortLinkEventType, override?: string) => 
   return defaultCopy[eventType]?.subheading ?? defaultCopy.clientInvite.subheading;
 };
 
-const resolveStoreLink = (platform: ReturnType<typeof detectPlatform>, data: DirectLinkDTO): string | null => {
-  if (platform === "ios" && data.appStoreLink) {
+const resolveStoreLink = (platform: PlatformInfo, data: DirectLinkDTO): string | null => {
+  if (platform.isIOS && data.appStoreLink) {
     return data.appStoreLink;
   }
 
-  if (platform === "android" && (data.playStoreLink ?? data.appStoreLink)) {
+  if (platform.isAndroid && (data.playStoreLink ?? data.appStoreLink)) {
     return data.playStoreLink ?? data.appStoreLink ?? null;
   }
 
@@ -64,10 +65,10 @@ const resolveStoreLink = (platform: ReturnType<typeof detectPlatform>, data: Dir
   return data.universalLink ?? null;
 };
 
-const platformCtaLabel: Record<ReturnType<typeof detectPlatform>, string> = {
+const platformCtaLabel: Record<PlatformInfo["platform"], string> = {
   ios: "Открыть в App Store",
   android: "Открыть в Google Play",
-  web: "Открыть ссылку",
+  desktop: "Открыть ссылку",
 };
 
 const mapEventToBadge: Partial<Record<ShortLinkEventType, string>> = {
@@ -83,7 +84,7 @@ const descriptionFallback =
 
 const InviteScreen = ({ data }: InviteScreenProps) => {
   const [copyState, setCopyState] = useState<CopyState>("idle");
-  const platform = detectPlatform();
+  const platform = usePlatform();
 
   const heading = useMemo(() => resolveHeading(data.eventType, data.title), [data.eventType, data.title]);
   const subheading = useMemo(
@@ -162,7 +163,7 @@ const InviteScreen = ({ data }: InviteScreenProps) => {
               onClick={handleOpenApp}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-semibold uppercase tracking-wider text-white transition hover:-translate-y-0.5 hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 dark:bg-white dark:text-black dark:hover:bg-white/90 dark:focus-visible:ring-white dark:focus-visible:ring-offset-dark-bg"
             >
-              {platformCtaLabel[platform]}
+              {platformCtaLabel[platform.platform]}
             </button>
 
             <Link
