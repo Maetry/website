@@ -7,8 +7,6 @@ import { WalletToast } from "./WalletToast";
 
 export type AddToAppleWalletBadgeProps = {
   passId: string;
-  locale: string;
-  baseUrl?: string;
   shareUrl?: string;
   className?: string;
   onClickStart?: () => void;
@@ -24,8 +22,6 @@ const APPLE_BASE_IMAGE = "/images/add-to-apple-wallet/add-to-apple-wallet.svg";
 
 export const AddToAppleWalletBadge = ({
   passId,
-  locale,
-  baseUrl,
   shareUrl,
   className,
   onClickStart,

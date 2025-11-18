@@ -7,8 +7,6 @@ import { WalletToast } from "./WalletToast";
 
 export type AddToGoogleWalletBadgeProps = {
   passId: string;
-  locale: string;
-  baseUrl?: string;
   shareUrl?: string;
   className?: string;
 
@@ -25,8 +23,6 @@ const GOOGLE_BASE_IMAGE = "/images/add-to-google-wallet/add-to-google-wallet.svg
 
 export const AddToGoogleWalletBadge = ({
   passId,
-  locale,
-  baseUrl,
   shareUrl,
   className,
   onClickStart,

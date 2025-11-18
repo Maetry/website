@@ -296,12 +296,10 @@ const AppointmentView = ({ appointmentId, locale }: AppointmentViewProps) => {
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <AddToAppleWalletBadge
               passId={appointmentId}
-              locale={locale}
               shareUrl={appleWalletUrl}
             />
             <AddToGoogleWalletBadge
               passId={appointmentId}
-              locale={locale}
               shareUrl={googleWalletUrl}
             />
           </div>

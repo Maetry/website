@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+
 import { useTranslations } from "next-intl";
 
 type WalletToastProps = {

@@ -453,28 +453,6 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
     }
   };
 
-  const handleBack = () => {
-    setGlobalError(null);
-
-    if (currentStep === "details") {
-      setCurrentStep("time");
-      return;
-    }
-
-    if (currentStep === "time") {
-      if (selectedGroup && selectedGroup.procedures.length > 1) {
-        setCurrentStep("master");
-      } else {
-        setCurrentStep("service");
-      }
-      return;
-    }
-
-    if (currentStep === "master") {
-      setCurrentStep("service");
-    }
-  };
-
   const handleStepClick = (stepId: Step, stepIndex: number) => {
     if (stepIndex >= currentStepIndex) {
       return;
@@ -500,17 +478,6 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
     } else if (stepId === "details") {
       setCurrentStep("details");
     }
-  };
-
-  const handleCreateAnother = () => {
-    setCurrentStep("service");
-    setSelectedGroupId(null);
-    setSelectedProcedureId(null);
-    resetSlotsState();
-    setClientName("");
-    setClientPhone("");
-    setGlobalError(null);
-    setFormErrors({});
   };
 
   const renderHeader = () => {
@@ -913,22 +880,13 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
         </label>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="inline-flex min-h-[56px] flex-1 items-center justify-center rounded-full bg-slate-900 text-lg font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:min-h-[52px] sm:text-base"
-        >
-          {isSubmitting ? t("loading.submit") : t("submitLabel")}
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentStep("time")}
-          className="inline-flex min-h-[56px] flex-1 items-center justify-center rounded-full border border-slate-200 bg-transparent text-lg font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 sm:min-h-[52px] sm:max-w-[180px] sm:text-base"
-        >
-          {t("backLabel")}
-        </button>
-      </div>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="mt-4 w-full min-h-[56px] inline-flex items-center justify-center rounded-full bg-slate-900 text-lg font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:min-h-[52px] sm:text-base"
+      >
+        {isSubmitting ? t("loading.submit") : t("submitLabel")}
+      </button>
     </form>
   );
 
