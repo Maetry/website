@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { notFound } from 'next/navigation';
+import { notFound } from "next/navigation";
 
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 
 import { PlatformProvider } from "@/lib/userAgent/PlatformProvider";
 import { StoreProvider } from "@/shared/store";
@@ -30,7 +30,8 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const userAgent = headers().get("user-agent") ?? "";
+  const headersList = await headers();
+  const userAgent = headersList.get("user-agent") ?? "";
 
   // Проверяем, что локаль поддерживается
   if (!isSupportedLocale(locale)) {

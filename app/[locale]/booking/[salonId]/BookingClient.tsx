@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import { useTranslations } from "next-intl";
-
 
 import {
   BookingApiError,
@@ -18,9 +18,8 @@ import {
   type SlotInterval,
   type Step,
 } from "@/lib/api/booking";
-import { useRouter } from "next/navigation";
-import { useTracking } from "@/lib/tracking/useTracking";
 import { useAppSelector } from "@/lib/hooks";
+import { useTracking } from "@/lib/tracking/useTracking";
 
 type BookingClientProps = {
   salonId: string;
@@ -124,8 +123,6 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [salonIcon, setSalonIcon] = useState<string | null>(null);
-  const [salonName, setSalonName] = useState<string | null>(null);
-  const isDarkTheme = useAppSelector((state) => state.theme.blackTheme);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -481,9 +478,7 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
   };
 
   const renderHeader = () => {
-    const headline = salonName
-      ? `${t("headline")} в ${salonName}`
-      : t("headline");
+    const headline = t("headline");
 
     return (
       <header className="flex flex-col gap-5 text-slate-900">

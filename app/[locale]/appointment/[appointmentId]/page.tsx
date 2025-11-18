@@ -1,6 +1,7 @@
+import { notFound } from "next/navigation";
+
 import type { Metadata, Viewport } from "next";
 import { getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 
 import AppointmentView from "./AppointmentView";
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+
 import { useTranslations } from "next-intl";
 
 import { AddToAppleWalletBadge, AddToGoogleWalletBadge } from "@/components/wallet";
@@ -15,7 +16,6 @@ import {
   type AppointmentResponse,
   type Procedure,
 } from "@/lib/api/booking";
-import { useAppSelector } from "@/lib/hooks";
 
 type AppointmentViewProps = {
   appointmentId: string;
@@ -62,7 +62,6 @@ const getWalletUrl = (response: AppointmentResponse | null) => {
 const AppointmentView = ({ appointmentId, locale }: AppointmentViewProps) => {
   const t = useTranslations("booking");
   const router = useRouter();
-  const isDarkTheme = useAppSelector((state) => state.theme.blackTheme);
 
   const [appointment, setAppointment] = useState<AppointmentResponse | null>(null);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
