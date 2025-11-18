@@ -1,0 +1,13 @@
+# Next.js generated files
+next-env.d.ts
+.next/
+out/
+build/
+dist/
+
+# Dependencies
+node_modules/
+
+# Build outputs
+*.tsbuildinfo
+

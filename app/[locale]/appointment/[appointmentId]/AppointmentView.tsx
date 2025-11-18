@@ -6,8 +6,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { useTranslations } from "next-intl";
-import { AddToAppleWalletBadge, AddToGoogleWalletBadge } from "@/components/wallet";
 
+import { AddToAppleWalletBadge, AddToGoogleWalletBadge } from "@/components/wallet";
 import {
   BookingApiError,
   getAppointment,
