@@ -37,6 +37,7 @@ export function middleware(req: NextRequest) {
       pathname.startsWith('/_next') ||
       pathname.startsWith('/_vercel') ||
       pathname.startsWith('/assets') ||
+      pathname.startsWith('/.well-known') ||
       pathname === '/favicon.ico'
     ) {
       return NextResponse.next();
@@ -56,6 +57,7 @@ export function middleware(req: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/_vercel') ||
     pathname.startsWith('/assets') ||
+    pathname.startsWith('/.well-known') ||
     pathname === '/favicon.ico'
   ) {
     return NextResponse.next();
