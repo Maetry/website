@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { useTranslations } from "next-intl";
 
@@ -18,7 +18,6 @@ import {
   type SlotInterval,
   type Step,
 } from "@/lib/api/booking";
-import { useTracking } from "@/lib/tracking/useTracking";
 
 type BookingClientProps = {
   salonId: string;
@@ -94,8 +93,11 @@ const formatCurrency = (
 
 const BookingClient = ({ salonId, locale }: BookingClientProps) => {
   const t = useTranslations("booking");
-  const tracking = useTracking();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Получаем trackingId из query параметров (если был редирект с MagicLink)
+  const trackingId = searchParams.get("trackingId");
 
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [proceduresLoading, setProceduresLoading] = useState(true);
@@ -412,14 +414,8 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
         start: new Date(selectedSlot.start).toISOString(),
         end: new Date(selectedSlot.end).toISOString(),
       },
+      trackingId: trackingId || null,
     };
-
-    if (tracking?.firstTouch || tracking?.lastTouch) {
-      payload.tracking = {
-        ...(tracking.firstTouch ? { firstTouch: tracking.firstTouch } : {}),
-        ...(tracking.lastTouch ? { lastTouch: tracking.lastTouch } : {}),
-      };
-    }
 
     try {
       const data = await createSalonAppointment({
@@ -427,16 +423,47 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
         payload,
       });
       
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[BookingClient] Appointment created, response:", data);
+      }
+      
       // Перенаправляем на страницу созданной записи
-      if (data.appointmentId) {
-        router.push(`/${locale}/appointment/${data.appointmentId}`);
+      // Проверяем разные возможные варианты названия поля
+      const appointmentId = 
+        data.appointmentId || 
+        (data as unknown as { id?: string }).id ||
+        (data as unknown as { appointment?: { id?: string } }).appointment?.id;
+      
+      if (appointmentId) {
+        const appointmentUrl = `/${locale}/appointment/${appointmentId}`;
+        
+        if (process.env.NODE_ENV !== "production") {
+          console.log("[BookingClient] Redirecting to appointment:", appointmentUrl);
+        }
+        
+        // Сбрасываем состояние перед перенаправлением
+        setIsSubmitting(false);
+        
+        // Используем router.push для клиентской навигации (без перезагрузки страницы)
+        // Это быстрее и сохраняет состояние приложения
+        router.push(appointmentUrl);
         return;
       }
       
       // Если appointmentId нет, показываем ошибку (это не должно происходить)
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[BookingClient] No appointmentId in response:", {
+          data,
+          keys: Object.keys(data),
+          appointmentId: data.appointmentId,
+          id: (data as unknown as { id?: string }).id,
+          fullResponse: JSON.stringify(data, null, 2),
+        });
+      }
       setGlobalError(t("errors.createAppointment"));
+      setIsSubmitting(false);
     } catch (error) {
-      console.error(error);
+      console.error("[BookingClient] Error creating appointment:", error);
       const message =
         error instanceof BookingApiError ? error.message : undefined;
       setGlobalError(
@@ -444,7 +471,6 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
           ? t("errors.apiMessage", { message })
           : t("errors.createAppointment")
       );
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -716,8 +742,31 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
         <button
           type="button"
           onClick={() => selectedProcedure && fetchSlotsForProcedure(selectedProcedure.id)}
-          className="inline-flex items-center justify-center rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+          disabled={slotsLoading}
+          className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
         >
+          {slotsLoading && (
+            <svg
+              className="h-4 w-4 animate-spin text-slate-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          )}
           {t("timeReload")}
         </button>
       </div>
@@ -877,8 +926,30 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="mt-4 w-full min-h-[56px] inline-flex items-center justify-center rounded-full bg-slate-900 text-lg font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:min-h-[52px] sm:text-base"
+        className="mt-4 w-full min-h-[56px] inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 text-lg font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:min-h-[52px] sm:text-base"
       >
+        {isSubmitting && (
+          <svg
+            className="h-5 w-5 animate-spin text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        )}
         {isSubmitting ? t("loading.submit") : t("submitLabel")}
       </button>
     </form>

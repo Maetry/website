@@ -2,7 +2,7 @@ import React from "react";
 
 import Script from 'next/script';
 
-import type { Metadata } from 'next';
+import { generateLandingMetadata } from "@/lib/metadata";
 
 import { LandingLayout } from "@/features/landing-layout";
 
@@ -10,47 +10,9 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
+}) {
   const { locale } = await params;
-  
-  // Простая локализация метаданных
-  const metadata = {
-    ru: {
-      title: "Maetry - Info Page",
-      description: "Автоматизируйте бизнес-процессы"
-    },
-    en: {
-      title: "Maetry - Info Page", 
-      description: "Automate your business processes"
-    }
-  };
-
-  const t = metadata[locale as keyof typeof metadata] || metadata.ru;
-
-  return {
-    title: t.title,
-    description: t.description,
-    keywords: "maetry,beauty salon,booking,management,appointment,crm,automation,salon,service,nails,lashes,barber",
-    openGraph: {
-      title: "Maetry",
-      description: t.description,
-      url: "https://maetry.com",
-      siteName: "Maetry",
-      images: [
-        {
-          url: "https://maetry.com/_next/static/media/logo.30e07f0a.svg",
-        },
-      ],
-      locale: locale === 'ru' ? 'ru_RU' : 'en_US',
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: "Maetry",
-      description: t.description,
-      images: ["https://maetry.com/_next/static/media/logo.30e07f0a.svg"],
-    },
-  };
+  return generateLandingMetadata(locale);
 }
 
 export default async function LandingPage() {

@@ -350,7 +350,35 @@
     "askQuestions": "ask questions"
   },
   "invite": {
-    "followLink": "Follow the link"
+    "followLink": "Follow the link",
+    "heading": {
+      "employeeInvite": "You have been invited to work as a master",
+      "clientInvite": "You have been invited to become a salon client",
+      "default": "You have been invited to join"
+    },
+    "subheading": {
+      "employeeInvite": "Manage your schedule and expand your client base",
+      "clientInvite": "Choose masters and book online",
+      "default": "Download the Maetry app to continue"
+    },
+    "badgeLabel": {
+      "employeeInvite": "Master invitation",
+      "clientInvite": "Client invitation",
+      "default": "Invitation"
+    },
+    "downloadTitle": "Download Maetry app",
+    "downloadDescription": "Download the Maetry app, sign in and reopen the link to complete the invitation.",
+    "appStoreButtonTitle": "Download from App Store",
+    "footerCopyright": "All rights reserved."
+  },
+  "linkHandler": {
+    "processing": "Processing link...",
+    "pleaseWait": "Please wait",
+    "errorTitle": "An error occurred",
+    "errorCampaign": "Failed to load campaign data",
+    "errorUnknownType": "Unknown link type",
+    "errorProcessing": "Failed to process link",
+    "retry": "Try again"
   },
   "footer": {
     "privacyPolicy": "privacy policy",

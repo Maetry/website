@@ -1,16 +1,15 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_BOOKING_API_URL ??
-  process.env.NEXT_PUBLIC_API_URL ??
-  'http://localhost:8080';
+import { ApiError } from "@/lib/api/error-handler";
+import { resolveApiUrl } from "@/lib/api/config";
+import { validateId } from "@/lib/api/validation";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const id = searchParams.get('id');
+  const rawId = searchParams.get('id');
 
-  if (!id) {
+  if (!rawId) {
     return NextResponse.json(
       { error: 'Missing id parameter' },
       { status: 400 }
@@ -18,8 +17,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const apiUrl = `${API_BASE_URL}/wallet/apple?id=${encodeURIComponent(id)}`;
-    const response = await fetch(apiUrl, {
+    const id = validateId(rawId, "appointmentId");
+    const apiUrl = resolveApiUrl();
+    const targetUrl = `${apiUrl}/wallet/apple?id=${encodeURIComponent(id)}`;
+    
+    const response = await fetch(targetUrl, {
       method: 'GET',
       cache: 'no-store',
       redirect: 'follow',
@@ -51,6 +53,16 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   } catch (error) {
+    if (error instanceof ApiError) {
+      return NextResponse.json(
+        { 
+          error: 'INVALID_APPOINTMENT_ID',
+          message: error.message
+        },
+        { status: error.status }
+      );
+    }
+    
     console.error('[wallet/apple] proxy failed', error);
     return NextResponse.json(
       {

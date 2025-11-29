@@ -40,3 +40,5 @@ next-env.d.ts
 .DS_Store
 public/.DS_Store
 /.build
+.env.production
+.env.staging

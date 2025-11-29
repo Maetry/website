@@ -350,7 +350,35 @@
     "askQuestions": "задать вопрос"
   },
   "invite": {
-    "followLink": "Перейти по ссылке"
+    "followLink": "Перейти по ссылке",
+    "heading": {
+      "employeeInvite": "Вас пригласили работать мастером",
+      "clientInvite": "Вас пригласили стать клиентом салона",
+      "default": "Вас пригласили присоединиться"
+    },
+    "subheading": {
+      "employeeInvite": "Управляйте своей записью и расширяйте клиентскую базу",
+      "clientInvite": "Выбирайте мастеров и записывайтесь онлайн",
+      "default": "Скачайте приложение Maetry для продолжения"
+    },
+    "badgeLabel": {
+      "employeeInvite": "Приглашение для мастера",
+      "clientInvite": "Приглашение для клиента",
+      "default": "Приглашение"
+    },
+    "downloadTitle": "Скачайте приложение Maetry",
+    "downloadDescription": "Скачайте приложение Maetry, авторизуйтесь и повторно откройте ссылку, чтобы завершить приглашение.",
+    "appStoreButtonTitle": "Скачать в App Store",
+    "footerCopyright": "Все права защищены."
+  },
+  "linkHandler": {
+    "processing": "Обработка ссылки...",
+    "pleaseWait": "Пожалуйста, подождите",
+    "errorTitle": "Произошла ошибка",
+    "errorCampaign": "Не удалось загрузить данные кампании",
+    "errorUnknownType": "Неизвестный тип ссылки",
+    "errorProcessing": "Не удалось обработать ссылку",
+    "retry": "Попробовать снова"
   },
   "footer": {
     "privacyPolicy": "политика конфиденциальности",

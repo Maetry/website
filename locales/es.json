@@ -411,7 +411,35 @@
     "askQuestions": "hacer preguntas"
   },
   "invite": {
-    "followLink": "Seguir el enlace"
+    "followLink": "Seguir el enlace",
+    "heading": {
+      "employeeInvite": "Has sido invitado a trabajar como maestro",
+      "clientInvite": "Has sido invitado a ser cliente del salón",
+      "default": "Has sido invitado a unirte"
+    },
+    "subheading": {
+      "employeeInvite": "Gestiona tu agenda y amplía tu base de clientes",
+      "clientInvite": "Elige maestros y reserva en línea",
+      "default": "Descarga la aplicación Maetry para continuar"
+    },
+    "badgeLabel": {
+      "employeeInvite": "Invitación para maestro",
+      "clientInvite": "Invitación para cliente",
+      "default": "Invitación"
+    },
+    "downloadTitle": "Descarga la aplicación Maetry",
+    "downloadDescription": "Descarga la aplicación Maetry, inicia sesión y vuelve a abrir el enlace para completar la invitación.",
+    "appStoreButtonTitle": "Descargar desde App Store",
+    "footerCopyright": "Todos los derechos reservados."
+  },
+  "linkHandler": {
+    "processing": "Procesando enlace...",
+    "pleaseWait": "Por favor espera",
+    "errorTitle": "Ocurrió un error",
+    "errorCampaign": "No se pudo cargar los datos de la campaña",
+    "errorUnknownType": "Tipo de enlace desconocido",
+    "errorProcessing": "No se pudo procesar el enlace",
+    "retry": "Intentar de nuevo"
   },
   "meta": {
     "ambassador": {

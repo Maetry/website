@@ -1,135 +1,68 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
-import type { DirectLinkDTO, ShortLinkEventType } from "@/lib/api/shortLink";
-import { sendFingerprint } from "@/lib/fingerprint/collectFingerprint";
-import { type PlatformInfo } from "@/lib/userAgent/detectPlatform";
-import { usePlatform } from "@/lib/userAgent/PlatformProvider";
+import type { LinkKind } from "@/lib/api/shortLink";
+import { useTracking } from "@/lib/tracking/useTracking";
 import logo from "@/public/images/logo.svg";
+import appstore from "@/public/images/appstore.svg";
 import phones from "@/public/images/phones_customer.png";
 
 type InviteScreenProps = {
-  data: DirectLinkDTO;
+  kind: LinkKind;
 };
 
-type CopyState = "idle" | "copied" | "error";
+const APP_STORE_BASE_URL = "https://apps.apple.com/app/id6746678571";
 
-const defaultCopy = {
-  salonInvite: {
-    heading: "Вас пригласили присоединиться к салону",
-    subheading: "Управляйте салоном и приглашайте мастеров",
-  },
-  employeeInvite: {
-    heading: "Вас пригласили работать мастером",
-    subheading: "Управляйте своей записью и расширяйте клиентскую базу",
-  },
-  clientInvite: {
-    heading: "Вас пригласили стать клиентом салона",
-    subheading: "Выбирайте мастеров и записывайтесь онлайн",
-  },
-} satisfies Record<ShortLinkEventType, { heading: string; subheading: string }>;
-
-const resolveHeading = (eventType: ShortLinkEventType, override?: string) => {
-  if (override) {
-    return override;
+// Формирует URL App Store с UTM параметрами
+function buildAppStoreUrl(utm?: { source?: string; medium?: string; campaign?: string; term?: string; content?: string }): string {
+  if (!utm || Object.keys(utm).length === 0) {
+    return APP_STORE_BASE_URL
   }
 
-  return defaultCopy[eventType]?.heading ?? defaultCopy.clientInvite.heading;
-};
+  const url = new URL(APP_STORE_BASE_URL)
+  
+  if (utm.source) url.searchParams.set("utm_source", utm.source)
+  if (utm.medium) url.searchParams.set("utm_medium", utm.medium)
+  if (utm.campaign) url.searchParams.set("utm_campaign", utm.campaign)
+  if (utm.term) url.searchParams.set("utm_term", utm.term)
+  if (utm.content) url.searchParams.set("utm_content", utm.content)
 
-const resolveSubheading = (eventType: ShortLinkEventType, override?: string) => {
-  if (override) {
-    return override;
-  }
+  return url.toString()
+}
 
-  return defaultCopy[eventType]?.subheading ?? defaultCopy.clientInvite.subheading;
-};
+const InviteScreen = ({ kind }: InviteScreenProps) => {
+  const t = useTranslations("invite");
+  const tracking = useTracking();
 
-const resolveStoreLink = (platform: PlatformInfo, data: DirectLinkDTO): string | null => {
-  if (platform.isIOS && data.appStoreLink) {
-    return data.appStoreLink;
-  }
+  // Используем lastTouch UTM параметры, если есть, иначе firstTouch
+  const utm = tracking?.lastTouch?.utm || tracking?.firstTouch?.utm;
 
-  if (platform.isAndroid && (data.playStoreLink ?? data.appStoreLink)) {
-    return data.playStoreLink ?? data.appStoreLink ?? null;
-  }
+  // Получаем локализованные тексты
+  const headingKey = kind === "employeeInvite" || kind === "clientInvite" ? kind : "default";
+  const heading = t(`heading.${headingKey}`);
+  const subheading = t(`subheading.${headingKey}`);
+  const badgeLabel = t(`badgeLabel.${headingKey}`);
+  const downloadTitle = t("downloadTitle");
+  const downloadDescription = t("downloadDescription");
+  const appStoreButtonTitle = t("appStoreButtonTitle");
+  const footerCopyright = t("footerCopyright");
 
-  if (data.webFallbackLink) {
-    return data.webFallbackLink;
-  }
-
-  return data.universalLink ?? null;
-};
-
-const platformCtaLabel: Record<PlatformInfo["platform"], string> = {
-  ios: "Открыть в App Store",
-  android: "Открыть в Google Play",
-  desktop: "Открыть ссылку",
-};
-
-const mapEventToBadge: Partial<Record<ShortLinkEventType, string>> = {
-  salonInvite: "Приглашение для салона",
-  employeeInvite: "Приглашение для мастера",
-  clientInvite: "Приглашение для клиента",
-};
-
-const getBadgeLabel = (eventType: ShortLinkEventType) => mapEventToBadge[eventType] ?? mapEventToBadge.clientInvite!;
-
-const descriptionFallback =
-  "Скачайте приложение Maetry, авторизуйтесь и повторно откройте ссылку, чтобы завершить приглашение.";
-
-const InviteScreen = ({ data }: InviteScreenProps) => {
-  const [copyState, setCopyState] = useState<CopyState>("idle");
-  const platform = usePlatform();
-
-  const heading = useMemo(() => resolveHeading(data.eventType, data.title), [data.eventType, data.title]);
-  const subheading = useMemo(
-    () => resolveSubheading(data.eventType, data.description),
-    [data.eventType, data.description],
-  );
-  const description = useMemo(() => data.salon?.description ?? descriptionFallback, [data.salon?.description]);
-  const badgeLabel = useMemo(() => getBadgeLabel(data.eventType), [data.eventType]);
-  const storeLink = useMemo(() => resolveStoreLink(platform, data), [platform, data]);
-
-  useEffect(() => {
-    sendFingerprint(data.nanoId);
-  }, [data.nanoId]);
-
-  useEffect(() => {
-    if (copyState === "copied" || copyState === "error") {
-      const timer = window.setTimeout(() => setCopyState("idle"), 3000);
-      return () => window.clearTimeout(timer);
-    }
-
-    return undefined;
-  }, [copyState]);
-
-  const handleOpenApp = useCallback(async () => {
+  const handleAppStoreClick = async () => {
+    // Копируем текущий URL в буфер обмена
     try {
-      if (data.universalLink) {
-        await navigator.clipboard?.writeText?.(data.universalLink);
-        setCopyState("copied");
-      }
-    } catch (error) {
-      setCopyState("error");
-      if (process.env.NODE_ENV !== "production") {
-        console.error("Не удалось скопировать ссылку", error);
-      }
+      const currentUrl = window.location.href;
+      await navigator.clipboard.writeText(currentUrl);
+    } catch (err) {
+      console.error("Не удалось скопировать ссылку:", err);
     }
 
-    if (storeLink) {
-      window.location.href = storeLink;
-      return;
-    }
-
-    if (data.universalLink) {
-      window.location.href = data.universalLink;
-    }
-  }, [data.universalLink, storeLink]);
+    // Переходим в App Store с UTM параметрами
+    const appStoreUrl = buildAppStoreUrl(utm);
+    window.location.href = appStoreUrl;
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-black dark:bg-dark-bg dark:text-dark-text">
@@ -153,39 +86,19 @@ const InviteScreen = ({ data }: InviteScreenProps) => {
           </div>
 
           <div className="rounded-2xl border border-black/5 bg-black/5 p-6 text-sm text-black/80 dark:border-white/10 dark:bg-white/5 dark:text-white/80 md:p-8 md:text-base">
-            <h2 className="text-lg font-medium md:text-xl">{data.salon?.name ?? "Maetry"}</h2>
-            <p className="mt-2 leading-relaxed">{description}</p>
+            <h2 className="text-lg font-medium md:text-xl">{downloadTitle}</h2>
+            <p className="mt-2 leading-relaxed">{downloadDescription}</p>
           </div>
 
           <div className="flex flex-col gap-4">
             <button
               type="button"
-              onClick={handleOpenApp}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-semibold uppercase tracking-wider text-white transition hover:-translate-y-0.5 hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 dark:bg-white dark:text-black dark:hover:bg-white/90 dark:focus-visible:ring-white dark:focus-visible:ring-offset-dark-bg"
+              onClick={handleAppStoreClick}
+              className="inline-flex items-center justify-center transition active:scale-105 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 dark:focus-visible:ring-white dark:focus-visible:ring-offset-dark-bg"
+              title={appStoreButtonTitle}
             >
-              {platformCtaLabel[platform.platform]}
+              <Image src={appstore} alt={appStoreButtonTitle} className="h-[50px] w-auto" />
             </button>
-
-            <Link
-              href={data.universalLink ?? "#"}
-              prefetch={false}
-              className="text-sm font-medium text-black/60 underline-offset-4 hover:underline dark:text-white/70"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Открыть универсальную ссылку
-            </Link>
-
-            {copyState === "copied" && (
-              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                Универсальная ссылка скопирована в буфер обмена
-              </span>
-            )}
-            {copyState === "error" && (
-              <span className="text-xs font-medium text-rose-600 dark:text-rose-400">
-                Не удалось скопировать ссылку. Попробуйте вручную.
-              </span>
-            )}
           </div>
         </section>
 
@@ -205,19 +118,8 @@ const InviteScreen = ({ data }: InviteScreenProps) => {
 
       <footer className="border-t border-black/5 bg-white/80 px-6 py-6 text-center text-xs text-black/50 backdrop-blur dark:border-white/10 dark:bg-dark-bg/80 dark:text-white/50">
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-between gap-3 sm:flex-row">
-          <span>© {new Date().getFullYear()} Maetry. Все права защищены.</span>
+          <span>© {new Date().getFullYear()} Maetry. {footerCopyright}</span>
           <nav className="flex items-center gap-4">
-            {data.webFallbackLink && (
-              <Link
-                href={data.webFallbackLink}
-                className="underline-offset-4 hover:underline"
-                prefetch={false}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Перейти в веб-версию
-              </Link>
-            )}
             <Link href="https://maetry.com" className="underline-offset-4 hover:underline">
               maetry.com
             </Link>
@@ -229,4 +131,3 @@ const InviteScreen = ({ data }: InviteScreenProps) => {
 };
 
 export default InviteScreen;
-
