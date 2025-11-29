@@ -1,2 +1,2 @@
 // Типы для локализации
-export type Locale = 'en' | 'ru' | 'es'
+export type Locale = "en" | "ru" | "es";

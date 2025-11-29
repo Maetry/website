@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
-import { useAppSelector } from "@/lib/hooks"
-import { LocalizedImage } from "@/shared/localization"
-import { ScrollingImage, ScrollingText, LocalizedText } from "@/shared/ui"
+import { useAppSelector } from "@/lib/hooks";
+import { LocalizedImage } from "@/shared/localization";
+import { ScrollingImage, ScrollingText, LocalizedText } from "@/shared/ui";
 
 const AboutSection = () => {
-  const isDark = useAppSelector((state) => state.theme.blackTheme)
+  const isDark = useAppSelector((state) => state.theme.blackTheme);
 
   return (
     <section
@@ -17,7 +17,11 @@ const AboutSection = () => {
       <div className="flex w-full flex-col items-center xl:text-start text-center xl:flex-row px-[3.5%]">
         <div className="w-[80%] xl:w-1/2 xl:h-full flex items-center justify-center relative">
           <LocalizedImage
-            baseImage={isDark ? "/images/phones_about_center_dark.svg" : "/images/phones_about_center_light.svg"}
+            baseImage={
+              isDark
+                ? "/images/phones_about_center_dark.svg"
+                : "/images/phones_about_center_light.svg"
+            }
             alt=""
             width={400}
             height={600}
@@ -26,8 +30,8 @@ const AboutSection = () => {
           <ScrollingImage></ScrollingImage>
         </div>
         <div className="xl:w-1/2 items-center xl:items-start w-full flex flex-col gap-y-2 mt-[5vh] xl:px-0 px-[10%]">
-          <LocalizedText 
-            id={3} 
+          <LocalizedText
+            id={3}
             translationKey="about.mission"
             fallback="our mission"
           />
@@ -52,7 +56,7 @@ const AboutSection = () => {
         <ScrollingText></ScrollingText>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default AboutSection
+export default AboutSection;

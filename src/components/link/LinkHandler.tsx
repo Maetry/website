@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 
 import { useRouter, useParams } from "next/navigation";
+
 import { useTranslations } from "next-intl";
 
 import { InviteScreen } from "@/components/invite";
 import { getMarketingCampaign } from "@/lib/api/getMarketingCampaign";
 import { registerClick } from "@/lib/api/registerClick";
 import type { LinkKind } from "@/lib/api/shortLink";
+
 import { LinkHandlerCard } from "./LinkHandlerCard";
 
 interface LinkHandlerProps {
@@ -24,7 +26,7 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
   const [error, setError] = useState<string | null>(null);
 
   // Определяем локаль из params (как в других компонентах)
-  const locale = (params?.locale as string) || 'en';
+  const locale = (params?.locale as string) || "en";
 
   useEffect(() => {
     const handleLink = async () => {
@@ -38,11 +40,13 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
             try {
               // Получаем информацию о кампании
               const campaign = await getMarketingCampaign(nanoId);
-              
+
               // Перенаправляем на страницу бронирования с trackingId в query параметре
-              router.push(`/${locale}/booking/${campaign.salonId}?trackingId=${nanoId}`);
+              router.push(
+                `/${locale}/booking/${campaign.salonId}?trackingId=${nanoId}`,
+              );
               return;
-            } catch (error) {
+            } catch {
               setError(t("errorCampaign"));
               setIsProcessing(false);
               return;
@@ -63,16 +67,16 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
           }
         }
       } catch (error) {
-        
         // Показываем более информативное сообщение об ошибке
-        const errorMessage = error instanceof Error ? error.message : t("errorProcessing");
+        const errorMessage =
+          error instanceof Error ? error.message : t("errorProcessing");
         setError(errorMessage);
         setIsProcessing(false);
       }
     };
 
     handleLink();
-  }, [nanoId, router]);
+  }, [nanoId, router, locale, t]);
 
   if (isProcessing) {
     return (
@@ -106,9 +110,7 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
           <h2 className="text-xl font-semibold text-slate-900">
             {t("processing")}
           </h2>
-          <p className="text-sm text-slate-600">
-            {t("pleaseWait")}
-          </p>
+          <p className="text-sm text-slate-600">{t("pleaseWait")}</p>
         </div>
 
         {/* Анимированные точки */}
@@ -148,9 +150,7 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
           <h2 className="text-xl font-semibold text-slate-900">
             {t("errorTitle")}
           </h2>
-          <p className="text-sm text-red-600 dark:text-red-400">
-            {error}
-          </p>
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         </div>
 
         {/* Кнопка повтора */}
@@ -170,4 +170,3 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
 
   return null;
 };
-

@@ -1,5 +1,5 @@
-import { initializeApp, type FirebaseApp } from 'firebase/app';
 import { getAnalytics, type Analytics } from 'firebase/analytics';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBPk5wpYvK15mCbVJW_8Q1TlV2MDtermBo',

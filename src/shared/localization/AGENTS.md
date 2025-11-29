@@ -17,8 +17,9 @@ src/shared/localization/
 ### Локализованные изображения
 
 #### Через компонент LocalizedImage (рекомендуется):
+
 ```tsx
-import { LocalizedImage } from '@/shared/localization'
+import { LocalizedImage } from "@/shared/localization";
 
 const MyComponent = () => {
   return (
@@ -28,20 +29,21 @@ const MyComponent = () => {
       width={200}
       height={50}
     />
-  )
-}
+  );
+};
 ```
 
 #### Через хук (для кастомных случаев):
+
 ```tsx
-import { useLocalizedImage } from '@/shared/localization'
-import logo from '@/public/images/logo.svg'
+import { useLocalizedImage } from "@/shared/localization";
+import logo from "@/public/images/logo.svg";
 
 const MyComponent = () => {
-  const localizedLogo = useLocalizedImage(logo)
-  
-  return <img src={localizedLogo} alt="Logo" />
-}
+  const localizedLogo = useLocalizedImage(logo);
+
+  return <img src={localizedLogo} alt="Logo" />;
+};
 ```
 
 ### Локализованный текст
@@ -49,18 +51,19 @@ const MyComponent = () => {
 Используйте `next-intl` для текстов:
 
 ```tsx
-import { useTranslations } from 'next-intl'
+import { useTranslations } from "next-intl";
 
 const MyComponent = () => {
-  const t = useTranslations('section')
-  
-  return <h1>{t('title')}</h1>
-}
+  const t = useTranslations("section");
+
+  return <h1>{t("title")}</h1>;
+};
 ```
 
 ## Правила именования файлов
 
 ### Изображения:
+
 - Базовое: `logo.svg`
 - Русская версия: `logo_ru.svg`
 - Испанская версия: `logo_es.svg`
@@ -81,8 +84,9 @@ const MyComponent = () => {
 ## Примеры использования
 
 ### Простое изображение:
+
 ```tsx
-import { LocalizedImage } from '@/shared/localization'
+import { LocalizedImage } from "@/shared/localization";
 
 return (
   <LocalizedImage
@@ -91,17 +95,18 @@ return (
     width={800}
     height={600}
   />
-)
+);
 ```
 
 ### Компонент с темой и локализацией:
+
 ```tsx
-import { LocalizedImage } from '@/shared/localization'
-import { useAppSelector } from '@/lib/hooks'
+import { LocalizedImage } from "@/shared/localization";
+import { useAppSelector } from "@/lib/hooks";
 
 const MyComponent = () => {
-  const isDark = useAppSelector((state) => state.theme.blackTheme)
-  
+  const isDark = useAppSelector((state) => state.theme.blackTheme);
+
   return (
     <LocalizedImage
       baseImage={isDark ? "/images/dark-hero.svg" : "/images/light-hero.svg"}
@@ -109,6 +114,6 @@ const MyComponent = () => {
       width={800}
       height={600}
     />
-  )
-}
+  );
+};
 ```

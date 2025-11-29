@@ -1,6 +1,6 @@
 "use client";
 
-import { NotFoundError, handleApiResponse } from "./error-handler";
+import { handleApiResponse } from "./error-handler";
 import { devError } from "./utils";
 
 interface ClientApiRequestOptions {

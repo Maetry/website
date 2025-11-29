@@ -19,7 +19,8 @@ export type AddToGoogleWalletBadgeProps = {
 const IMAGE_WIDTH = 283;
 const IMAGE_HEIGHT = 50;
 
-const GOOGLE_BASE_IMAGE = "/images/add-to-google-wallet/add-to-google-wallet.svg";
+const GOOGLE_BASE_IMAGE =
+  "/images/add-to-google-wallet/add-to-google-wallet.svg";
 
 export const AddToGoogleWalletBadge = ({
   passId,
@@ -53,7 +54,7 @@ export const AddToGoogleWalletBadge = ({
       console.error("Failed to redirect to Google Wallet:", error);
       setIsLoading(false);
       onClickError?.(error);
-      
+
       // В случае ошибки используем fallback URL
       if (shareUrl) {
         if (platform.isAndroid) {
@@ -113,5 +114,3 @@ export const AddToGoogleWalletBadge = ({
     </>
   );
 };
-
-

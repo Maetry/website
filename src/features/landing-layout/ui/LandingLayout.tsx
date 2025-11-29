@@ -1,16 +1,21 @@
-import React from "react"
+import React from "react";
 
-import Image from "next/image"
+import Image from "next/image";
 
-import { AboutSection } from "@/features/about-section"
-import { FAQSection } from "@/features/faq-section"
-import { FeaturesSection } from "@/features/features-section"
-import { Footer } from "@/features/footer"
-import { Header, MobileHeader } from "@/features/header"
-import { HeroSection } from "@/features/hero-section"
-import { ReviewsSection } from "@/features/reviews-section"
-import prefooter from "@/public/images/prefooterImage.svg"
-import { AppleButton, BgImage, ImageTextFabric, LocalizedText } from "@/shared/ui"
+import { AboutSection } from "@/features/about-section";
+import { FAQSection } from "@/features/faq-section";
+import { FeaturesSection } from "@/features/features-section";
+import { Footer } from "@/features/footer";
+import { Header, MobileHeader } from "@/features/header";
+import { HeroSection } from "@/features/hero-section";
+import { ReviewsSection } from "@/features/reviews-section";
+import prefooter from "@/public/images/prefooterImage.svg";
+import {
+  AppleButton,
+  BgImage,
+  ImageTextFabric,
+  LocalizedText,
+} from "@/shared/ui";
 
 const LandingLayout = () => {
   return (
@@ -44,10 +49,10 @@ const LandingLayout = () => {
         <section id={"prefooter"} className="w-full px-[3.5%] h-[70vh] ">
           <div className="w-full h-full bg-dark-bg dark:bg-white rounded-[21px] flex items-center justify-center shadow-xl relative">
             <div className="z-[1000] flex text-invert items-center text-center flex-col w-[80%] xl:w-[40%] gap-y-3 xl:gap-y-0 dark:text-black text-[#fdfdfd]">
-              <LocalizedText 
-                id={7} 
-                translationKey="prefooter.title" 
-                fallback="free trial" 
+              <LocalizedText
+                id={7}
+                translationKey="prefooter.title"
+                fallback="free trial"
               />
               <div className="mt-[1%]">
                 <LocalizedText
@@ -78,7 +83,7 @@ const LandingLayout = () => {
       </main>
       <Footer></Footer>
     </>
-  )
-}
+  );
+};
 
-export default LandingLayout
+export default LandingLayout;

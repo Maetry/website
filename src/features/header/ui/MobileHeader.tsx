@@ -1,23 +1,21 @@
-"use client"
-import React from "react"
+"use client";
+import React from "react";
 
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 
-import { toggleHeader } from "@/entities/mobile-header"
-import { useAppDispatch, useAppSelector } from "@/lib/hooks"
-import closeImage from "@/public/images/closeImage.svg"
-import logo from "@/public/images/logo.svg"
-import mobileMenu from "@/public/images/mobile_menu.svg"
-import { LocalizedText } from "@/shared/ui"
+import { toggleHeader } from "@/entities/mobile-header";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import closeImage from "@/public/images/closeImage.svg";
+import logo from "@/public/images/logo.svg";
+import mobileMenu from "@/public/images/mobile_menu.svg";
+import { LocalizedText } from "@/shared/ui";
 
-import LinksBar from "./SlideBarLinks"
-
+import LinksBar from "./SlideBarLinks";
 
 const MobileHeader = () => {
-  const dispatch = useAppDispatch()
-  const showLinks = useAppSelector((state) => state.mobileMenu.showLinks)
-
+  const dispatch = useAppDispatch();
+  const showLinks = useAppSelector((state) => state.mobileMenu.showLinks);
 
   return (
     <header className="fixed xl:hidden bg-white dark:bg-dark-bg z-[3000] h-[7vh] w-full items-center gap-x-4 shadow-sm px-[3.5%]">
@@ -40,7 +38,11 @@ const MobileHeader = () => {
               className="flex gap-x-2 h-full items-center ml-auto"
             >
               <label className="text-[14px] md:text-[16px] lg:text-[22px] dark:text-dark-text flex">
-                <LocalizedText translationKey="navigation.menu" id={2} fallback="menu" />
+                <LocalizedText
+                  translationKey="navigation.menu"
+                  id={2}
+                  fallback="menu"
+                />
               </label>
               <Image
                 src={mobileMenu}
@@ -73,7 +75,7 @@ const MobileHeader = () => {
       </div>
       <LinksBar />
     </header>
-  )
-}
+  );
+};
 
-export default MobileHeader
+export default MobileHeader;

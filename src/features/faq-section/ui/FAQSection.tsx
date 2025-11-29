@@ -1,7 +1,7 @@
-import React from "react"
+import React from "react";
 
-import { Question, Vitaliy } from "@/features/faq"
-import { LocalizedText } from "@/shared/ui"
+import { Question, Vitaliy } from "@/features/faq";
+import { LocalizedText } from "@/shared/ui";
 
 const FAQSection = () => {
   return (
@@ -10,15 +10,11 @@ const FAQSection = () => {
       className="w-[93%] px-[3.5%] flex flex-col gap-y-[5vh] xl:gap-y-[8vh] justify-center"
     >
       <div className="w-full flex flex-col">
-        <LocalizedText 
-          id={3} 
-          translationKey="faq.subtitle" 
-          fallback="faq" 
-        />
-        <LocalizedText 
-          id={1} 
-          translationKey="faq.title" 
-          fallback="frequent questions" 
+        <LocalizedText id={3} translationKey="faq.subtitle" fallback="faq" />
+        <LocalizedText
+          id={1}
+          translationKey="faq.title"
+          fallback="frequent questions"
         />
       </div>
 
@@ -39,7 +35,7 @@ const FAQSection = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default FAQSection
+export default FAQSection;

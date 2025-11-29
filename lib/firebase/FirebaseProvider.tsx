@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect } from 'react';
+
 import { usePathname } from 'next/navigation';
+
 import { logEvent } from 'firebase/analytics';
 
-import { getFirebaseAnalytics } from './config';
 import { useTracking } from '@/lib/tracking/useTracking';
+
+import { getFirebaseAnalytics } from './config';
 
 /**
  * Компонент для автоматического трекинга страниц в Firebase Analytics

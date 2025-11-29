@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { ApiError } from "./error-handler";
 import { resolveApiUrl } from "./config";
+import { ApiError } from "./error-handler";
 import { devError } from "./utils";
 
 interface ProxyRequestOptions {

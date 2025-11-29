@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
+
 import { useTranslations } from "next-intl";
 
 import type { LinkKind } from "@/lib/api/shortLink";
 import { useTracking } from "@/lib/tracking/useTracking";
-import logo from "@/public/images/logo.svg";
 import appstore from "@/public/images/appstore.svg";
+import logo from "@/public/images/logo.svg";
 import phones from "@/public/images/phones_customer.png";
 
 type InviteScreenProps = {
@@ -17,20 +18,26 @@ type InviteScreenProps = {
 const APP_STORE_BASE_URL = "https://apps.apple.com/app/id6746678571";
 
 // Формирует URL App Store с UTM параметрами
-function buildAppStoreUrl(utm?: { source?: string; medium?: string; campaign?: string; term?: string; content?: string }): string {
+function buildAppStoreUrl(utm?: {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  term?: string;
+  content?: string;
+}): string {
   if (!utm || Object.keys(utm).length === 0) {
-    return APP_STORE_BASE_URL
+    return APP_STORE_BASE_URL;
   }
 
-  const url = new URL(APP_STORE_BASE_URL)
-  
-  if (utm.source) url.searchParams.set("utm_source", utm.source)
-  if (utm.medium) url.searchParams.set("utm_medium", utm.medium)
-  if (utm.campaign) url.searchParams.set("utm_campaign", utm.campaign)
-  if (utm.term) url.searchParams.set("utm_term", utm.term)
-  if (utm.content) url.searchParams.set("utm_content", utm.content)
+  const url = new URL(APP_STORE_BASE_URL);
 
-  return url.toString()
+  if (utm.source) url.searchParams.set("utm_source", utm.source);
+  if (utm.medium) url.searchParams.set("utm_medium", utm.medium);
+  if (utm.campaign) url.searchParams.set("utm_campaign", utm.campaign);
+  if (utm.term) url.searchParams.set("utm_term", utm.term);
+  if (utm.content) url.searchParams.set("utm_content", utm.content);
+
+  return url.toString();
 }
 
 const InviteScreen = ({ kind }: InviteScreenProps) => {
@@ -41,7 +48,8 @@ const InviteScreen = ({ kind }: InviteScreenProps) => {
   const utm = tracking?.lastTouch?.utm || tracking?.firstTouch?.utm;
 
   // Получаем локализованные тексты
-  const headingKey = kind === "employeeInvite" || kind === "clientInvite" ? kind : "default";
+  const headingKey =
+    kind === "employeeInvite" || kind === "clientInvite" ? kind : "default";
   const heading = t(`heading.${headingKey}`);
   const subheading = t(`subheading.${headingKey}`);
   const badgeLabel = t(`badgeLabel.${headingKey}`);
@@ -68,8 +76,16 @@ const InviteScreen = ({ kind }: InviteScreenProps) => {
     <div className="flex min-h-screen flex-col bg-white text-black dark:bg-dark-bg dark:text-dark-text">
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 px-6 py-4 backdrop-blur dark:border-white/10 dark:bg-dark-bg/80">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 text-lg font-semibold uppercase tracking-wide">
-            <Image src={logo} alt="Maetry" className="h-7 w-auto dark:invert" priority />
+          <Link
+            href="/"
+            className="flex items-center gap-3 text-lg font-semibold uppercase tracking-wide"
+          >
+            <Image
+              src={logo}
+              alt="Maetry"
+              className="h-7 w-auto dark:invert"
+              priority
+            />
             <span className="sr-only">Maetry</span>
           </Link>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs font-medium uppercase tracking-wider text-black/70 dark:bg-white/10 dark:text-white/70">
@@ -81,8 +97,12 @@ const InviteScreen = ({ kind }: InviteScreenProps) => {
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-12 px-6 py-10 md:flex-row md:items-center md:gap-16 md:py-16">
         <section className="flex flex-1 flex-col gap-6">
           <div className="flex flex-col gap-3">
-            <h1 className="text-3xl font-semibold leading-tight md:text-4xl">{heading}</h1>
-            <p className="text-base text-black/70 dark:text-white/70 md:text-lg">{subheading}</p>
+            <h1 className="text-3xl font-semibold leading-tight md:text-4xl">
+              {heading}
+            </h1>
+            <p className="text-base text-black/70 dark:text-white/70 md:text-lg">
+              {subheading}
+            </p>
           </div>
 
           <div className="rounded-2xl border border-black/5 bg-black/5 p-6 text-sm text-black/80 dark:border-white/10 dark:bg-white/5 dark:text-white/80 md:p-8 md:text-base">
@@ -97,7 +117,11 @@ const InviteScreen = ({ kind }: InviteScreenProps) => {
               className="inline-flex items-center justify-center transition active:scale-105 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 dark:focus-visible:ring-white dark:focus-visible:ring-offset-dark-bg"
               title={appStoreButtonTitle}
             >
-              <Image src={appstore} alt={appStoreButtonTitle} className="h-[50px] w-auto" />
+              <Image
+                src={appstore}
+                alt={appStoreButtonTitle}
+                className="h-[50px] w-auto"
+              />
             </button>
           </div>
         </section>
@@ -118,9 +142,14 @@ const InviteScreen = ({ kind }: InviteScreenProps) => {
 
       <footer className="border-t border-black/5 bg-white/80 px-6 py-6 text-center text-xs text-black/50 backdrop-blur dark:border-white/10 dark:bg-dark-bg/80 dark:text-white/50">
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-between gap-3 sm:flex-row">
-          <span>© {new Date().getFullYear()} Maetry. {footerCopyright}</span>
+          <span>
+            © {new Date().getFullYear()} Maetry. {footerCopyright}
+          </span>
           <nav className="flex items-center gap-4">
-            <Link href="https://maetry.com" className="underline-offset-4 hover:underline">
+            <Link
+              href="https://maetry.com"
+              className="underline-offset-4 hover:underline"
+            >
               maetry.com
             </Link>
           </nav>

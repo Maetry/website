@@ -1,7 +1,7 @@
 "use client";
 
-import type { ClickRequest, MagicLinkResponse } from "./types";
 import { clientApiRequest } from "./client";
+import type { ClickRequest, MagicLinkResponse } from "./types";
 
 const isNavigator = typeof navigator !== "undefined";
 const isWindow = typeof window !== "undefined";

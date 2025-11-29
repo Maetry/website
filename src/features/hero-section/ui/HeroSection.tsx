@@ -1,6 +1,6 @@
-import React from "react"
+import React from "react";
 
-import { BgImage, LocalizedText, ImageTextFabric } from "@/shared/ui"
+import { BgImage, LocalizedText, ImageTextFabric } from "@/shared/ui";
 
 const HeroSection = () => {
   return (
@@ -28,7 +28,7 @@ const HeroSection = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default HeroSection
+export default HeroSection;

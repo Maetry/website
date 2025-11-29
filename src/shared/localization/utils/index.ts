@@ -1,2 +1,2 @@
 // Экспорт утилит для изображений
-export { getLocalizedImage, getLocalizedImagePath } from './getLocalizedImage'
+export { getLocalizedImage, getLocalizedImagePath } from "./getLocalizedImage";

@@ -52,7 +52,7 @@ export const AddToAppleWalletBadge = ({
       console.error("Failed to redirect to Apple Wallet:", error);
       setIsLoading(false);
       onClickError?.(error);
-      
+
       // В случае ошибки используем fallback URL
       if (shareUrl) {
         if (platform.isIOS || platform.isMacOS) {
@@ -112,5 +112,3 @@ export const AddToAppleWalletBadge = ({
     </>
   );
 };
-
-

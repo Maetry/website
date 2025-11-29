@@ -1,2 +1,2 @@
 // Экспорт хуков локализации
-export { useLocalizedImage } from './useLocalizedImage'
+export { useLocalizedImage } from "./useLocalizedImage";

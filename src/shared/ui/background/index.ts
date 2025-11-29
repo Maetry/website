@@ -1,1 +1,1 @@
-export { default as BgImage } from './BgImage'
+export { default as BgImage } from "./BgImage";

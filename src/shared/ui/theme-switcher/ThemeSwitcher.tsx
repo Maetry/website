@@ -1,134 +1,142 @@
-"use client"
-import { useCallback, useEffect, useRef, useState } from "react"
+"use client";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { setTheme } from "@/entities/theme"
-import { useAppDispatch } from "@/lib/hooks"
+import { setTheme } from "@/entities/theme";
+import { useAppDispatch } from "@/lib/hooks";
 
 const ThemeSwitcher: React.FC = () => {
-  const dispatch = useAppDispatch()
-  const [, setSystemTheme] = useState<'light' | 'dark'>('light')
-  const [currentTheme, setCurrentTheme] = useState<'system' | 'light' | 'dark'>('system')
-  const mediaQueryRef = useRef<MediaQueryList | null>(null)
+  const dispatch = useAppDispatch();
+  const [, setSystemTheme] = useState<"light" | "dark">("light");
+  const [currentTheme, setCurrentTheme] = useState<"system" | "light" | "dark">(
+    "system",
+  );
+  const mediaQueryRef = useRef<MediaQueryList | null>(null);
 
-  const applyDocumentTheme = useCallback((mode: 'light' | 'dark') => {
-    const isDark = mode === 'dark'
-    dispatch(setTheme(isDark))
-    if (isDark) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-  }, [dispatch])
+  const applyDocumentTheme = useCallback(
+    (mode: "light" | "dark") => {
+      const isDark = mode === "dark";
+      dispatch(setTheme(isDark));
+      if (isDark) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    },
+    [dispatch],
+  );
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    mediaQueryRef.current = mediaQuery
+    if (typeof window === "undefined") return;
 
-    const savedTheme = localStorage.getItem("Theme") as 'light' | 'dark' | null
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaQueryRef.current = mediaQuery;
+
+    const savedTheme = localStorage.getItem("Theme") as "light" | "dark" | null;
     if (savedTheme) {
-      setCurrentTheme(savedTheme)
-      applyDocumentTheme(savedTheme)
-      return
+      setCurrentTheme(savedTheme);
+      applyDocumentTheme(savedTheme);
+      return;
     }
 
-    setCurrentTheme('system')
-    const systemMode = mediaQuery.matches ? 'dark' : 'light'
-    setSystemTheme(systemMode)
-    applyDocumentTheme(systemMode)
-  }, [applyDocumentTheme])
+    setCurrentTheme("system");
+    const systemMode = mediaQuery.matches ? "dark" : "light";
+    setSystemTheme(systemMode);
+    applyDocumentTheme(systemMode);
+  }, [applyDocumentTheme]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (currentTheme !== 'system') return
+    if (typeof window === "undefined") return;
+    if (currentTheme !== "system") return;
 
-    const mediaQuery = mediaQueryRef.current
-    if (!mediaQuery) return
+    const mediaQuery = mediaQueryRef.current;
+    if (!mediaQuery) return;
 
     const handleSystemThemeChange = (event: MediaQueryListEvent) => {
-      const mode = event.matches ? 'dark' : 'light'
-      setSystemTheme(mode)
-      applyDocumentTheme(mode)
-    }
+      const mode = event.matches ? "dark" : "light";
+      setSystemTheme(mode);
+      applyDocumentTheme(mode);
+    };
 
-    const initialMode = mediaQuery.matches ? 'dark' : 'light'
-    setSystemTheme(initialMode)
-    applyDocumentTheme(initialMode)
+    const initialMode = mediaQuery.matches ? "dark" : "light";
+    setSystemTheme(initialMode);
+    applyDocumentTheme(initialMode);
 
-    mediaQuery.addEventListener('change', handleSystemThemeChange)
+    mediaQuery.addEventListener("change", handleSystemThemeChange);
 
-    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange)
-  }, [applyDocumentTheme, currentTheme])
+    return () =>
+      mediaQuery.removeEventListener("change", handleSystemThemeChange);
+  }, [applyDocumentTheme, currentTheme]);
 
-  const handleThemeChange = (theme: 'system' | 'light' | 'dark') => {
-    if (typeof window === 'undefined') return
-    
-    setCurrentTheme(theme)
-    
-    if (theme === 'system') {
-      localStorage.removeItem("Theme")
-      const mediaQuery = mediaQueryRef.current ?? window.matchMedia('(prefers-color-scheme: dark)')
-      mediaQueryRef.current = mediaQuery
-      const prefersDark = mediaQuery.matches
-      const systemMode = prefersDark ? 'dark' : 'light'
-      setSystemTheme(systemMode)
-      applyDocumentTheme(systemMode)
+  const handleThemeChange = (theme: "system" | "light" | "dark") => {
+    if (typeof window === "undefined") return;
+
+    setCurrentTheme(theme);
+
+    if (theme === "system") {
+      localStorage.removeItem("Theme");
+      const mediaQuery =
+        mediaQueryRef.current ??
+        window.matchMedia("(prefers-color-scheme: dark)");
+      mediaQueryRef.current = mediaQuery;
+      const prefersDark = mediaQuery.matches;
+      const systemMode = prefersDark ? "dark" : "light";
+      setSystemTheme(systemMode);
+      applyDocumentTheme(systemMode);
     } else {
-      localStorage.setItem("Theme", theme)
-      setSystemTheme(theme === 'dark' ? 'dark' : 'light')
-      applyDocumentTheme(theme)
+      localStorage.setItem("Theme", theme);
+      setSystemTheme(theme === "dark" ? "dark" : "light");
+      applyDocumentTheme(theme);
     }
-  }
+  };
 
   return (
     <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
       {/* System Theme Button */}
       <button
-        onClick={() => handleThemeChange('system')}
+        onClick={() => handleThemeChange("system")}
         className={`p-2 rounded-md transition-colors ${
-          currentTheme === 'system'
-            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          currentTheme === "system"
+            ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         }`}
         title="System"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20 3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h3l-1 1v1h12v-1l-1-1h3c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 13H4V5h16v11z"/>
+          <path d="M20 3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h3l-1 1v1h12v-1l-1-1h3c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 13H4V5h16v11z" />
         </svg>
       </button>
 
       {/* Light Theme Button */}
       <button
-        onClick={() => handleThemeChange('light')}
+        onClick={() => handleThemeChange("light")}
         className={`p-2 rounded-md transition-colors ${
-          currentTheme === 'light'
-            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          currentTheme === "light"
+            ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         }`}
         title="Light"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+          <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
         </svg>
       </button>
 
       {/* Dark Theme Button */}
       <button
-        onClick={() => handleThemeChange('dark')}
+        onClick={() => handleThemeChange("dark")}
         className={`p-2 rounded-md transition-colors ${
-          currentTheme === 'dark'
-            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          currentTheme === "dark"
+            ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         }`}
         title="Dark"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+          <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" />
         </svg>
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default ThemeSwitcher
+export default ThemeSwitcher;

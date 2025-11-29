@@ -5,9 +5,9 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 
+import { FirebaseTracker } from "@/lib/firebase";
 import { PlatformProvider } from "@/lib/userAgent/PlatformProvider";
 import { StoreProvider } from "@/shared/store";
-import { FirebaseTracker } from "@/lib/firebase";
 
 import { locales, isSupportedLocale, type Locale } from '../../i18n';
 

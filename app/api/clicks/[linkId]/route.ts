@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 
 import { proxyApiRequest, handleValidationError } from "@/lib/api/route-handler";
-import { validateId } from "@/lib/api/validation";
 import { devLog } from "@/lib/api/utils";
+import { validateId } from "@/lib/api/validation";
 
 type RouteParams = {
   params: Promise<{ linkId: string }>;

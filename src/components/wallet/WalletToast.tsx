@@ -8,7 +8,11 @@ type WalletToastProps = {
   onClose: () => void;
 };
 
-export const WalletToast = ({ isVisible, walletType, onClose }: WalletToastProps) => {
+export const WalletToast = ({
+  isVisible,
+  walletType,
+  onClose,
+}: WalletToastProps) => {
   const t = useTranslations("booking.walletShare");
 
   useEffect(() => {
@@ -25,10 +29,7 @@ export const WalletToast = ({ isVisible, walletType, onClose }: WalletToastProps
     return null;
   }
 
-  const message =
-    walletType === "apple"
-      ? t("toastApple")
-      : t("toastGoogle");
+  const message = walletType === "apple" ? t("toastApple") : t("toastGoogle");
 
   return (
     <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4">

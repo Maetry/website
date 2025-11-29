@@ -1,1 +1,1 @@
-export { default as Review } from './ReviewFabric'
+export { default as Review } from "./ReviewFabric";

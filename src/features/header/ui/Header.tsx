@@ -1,12 +1,12 @@
-import React from "react"
+import React from "react";
 
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 
-import logo from "@/public/images/logo.svg"
-import { LocalizedText } from "@/shared/ui"
+import logo from "@/public/images/logo.svg";
+import { LocalizedText } from "@/shared/ui";
 
-import SignIn from "./SignIn"
+import SignIn from "./SignIn";
 
 const Header = () => {
   return (
@@ -28,30 +28,30 @@ const Header = () => {
             href={"/#about"}
             className="relative dark:hover:border-white hover:border-black/50 transition-all duration-200 border-b border-transparent"
           >
-            <LocalizedText 
-              translationKey="navigation.about" 
-              id={2} 
-              fallback="About" 
+            <LocalizedText
+              translationKey="navigation.about"
+              id={2}
+              fallback="About"
             />
           </Link>
           <Link
             href={"/#reviews"}
             className="relative dark:hover:border-white hover:border-black/50 transition-all duration-200 border-b border-transparent"
           >
-            <LocalizedText 
-              translationKey="navigation.reviews" 
-              id={2} 
-              fallback="Reviews" 
+            <LocalizedText
+              translationKey="navigation.reviews"
+              id={2}
+              fallback="Reviews"
             />
           </Link>
           <Link
             href={"/#features"}
             className="relative dark:hover:border-white hover:border-black/50 transition-all duration-200 border-b border-transparent"
           >
-            <LocalizedText 
-              translationKey="navigation.features" 
-              id={2} 
-              fallback="Features" 
+            <LocalizedText
+              translationKey="navigation.features"
+              id={2}
+              fallback="Features"
             />
           </Link>
         </nav>
@@ -60,7 +60,7 @@ const Header = () => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

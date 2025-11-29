@@ -1,1 +1,1 @@
-export { default as ImageTextFabric } from './ImageTextFabric'
+export { default as ImageTextFabric } from "./ImageTextFabric";

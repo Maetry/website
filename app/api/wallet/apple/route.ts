@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { ApiError } from "@/lib/api/error-handler";
 import { resolveApiUrl } from "@/lib/api/config";
+import { ApiError } from "@/lib/api/error-handler";
 import { validateId } from "@/lib/api/validation";
 
 export async function GET(request: NextRequest) {

@@ -1,7 +1,7 @@
 "use client";
 
-import type { MarketingCampaign } from "./types";
 import { clientApiRequest } from "./client";
+import type { MarketingCampaign } from "./types";
 
 export async function getMarketingCampaign(nanoId: string): Promise<MarketingCampaign> {
   if (!nanoId) {

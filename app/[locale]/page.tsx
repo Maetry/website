@@ -2,9 +2,9 @@ import React from "react";
 
 import Script from 'next/script';
 
+import { LandingLayout } from "@/features/landing-layout";
 import { generateLandingMetadata } from "@/lib/metadata";
 
-import { LandingLayout } from "@/features/landing-layout";
 
 export async function generateMetadata({
   params,

@@ -1,42 +1,42 @@
-"use client"
-import React, { useRef, useState, useEffect } from "react"
+"use client";
+import React, { useRef, useState, useEffect } from "react";
 
-import Image from "next/image"
+import Image from "next/image";
 
-import { toggleShowQuestion, setQuestion } from "@/entities/question"
-import { useAppDispatch, useAppSelector } from "@/lib/hooks"
-import closeButton from "@/public/images/closeImage.svg"
-import { LocalizedText } from "@/shared/ui"
+import { toggleShowQuestion, setQuestion } from "@/entities/question";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import closeButton from "@/public/images/closeImage.svg";
+import { LocalizedText } from "@/shared/ui";
 
 interface QuestionProps {
-  id: number
-  title: string
-  answer: string
+  id: number;
+  title: string;
+  answer: string;
 }
 
 const Question = ({ id, title, answer }: QuestionProps) => {
-  const show = useAppSelector((state) => state.question.show)
-  const question = useAppSelector((state) => state.question.question)
-  const dispatch = useAppDispatch()
-  const contentRef = useRef<HTMLDivElement>(null)
-  const [maxHeight, setMaxHeight] = useState(0)
+  const show = useAppSelector((state) => state.question.show);
+  const question = useAppSelector((state) => state.question.question);
+  const dispatch = useAppDispatch();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [maxHeight, setMaxHeight] = useState(0);
 
   useEffect(() => {
     if (show && question === id.toString()) {
-      setMaxHeight(contentRef.current?.scrollHeight || 0)
+      setMaxHeight(contentRef.current?.scrollHeight || 0);
     } else {
-      setMaxHeight(0)
+      setMaxHeight(0);
     }
-  }, [show, question, id])
+  }, [show, question, id]);
 
   function chooseQuestion(id: string) {
     if (!show || question !== id) {
-      dispatch(setQuestion(id))
+      dispatch(setQuestion(id));
       if (!show) {
-        dispatch(toggleShowQuestion())
+        dispatch(toggleShowQuestion());
       }
     } else {
-      dispatch(toggleShowQuestion())
+      dispatch(toggleShowQuestion());
     }
   }
 
@@ -49,8 +49,8 @@ const Question = ({ id, title, answer }: QuestionProps) => {
             className="h-full w-full flex text-start justify-between items-center"
           >
             <div className="w-[85%] xl:w-full">
-              <LocalizedText 
-                id={4} 
+              <LocalizedText
+                id={4}
                 translationKey={`faq.q${id}.question`}
                 fallback={title}
               />
@@ -74,18 +74,18 @@ const Question = ({ id, title, answer }: QuestionProps) => {
               : "-translate-y-4"
           }`}
           style={{
-            maxHeight: `${maxHeight}px`
+            maxHeight: `${maxHeight}px`,
           }}
         >
-          <LocalizedText 
-            id={2} 
+          <LocalizedText
+            id={2}
             translationKey={`faq.q${id}.answer`}
             fallback={answer}
           />
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Question
+export default Question;

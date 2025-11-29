@@ -1,1 +1,1 @@
-export { default as InviteButton } from './InviteButton'
+export { default as InviteButton } from "./InviteButton";
