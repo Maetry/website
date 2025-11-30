@@ -5,11 +5,8 @@
       {
         "appID": "HWPQBM32W8.com.maetry",
         "paths": [
-           "/clients/invite*",
-           "/employees/invite*",
-           "/salons*",
-           "/booking/*",
-           "/*"
+          "/appointment/*",
+          "/*/appointment/*"
         ]
       }
     ]
@@ -20,3 +17,4 @@
     ]
   }
 }
+

@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "HWPQBM32W8.com.maetry",
+        "paths": [
+          "/*"
+        ]
+      }
+    ]
+  },
+  "appclips": {
+    "apps": [
+      "HWPQBM32W8.com.maetry.clip"
+    ]
+  }
+}
+
