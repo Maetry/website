@@ -19,9 +19,10 @@ import {
   type Step,
 } from "@/lib/api/booking";
 
-type BookingClientProps = {
+type BookingScreenProps = {
   salonId: string;
   locale: string;
+  trackingId?: string | null;
 };
 
 const DAYS_AHEAD = 21;
@@ -91,13 +92,13 @@ const formatCurrency = (
   }
 };
 
-const BookingClient = ({ salonId, locale }: BookingClientProps) => {
+const BookingScreen = ({ salonId, locale, trackingId: trackingIdProp }: BookingScreenProps) => {
   const t = useTranslations("booking");
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Получаем trackingId из query параметров (если был редирект с MagicLink)
-  const trackingId = searchParams.get("trackingId");
+  // Получаем trackingId из пропсов (если передан) или из query параметров (если был редирект с MagicLink)
+  const trackingId = trackingIdProp ?? searchParams.get("trackingId");
 
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [proceduresLoading, setProceduresLoading] = useState(true);
@@ -424,7 +425,7 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
       });
       
       if (process.env.NODE_ENV !== "production") {
-        console.log("[BookingClient] Appointment created, response:", data);
+        console.log("[BookingScreen] Appointment created, response:", data);
       }
       
       // Перенаправляем на страницу созданной записи
@@ -435,10 +436,31 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
         (data as unknown as { appointment?: { id?: string } }).appointment?.id;
       
       if (appointmentId) {
-        const appointmentUrl = `/${locale}/appointment/${appointmentId}`;
+        // Определяем, находимся ли мы на shortlink домене
+        const shortlinkHost = process.env.NEXT_PUBLIC_SHORTLINK_HOST || 'link.maetry.com';
+        const isShortlinkHost = typeof window !== 'undefined' && 
+                                (window.location.hostname === shortlinkHost || 
+                                 window.location.hostname.includes(shortlinkHost));
+        
+        let appointmentUrl: string;
+        
+        if (isShortlinkHost) {
+          // Если на shortlink домене, редиректим на основной домен
+          const currentHost = window.location.hostname;
+          const mainHost = currentHost.replace(/^link\./, ''); // убираем префикс link.
+          const mainDomain = `${window.location.protocol}//${mainHost}`;
+          appointmentUrl = `${mainDomain}/${locale}/appointment/${appointmentId}`;
+          
+          // Используем window.location.href для полного редиректа на другой домен
+          window.location.href = appointmentUrl;
+          return;
+        } else {
+          // Если на основном домене, используем router.push
+          appointmentUrl = `/${locale}/appointment/${appointmentId}`;
+        }
         
         if (process.env.NODE_ENV !== "production") {
-          console.log("[BookingClient] Redirecting to appointment:", appointmentUrl);
+          console.log("[BookingScreen] Redirecting to appointment:", appointmentUrl);
         }
         
         // Сбрасываем состояние перед перенаправлением
@@ -452,7 +474,7 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
       
       // Если appointmentId нет, показываем ошибку (это не должно происходить)
       if (process.env.NODE_ENV !== "production") {
-        console.error("[BookingClient] No appointmentId in response:", {
+        console.error("[BookingScreen] No appointmentId in response:", {
           data,
           keys: Object.keys(data),
           appointmentId: data.appointmentId,
@@ -463,7 +485,7 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
       setGlobalError(t("errors.createAppointment"));
       setIsSubmitting(false);
     } catch (error) {
-      console.error("[BookingClient] Error creating appointment:", error);
+      console.error("[BookingScreen] Error creating appointment:", error);
       const message =
         error instanceof BookingApiError ? error.message : undefined;
       setGlobalError(
@@ -973,5 +995,5 @@ const BookingClient = ({ salonId, locale }: BookingClientProps) => {
   );
 };
 
-export default BookingClient;
+export default BookingScreen;
 

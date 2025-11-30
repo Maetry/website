@@ -2,27 +2,30 @@
 
 import { useEffect, useState } from "react";
 
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 
 import { useTranslations } from "next-intl";
 
+import BookingScreen from "@/app/[locale]/booking/[salonId]/BookingScreen";
 import { InviteScreen } from "@/components/invite";
 import { getMarketingCampaign } from "@/lib/api/getMarketingCampaign";
 import { registerClick } from "@/lib/api/registerClick";
 import type { LinkKind } from "@/lib/api/shortLink";
 
-import { LinkHandlerCard } from "./LinkHandlerCard";
-
 interface LinkHandlerProps {
   nanoId: string;
 }
 
+interface MarketingCampaign {
+  salonId: string;
+}
+
 export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
-  const router = useRouter();
   const params = useParams();
   const t = useTranslations("linkHandler");
   const [isProcessing, setIsProcessing] = useState(true);
   const [inviteKind, setInviteKind] = useState<LinkKind | null>(null);
+  const [marketingCampaign, setMarketingCampaign] = useState<MarketingCampaign | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Определяем локаль из params (как в других компонентах)
@@ -40,11 +43,12 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
             try {
               // Получаем информацию о кампании
               const campaign = await getMarketingCampaign(nanoId);
-
-              // Перенаправляем на страницу бронирования с trackingId в query параметре
-              router.push(
-                `/${locale}/booking/${campaign.salonId}?trackingId=${nanoId}`,
-              );
+              
+              // Сохраняем данные кампании и показываем BookingScreen на той же странице
+              // Это защищает от обхода регистрации клика - пользователь не может поделиться
+              // прямой ссылкой на /booking/ без trackingId
+              setMarketingCampaign(campaign);
+              setIsProcessing(false);
               return;
             } catch {
               setError(t("errorCampaign"));
@@ -76,15 +80,14 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
     };
 
     handleLink();
-  }, [nanoId, router, locale, t]);
+  }, [nanoId, locale, t]);
 
   if (isProcessing) {
     return (
-      <LinkHandlerCard>
-        {/* Спиннер */}
-        <div className="mb-6 flex justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-slate-900">
+        <div className="flex flex-col items-center gap-4">
           <svg
-            className="h-8 w-8 animate-spin text-slate-600"
+            className="h-8 w-8 animate-spin text-slate-600 dark:text-slate-400"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -104,33 +107,17 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
             />
           </svg>
         </div>
-
-        {/* Текст */}
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-slate-900">
-            {t("processing")}
-          </h2>
-          <p className="text-sm text-slate-600">{t("pleaseWait")}</p>
-        </div>
-
-        {/* Анимированные точки */}
-        <div className="mt-6 flex justify-center gap-1">
-          <div className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
-          <div className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
-          <div className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
-        </div>
-      </LinkHandlerCard>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <LinkHandlerCard>
-        {/* Иконка ошибки */}
-        <div className="mb-6 flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+      <div className="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-slate-900">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
             <svg
-              className="h-8 w-8 text-red-600"
+              className="h-8 w-8 text-red-600 dark:text-red-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -143,24 +130,31 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
               />
             </svg>
           </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              {t("errorTitle")}
+            </h2>
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+          >
+            {t("retry")}
+          </button>
         </div>
+      </div>
+    );
+  }
 
-        {/* Текст ошибки */}
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-slate-900">
-            {t("errorTitle")}
-          </h2>
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        </div>
-
-        {/* Кнопка повтора */}
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-6 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-        >
-          {t("retry")}
-        </button>
-      </LinkHandlerCard>
+  // Показываем BookingScreen для маркетинговых ссылок
+  if (marketingCampaign) {
+    return (
+      <BookingScreen 
+        salonId={marketingCampaign.salonId} 
+        locale={locale}
+        trackingId={nanoId}
+      />
     );
   }
 

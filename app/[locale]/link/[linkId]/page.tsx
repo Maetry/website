@@ -2,6 +2,7 @@ import { LinkHandler } from "@/components/link";
 
 interface InvitePageProps {
   params: Promise<{
+    locale: string;
     linkId: string;
   }>;
 }

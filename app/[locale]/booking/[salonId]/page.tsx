@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import BookingClient from "./BookingClient";
+import BookingScreen from "./BookingScreen";
 
 type PageParams = {
   locale: string;
@@ -37,7 +37,7 @@ const BookingPage = async ({ params }: BookingPageProps) => {
   const resolvedParams = await params;
 
   return (
-    <BookingClient
+    <BookingScreen
       salonId={resolvedParams.salonId}
       locale={resolvedParams.locale}
     />

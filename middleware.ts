@@ -211,35 +211,51 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Пропускаем пути /link/ для обычного хоста (не shortlink)
-  // Они обрабатываются отдельным маршрутом app/link/[linkId]/page.tsx
-  if (pathname.startsWith('/link/') && !isShortlinkHost(host)) {
-    return NextResponse.next();
-  }
-
   // Обработка tracking параметров для всех запросов (включая shortlink)
   // Это нужно сделать до rewrite/redirect, чтобы параметры сохранились
   const encodedTracking = processTrackingParams(req, pathname);
 
-  // Обработка shortlink хоста
+  // 1. Обработка shortlink хоста (link.maetry.com)
   if (isShortlinkHost(host)) {
-    const shortlinkResponse = handleShortlinkHost(req, pathname);
-    if (shortlinkResponse) {
-      // Устанавливаем tracking cookie для shortlink если нужно
+    // Если путь уже начинается с /{locale}/link/, просто пропускаем дальше
+    if (LOCALE_PREFIX_PATTERN.test(pathname) && pathname.includes('/link/')) {
+      const response = NextResponse.next();
       if (encodedTracking) {
-        setTrackingCookie(shortlinkResponse, encodedTracking);
+        setTrackingCookie(response, encodedTracking);
       }
-      return shortlinkResponse;
+      return response;
     }
-    // Если путь уже начинается с /link/, продолжаем обычную обработку
+
+    // Определяем локаль и делаем rewrite на /{locale}/link/{nanoId}
+    const locale = getLocaleFromRequest(req);
+    const cleanPathname = pathname === '/' ? pathname : pathname.replace(/\/$/, '');
+    const rewriteUrl = req.nextUrl.clone();
+    
+    // Если путь уже начинается с /link/, убираем префикс
+    if (pathname.startsWith('/link/')) {
+      const linkPath = pathname.replace('/link/', '');
+      rewriteUrl.pathname = `/${locale}/link/${linkPath}`;
+    } else {
+      // Иначе добавляем /link/
+      rewriteUrl.pathname = `/${locale}/link${cleanPathname}`;
+    }
+    
+    const response = NextResponse.rewrite(rewriteUrl);
+    
+    // Устанавливаем cookies
+    setLocaleCookie(response, locale);
+    if (encodedTracking) {
+      setTrackingCookie(response, encodedTracking);
+    }
+    return response;
   }
 
-  // Если путь уже содержит локаль
+  // 2. Если путь уже содержит локаль (например, /ru/link/{nanoId})
   if (LOCALE_PREFIX_PATTERN.test(pathname)) {
     return handleLocaleRoute(req, pathname, encodedTracking);
   }
 
-  // Путь не содержит локаль - делаем редирект
+  // 3. Путь не содержит локаль - определяем локаль и редиректим на /{locale}/...
   return handleRedirectWithoutLocale(req, pathname, encodedTracking);
 }
 
