@@ -166,8 +166,46 @@ const AppointmentView = ({ appointmentId, locale }: AppointmentViewProps) => {
           paddingRight: 'max(env(safe-area-inset-right), 1rem)',
         }}
       >
+        <div className="absolute inset-0 -z-10 opacity-80" style={{ background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 55%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.25), transparent 55%)" }} />
+        <div className="absolute inset-0 -z-20 bg-[url('/images/featureBG.svg')] bg-cover bg-center opacity-10" />
+
         <div className="relative w-full min-w-[280px] max-w-[620px] rounded-[36px] border border-white/40 bg-white/80 p-6 text-slate-900 shadow-[0_55px_120px_rgba(49,45,105,0.35)] backdrop-blur-2xl sm:p-10">
-          <div className="text-center text-slate-600">{t("loading.submit")}</div>
+          {/* Header skeleton */}
+          <header className="flex flex-col gap-5">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 flex-shrink-0 animate-pulse rounded-[20%] bg-slate-200 sm:h-10 sm:w-10" />
+              <div className="flex-1 space-y-2">
+                <div className="h-6 w-3/4 animate-pulse rounded bg-slate-200 sm:h-5" />
+              </div>
+            </div>
+          </header>
+
+          <div className="mt-6 space-y-5">
+            {/* Title and subtitle skeleton */}
+            <div className="space-y-2">
+              <div className="h-7 w-2/3 animate-pulse rounded bg-slate-200 sm:h-6" />
+              <div className="h-4 w-full animate-pulse rounded bg-slate-200 sm:h-3" />
+            </div>
+
+            {/* Appointment info card skeleton */}
+            <div className="rounded-3xl border border-slate-100 bg-white p-4">
+              <div className="space-y-3">
+                <div className="h-6 w-1/2 animate-pulse rounded bg-slate-200 sm:h-5" />
+                <div className="h-4 w-1/3 animate-pulse rounded bg-slate-200" />
+                <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200" />
+                <div className="h-5 w-1/4 animate-pulse rounded bg-slate-200 sm:h-4" />
+              </div>
+            </div>
+
+            {/* Button skeleton */}
+            <div className="h-14 w-full animate-pulse rounded-full bg-slate-200 sm:min-h-[52px]" />
+
+            {/* Wallet badges skeleton */}
+            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+              <div className="h-12 w-32 animate-pulse rounded-lg bg-slate-200" />
+              <div className="h-12 w-32 animate-pulse rounded-lg bg-slate-200" />
+            </div>
+          </div>
         </div>
       </div>
     );
