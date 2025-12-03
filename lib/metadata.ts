@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 // Константы метаданных
-const SITE_URL = "https://maetry.com";
+export const SITE_URL = "https://maetry.com";
 const LOGO_URL = "https://maetry.com/_next/static/media/logo.30e07f0a.svg";
+export const LOGO_PNG_URL = `${SITE_URL}/logo.png`;
 const KEYWORDS = "maetry,beauty salon,booking,management,appointment,crm,automation,salon,service,nails,lashes,barber";
 
 type Locale = "ru" | "en" | "es";

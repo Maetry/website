@@ -42,6 +42,7 @@ const config: Config = {
         'slide-in-left': 'slideInLeft 0.3s ease-out',
         'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'gradient-slow': 'gradient 16s ease infinite',
+        'pulse-button': 'pulseButton 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         slideDown: {
@@ -56,6 +57,10 @@ const config: Config = {
           '0%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
           '100%': { backgroundPosition: '0% 50%' },
+        },
+        pulseButton: {
+          '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(59, 130, 246, 0.7)' },
+          '50%': { transform: 'scale(1.02)', boxShadow: '0 0 0 8px rgba(59, 130, 246, 0)' },
         },
       },
     }
