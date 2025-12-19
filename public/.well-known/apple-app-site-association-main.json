@@ -6,7 +6,8 @@
         "appID": "HWPQBM32W8.com.maetry",
         "paths": [
           "/appointment/*",
-          "/*/appointment/*"
+          "/*/appointment/*",
+          "/mirror"
         ]
       }
     ]
