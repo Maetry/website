@@ -7,8 +7,10 @@
         "paths": [
           "/appointment/*",
           "/*/appointment/*",
-          "/*/mirror/",
-          "/mirror/"
+          "/*/mirror/*",
+          "/mirror/*",
+          "/*/mirror",
+          "/mirror"
         ]
       }
     ]
