@@ -41,6 +41,13 @@ export const MobileNav = () => {
             fallback="features"
           />
         </Link>
+        <Link href={"#pricing"} onClick={handleAnchorClick}>
+          <LocalizedText
+            translationKey="navigation.pricing"
+            id={2}
+            fallback="pricing"
+          />
+        </Link>
 
         <div className="flex gap-x-4 mt-[10%]">
           <Link href="mailto:support@maetry.com">

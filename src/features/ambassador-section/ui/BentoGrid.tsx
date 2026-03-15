@@ -1,7 +1,4 @@
-"use client";
-import React from "react";
-
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 import BentoBox from "./BentoBox";
 
@@ -15,8 +12,13 @@ interface Feature {
   color?: "blue" | "green" | "purple" | "orange" | "red" | "indigo";
 }
 
-const BentoGrid: React.FC = () => {
-  const t = useTranslations("ambassador");
+const BentoGrid = async () => {
+  const t = await getTranslations("ambassador");
+  const labels = {
+    problem: t("labels.problem"),
+    solution: t("labels.solution"),
+    benefit: t("labels.benefit"),
+  };
 
   const features: Feature[] = [
     {
@@ -108,14 +110,13 @@ const BentoGrid: React.FC = () => {
         {/* Grid Title */}
         <div className="text-center mb-12">
           <h2 className="text-[2rem] md:text-[3rem] xl:text-[4rem] font-bold mb-6 text-gray-900 dark:text-white">
-            Возможности{" "}
+            {t("gridTitle")}{" "}
             <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               Maetry
             </span>
           </h2>
           <p className="text-[1.2rem] md:text-[1.5rem] text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
-            Каждый блок показывает проблему, решение и ценность для салона
-            красоты
+            {t("gridDescription")}
           </p>
         </div>
 
@@ -129,6 +130,7 @@ const BentoGrid: React.FC = () => {
               problems={feature.problems}
               solutions={feature.solutions}
               benefits={feature.benefits}
+              labels={labels}
               size={feature.size}
               color={feature.color}
             />
@@ -138,7 +140,7 @@ const BentoGrid: React.FC = () => {
         {/* Grid Info */}
         <div className="text-center mt-12">
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Интерактивная сетка возможностей • Наведите курсор для анимации
+            {t("gridHint")}
           </p>
         </div>
       </div>

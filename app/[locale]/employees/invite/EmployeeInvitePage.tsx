@@ -5,11 +5,16 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { useTranslations } from "next-intl";
+
 import logo from "@/public/images/logo.svg";
 import phones from "@/public/images/phones_customer.png";
 import { TextFabric, ThemeSwitcher, InviteButton, AppleButton } from "@/shared/ui";
 
 const EmployeeInvitePage = () => {
+  const t = useTranslations("invite");
+  const commonT = useTranslations("common");
+
   return (
     <div>
       <header
@@ -28,14 +33,8 @@ const EmployeeInvitePage = () => {
       <main className="flex h-[100vh] flex-col items-center px-[7%] pt-[7vh] xl:flex-row">
         <div className="flex h-full flex-col justify-between gap-y-[6vh] py-[13%] xl:w-1/2">
           <div className="flex w-full flex-col gap-2 text-center xl:text-start">
-            <TextFabric
-              text="you have been invited to join the salon as a master"
-              id={1}
-            />
-            <TextFabric
-              text="*manage online recording, expand your client base"
-              id={2}
-            />
+            <TextFabric text={t("heading.employeeInvite")} variant="display" />
+            <TextFabric text={t("subheading.employeeInvite")} variant="body" />
           </div>
 
           <div className="relative flex w-[80%] items-center justify-center xl:hidden">
@@ -49,13 +48,10 @@ const EmployeeInvitePage = () => {
           </div>
 
           <div className="flex flex-col items-center gap-2 pb-[5vh] text-center xl:items-start xl:text-start xl:pb-0">
-            <TextFabric
-              text="To continue, download the application and follow the link again"
-              id={2}
-            />
+            <TextFabric text={t("downloadDescription")} variant="body" />
 
             <div className="mt-[5vh] xl:mt-[1vh]">
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div>{commonT("loading")}</div>}>
                 <InviteButton />
               </Suspense>
             </div>
@@ -83,4 +79,3 @@ const EmployeeInvitePage = () => {
 };
 
 export default EmployeeInvitePage;
-

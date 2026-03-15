@@ -15,7 +15,7 @@ const NotFound = () => {
           href={"/"}
           className="border w-full xl:w-[20vw] py-[2.5vh] rounded-[21px] flex items-center justify-center hover:scale-105 transition-all"
         >
-          <TextFabric id={2} text={"go to the main page"}></TextFabric>
+          <TextFabric variant="body" text={"go to the main page"}></TextFabric>
         </Link>
       </div>
     </div>

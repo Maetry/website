@@ -8,15 +8,38 @@ import { getMessages } from "next-intl/server";
 import { FirebaseTracker } from "@/lib/firebase";
 import { PlatformProvider } from "@/lib/userAgent/PlatformProvider";
 import { StoreProvider } from "@/shared/store";
+import { ThemeBootstrap } from "@/shared/ui/theme-switcher";
 
 import { locales, isSupportedLocale, type Locale } from '../../i18n';
 
-export const metadata: Metadata = {
-  title: "Maetry",
-  description: "Automate your business processes",
-  icons: {
-    icon: "/images/favicon.png",
+const localeMetadata: Record<Locale, { description: string }> = {
+  en: {
+    description: "Salon management software and beauty booking marketplace",
   },
+  ru: {
+    description: "Система управления салоном и маркетплейс для записи на бьюти-услуги",
+  },
+  es: {
+    description: "Software de gestión para salones y marketplace de reservas de belleza",
+  },
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const metadata =
+    isSupportedLocale(locale) ? localeMetadata[locale] : localeMetadata.en;
+
+  return {
+    title: "Maetry",
+    description: metadata.description,
+    icons: {
+      icon: "/images/favicon.png",
+    },
+  };
 }
 
 export function generateStaticParams(): { locale: Locale }[] {
@@ -44,6 +67,7 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <StoreProvider>
+        <ThemeBootstrap />
         <PlatformProvider userAgent={userAgent}>
           <FirebaseTracker />
           {children}

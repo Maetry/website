@@ -1,87 +1,190 @@
-"use client"
+import { getLocale, getTranslations } from "next-intl/server";
 
-import React from "react";
+import { BentoGrid } from "@/features/ambassador-section";
+import { Footer } from "@/features/footer";
+import { Header } from "@/features/header";
 
-import { useTranslations } from 'next-intl';
-
-import { BentoGrid } from "@/features/ambassador-section"
-import { Footer } from "@/features/footer"
-import { Header, MobileHeader } from "@/features/header"
-// Стили подключены глобально в globals.css
-
-const AmbassadorPage = () => {
-  const t = useTranslations('ambassador');
+const AmbassadorPage = async () => {
+  const locale = await getLocale();
+  const t = await getTranslations("ambassador");
+  const emailSubject = encodeURIComponent(t("email.subject"));
+  const emailBody = encodeURIComponent(t("email.body"));
+  const mailtoHref = `mailto:info@maetry.com?subject=${emailSubject}&body=${emailBody}`;
+  const headerNav = [
+    { href: "#offer", label: t("offerLabel") },
+    { href: "#partner-proof", label: t("gridTitle") },
+    { href: "#apply", label: t("startEarning") },
+  ];
 
   return (
     <>
-      <Header />
-      <MobileHeader />
-      <main className="w-full pt-[10vh] flex flex-col items-center bg-white dark:bg-dark-bg gap-y-[9vh] xl:gap-y-[15vh]">
-        
-        {/* Hero Section */}
-        <section className="w-full h-[75vh] lg:h-[90vh] items-center justify-center flex px-[3.5%] pb-[5vh]">
-          <div className="w-full moving-background relative h-full rounded-[21px] shadow-lg">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-blue-600/20 rounded-[21px]"></div>
-            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center text-center px-[5%]">
-              <h1 className="text-[2.5rem] md:text-[4rem] xl:text-[5rem] font-bold mb-6 text-gray-900 dark:text-white">
-                {t('title')}
+      <Header
+        nav={headerNav}
+        primaryAction={{ href: mailtoHref, label: t("becomePartner"), tone: "primary" }}
+        secondaryAction={{ href: `/${locale}`, label: "Maetry", tone: "secondary" }}
+        logoHref={`/${locale}`}
+      />
+      <main className="w-full bg-white pt-4 text-[#13131A] dark:bg-dark-bg dark:text-white">
+        <section id="offer" className="mx-auto grid max-w-7xl gap-8 px-[3.5%] pb-12 pt-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:pb-16">
+          <div className="relative overflow-hidden rounded-[32px] border border-[#13131A]/8 bg-[linear-gradient(135deg,_rgba(255,248,243,0.98),_rgba(226,239,255,0.92))] p-8 shadow-[0_30px_90px_rgba(19,19,26,0.08)] dark:border-white/10 dark:bg-[linear-gradient(135deg,_rgba(30,33,48,0.98),_rgba(19,19,26,0.94))] lg:p-12">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.52),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(83,158,255,0.22),_transparent_36%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.08),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(83,158,255,0.24),_transparent_36%)]" />
+            <div className="relative">
+              <div className="inline-flex rounded-full border border-[#13131A]/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#13131A]/60 dark:border-white/10 dark:bg-white/10 dark:text-white/60">
+                {t("eyebrow")}
+              </div>
+              <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-[0.95] tracking-[-0.04em] sm:text-5xl lg:text-[4.5rem]">
+                {t("title")}
               </h1>
-              <p className="text-[1.2rem] md:text-[1.5rem] xl:text-[1.8rem] mb-8 max-w-4xl text-gray-900 dark:text-white">
-                {t('subtitle')}
+              <p className="mt-6 max-w-3xl text-base leading-7 text-[#13131A]/72 dark:text-white/72 sm:text-lg">
+                {t("subtitle")}
               </p>
-                             <div className="flex justify-center">
-                 <button 
-                   onClick={() => window.open('https://trackdesk.com', '_blank')}
-                   className="px-10 py-4 bg-white text-gray-900 border-2 border-white rounded-[12px] font-semibold text-lg transition-all duration-300 hover:bg-gray-50 hover:shadow-lg transform hover:scale-105"
-                 >
-                   {t('becomePartner')}
-                 </button>
-               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* About Maetry Section */}
-        <section className="w-full px-[3.5%]">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-[2rem] md:text-[3rem] xl:text-[4rem] font-bold mb-6">
-                <span className="gradient__text">Maetry</span> — {t('aboutTitle')}
-              </h2>
-              <p className="text-[1.2rem] md:text-[1.5rem] text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
-                {t('aboutDescription')}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href={mailtoHref}
+                  className="inline-flex items-center justify-center rounded-full bg-[#13131A] px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(19,19,26,0.18)] transition-transform duration-200 hover:-translate-y-0.5 dark:bg-white dark:text-[#13131A]"
+                >
+                  {t("becomePartner")}
+                </a>
+                <a
+                  href="#partner-proof"
+                  className="inline-flex items-center justify-center rounded-full border border-[#13131A]/10 bg-white/80 px-6 py-3 text-sm font-semibold text-[#13131A] transition-colors hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                >
+                  {t("gridHint")}
+                </a>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-[#13131A]/56 dark:text-white/56">
+                {t("ctaNote")}
               </p>
             </div>
           </div>
+
+          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-1">
+            <article className="rounded-[28px] border border-[#13131A]/8 bg-white p-6 shadow-[0_24px_70px_rgba(19,19,26,0.06)] dark:border-white/10 dark:bg-white/5">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#13131A]/45 dark:text-white/45">
+                {t("offerLabel")}
+              </p>
+              <p className="mt-3 text-xl font-semibold tracking-[-0.03em]">
+                {t("offerValue")}
+              </p>
+            </article>
+            <article className="rounded-[28px] border border-[#13131A]/8 bg-white p-6 shadow-[0_24px_70px_rgba(19,19,26,0.06)] dark:border-white/10 dark:bg-white/5">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#13131A]/45 dark:text-white/45">
+                {t("benefit1Label")}
+              </p>
+              <p className="mt-3 text-base leading-7 text-[#13131A]/72 dark:text-white/72">
+                {t("benefit1Value")}
+              </p>
+            </article>
+            <article className="rounded-[28px] border border-[#13131A]/8 bg-white p-6 shadow-[0_24px_70px_rgba(19,19,26,0.06)] dark:border-white/10 dark:bg-white/5">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#13131A]/45 dark:text-white/45">
+                {t("benefit2Label")}
+              </p>
+              <p className="mt-3 text-base leading-7 text-[#13131A]/72 dark:text-white/72">
+                {t("benefit2Value")}
+              </p>
+            </article>
+          </div>
         </section>
 
-        {/* Bento Grid Features */}
-        <BentoGrid />
-
-        {/* CTA Section */}
-        <section className="w-full px-[3.5%] py-16">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-[2rem] md:text-[3rem] font-bold mb-6">
-              <span className="gradient__text">{t('readyToPartner')}</span>
-            </h2>
-            <p className="text-[1.2rem] md:text-[1.5rem] text-gray-600 dark:text-gray-300 mb-8">
-              {t('partnerDescription')}
+        <section className="mx-auto grid max-w-7xl gap-5 px-[3.5%] py-8 lg:grid-cols-[0.9fr_1.1fr]">
+          <article className="rounded-[32px] border border-[#13131A]/8 bg-[#13131A] p-8 text-white shadow-[0_30px_80px_rgba(19,19,26,0.14)] dark:border-white/10 lg:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/45">
+              {t("aboutTitle")}
             </p>
-                         <div className="flex justify-center">
-               <button 
-                 onClick={() => window.open('https://trackdesk.com', '_blank')}
-                 className="px-10 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-purple-600 dark:border-purple-400 rounded-[12px] font-semibold text-lg transition-all duration-300 hover:bg-purple-50 dark:hover:bg-gray-700 hover:shadow-lg transform hover:scale-105"
-               >
-                 {t('startEarning')}
-               </button>
-             </div>
-          </div>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
+              {t("readyToPartner")}
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-white/72">
+              {t("aboutDescription")}
+            </p>
+            <ul className="mt-6 grid gap-3">
+              <li className="rounded-[22px] border border-white/10 bg-white/8 px-4 py-4 text-sm text-white/72">
+                {t("benefit1Value")}
+              </li>
+              <li className="rounded-[22px] border border-white/10 bg-white/8 px-4 py-4 text-sm text-white/72">
+                {t("benefit2Value")}
+              </li>
+              <li className="rounded-[22px] border border-white/10 bg-white/8 px-4 py-4 text-sm text-white/72">
+                {t("partnerDescription")}
+              </li>
+            </ul>
+          </article>
+
+          <article className="rounded-[32px] border border-[#13131A]/8 bg-[#FFF8F3] p-8 shadow-[0_30px_80px_rgba(19,19,26,0.07)] dark:border-white/10 dark:bg-white/5 lg:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#13131A]/42 dark:text-white/42">
+              {t("gridTitle")}
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
+              Maetry
+            </h2>
+            <p className="mt-4 text-base leading-7 text-[#13131A]/68 dark:text-white/68">
+              {t("gridDescription")}
+            </p>
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              <div className="rounded-[24px] border border-[#13131A]/8 bg-white px-5 py-5 dark:border-white/10 dark:bg-white/5">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#13131A]/45 dark:text-white/45">
+                  01
+                </p>
+                <p className="mt-3 text-sm leading-6 text-[#13131A]/68 dark:text-white/68">
+                  {t("offerValue")}
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-[#13131A]/8 bg-white px-5 py-5 dark:border-white/10 dark:bg-white/5">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#13131A]/45 dark:text-white/45">
+                  02
+                </p>
+                <p className="mt-3 text-sm leading-6 text-[#13131A]/68 dark:text-white/68">
+                  {t("gridHint")}
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-[#13131A]/8 bg-white px-5 py-5 dark:border-white/10 dark:bg-white/5">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#13131A]/45 dark:text-white/45">
+                  03
+                </p>
+                <p className="mt-3 text-sm leading-6 text-[#13131A]/68 dark:text-white/68">
+                  {t("ctaNote")}
+                </p>
+              </div>
+            </div>
+          </article>
         </section>
 
+        <section id="partner-proof" className="py-8">
+          <BentoGrid />
+        </section>
+
+        <section id="apply" className="mx-auto max-w-5xl px-[3.5%] py-14">
+          <div className="rounded-[32px] border border-[#13131A]/8 bg-[linear-gradient(135deg,_rgba(19,19,26,0.98),_rgba(35,56,97,0.96))] px-8 py-10 text-center text-white shadow-[0_30px_80px_rgba(19,19,26,0.16)] lg:px-12 lg:py-12">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/45">
+              {t("startEarning")}
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
+              {t("readyToPartner")}
+            </h2>
+            <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-white/72">
+              {t("partnerDescription")}
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <a
+                href={mailtoHref}
+                className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#13131A] transition-transform duration-200 hover:-translate-y-0.5"
+              >
+                {t("startEarning")}
+              </a>
+              <a
+                href="mailto:support@maetry.com"
+                className="inline-flex items-center justify-center rounded-full border border-white/14 bg-white/8 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/14"
+              >
+                support@maetry.com
+              </a>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-white/56">{t("ctaNote")}</p>
+          </div>
+        </section>
       </main>
       <Footer />
     </>
-  )
-}
+  );
+};
 
-export default AmbassadorPage
+export default AmbassadorPage;

@@ -6,16 +6,13 @@ import first from "@/public/images/1.png";
 import second from "@/public/images/2.png";
 import third from "@/public/images/3.png";
 import fourth from "@/public/images/4.png";
-import { LocalizedText } from "@/shared/ui";
+import { TextVariant } from "@/shared/ui";
 
 interface ReviewDataProps {
   id: number;
-  titleKey: string;
-  titleFallback: string;
-  roleKey: string;
-  roleFallback: string;
-  descriptionKey: string;
-  descriptionFallback: string;
+  title: string;
+  role: string;
+  description: string;
 }
 
 interface PesronImageProps {
@@ -45,12 +42,9 @@ const PersonImage = ({ id }: PesronImageProps) => {
 
 const Review = ({
   id,
-  titleKey,
-  titleFallback,
-  roleKey,
-  roleFallback,
-  descriptionKey,
-  descriptionFallback,
+  title,
+  role,
+  description,
 }: ReviewDataProps) => {
   return (
     <div className="w-full xl:w-1/4 p-6 border flex flex-col gap-y-6 rounded-[21px]">
@@ -60,23 +54,11 @@ const Review = ({
         </div>
 
         <div>
-          <LocalizedText
-            translationKey={titleKey}
-            fallback={titleFallback}
-            id={4}
-          />
-          <LocalizedText
-            translationKey={roleKey}
-            fallback={roleFallback}
-            id={5}
-          />
+          <TextVariant variant="title" text={title} />
+          <TextVariant variant="accent" text={role} />
         </div>
       </div>
-      <LocalizedText
-        translationKey={descriptionKey}
-        fallback={descriptionFallback}
-        id={2}
-      />
+      <TextVariant variant="body" text={description} />
     </div>
   );
 };

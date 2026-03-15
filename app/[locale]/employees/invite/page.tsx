@@ -1,14 +1,24 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import EmployeeInvitePage from "./EmployeeInvitePage";
 
-export const metadata: Metadata = {
-  title: "Maetry — Invite (Employee)",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "inviteMeta" });
+
+  return {
+    title: t("employeeTitle"),
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
+}
 
 const EmployeeInvite = () => {
   return <EmployeeInvitePage />;

@@ -538,6 +538,7 @@ const BookingScreen = ({ salonId, locale, trackingId: trackingIdProp }: BookingS
                 fill
                 className="rounded-[20%] object-cover"
                 sizes="48px"
+                unoptimized={!salonIcon.startsWith("/")}
                 onError={() => setSalonIcon(null)}
               />
             </div>
@@ -996,4 +997,3 @@ const BookingScreen = ({ salonId, locale, trackingId: trackingIdProp }: BookingS
 };
 
 export default BookingScreen;
-

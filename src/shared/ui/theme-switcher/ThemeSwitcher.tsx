@@ -1,65 +1,55 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { setTheme } from "@/entities/theme";
 import { useAppDispatch } from "@/lib/hooks";
 
+import {
+  applyResolvedTheme,
+  getStoredThemePreference,
+  resolveThemePreference,
+  type ThemePreference,
+  persistThemePreference,
+} from "./theme";
+
 const ThemeSwitcher: React.FC = () => {
   const dispatch = useAppDispatch();
-  const [, setSystemTheme] = useState<"light" | "dark">("light");
-  const [currentTheme, setCurrentTheme] = useState<"system" | "light" | "dark">(
-    "system",
-  );
-  const mediaQueryRef = useRef<MediaQueryList | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<ThemePreference>("system");
 
   const applyDocumentTheme = useCallback(
-    (mode: "light" | "dark") => {
-      const isDark = mode === "dark";
-      dispatch(setTheme(isDark));
-      if (isDark) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
+    (theme: ThemePreference) => {
+      if (typeof window === "undefined") {
+        return;
       }
+
+      const resolved = resolveThemePreference(
+        theme,
+        window.matchMedia("(prefers-color-scheme: dark)").matches,
+      );
+
+      applyResolvedTheme(resolved);
+      dispatch(setTheme(resolved === "dark"));
     },
     [dispatch],
   );
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    mediaQueryRef.current = mediaQuery;
-
-    const savedTheme = localStorage.getItem("Theme") as "light" | "dark" | null;
-    if (savedTheme) {
-      setCurrentTheme(savedTheme);
-      applyDocumentTheme(savedTheme);
-      return;
-    }
-
-    setCurrentTheme("system");
-    const systemMode = mediaQuery.matches ? "dark" : "light";
-    setSystemTheme(systemMode);
-    applyDocumentTheme(systemMode);
+    const preference = getStoredThemePreference();
+    setCurrentTheme(preference);
+    applyDocumentTheme(preference);
   }, [applyDocumentTheme]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (currentTheme !== "system") return;
+    if (typeof window === "undefined") {
+      return;
+    }
 
-    const mediaQuery = mediaQueryRef.current;
-    if (!mediaQuery) return;
-
-    const handleSystemThemeChange = (event: MediaQueryListEvent) => {
-      const mode = event.matches ? "dark" : "light";
-      setSystemTheme(mode);
-      applyDocumentTheme(mode);
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemThemeChange = () => {
+      if (currentTheme === "system") {
+        applyDocumentTheme("system");
+      }
     };
-
-    const initialMode = mediaQuery.matches ? "dark" : "light";
-    setSystemTheme(initialMode);
-    applyDocumentTheme(initialMode);
 
     mediaQuery.addEventListener("change", handleSystemThemeChange);
 
@@ -67,26 +57,10 @@ const ThemeSwitcher: React.FC = () => {
       mediaQuery.removeEventListener("change", handleSystemThemeChange);
   }, [applyDocumentTheme, currentTheme]);
 
-  const handleThemeChange = (theme: "system" | "light" | "dark") => {
-    if (typeof window === "undefined") return;
-
+  const handleThemeChange = (theme: ThemePreference) => {
     setCurrentTheme(theme);
-
-    if (theme === "system") {
-      localStorage.removeItem("Theme");
-      const mediaQuery =
-        mediaQueryRef.current ??
-        window.matchMedia("(prefers-color-scheme: dark)");
-      mediaQueryRef.current = mediaQuery;
-      const prefersDark = mediaQuery.matches;
-      const systemMode = prefersDark ? "dark" : "light";
-      setSystemTheme(systemMode);
-      applyDocumentTheme(systemMode);
-    } else {
-      localStorage.setItem("Theme", theme);
-      setSystemTheme(theme === "dark" ? "dark" : "light");
-      applyDocumentTheme(theme);
-    }
+    persistThemePreference(theme);
+    applyDocumentTheme(theme);
   };
 
   return (

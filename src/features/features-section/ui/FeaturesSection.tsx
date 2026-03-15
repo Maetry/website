@@ -1,45 +1,36 @@
-import React from "react";
+import { getTranslations } from "next-intl/server";
 
 import { Feature } from "@/features/feature-card";
-import { LocalizedText } from "@/shared/ui";
+import { TextVariant } from "@/shared/ui";
 
-const FeaturesSection = () => {
+const FeaturesSection = async () => {
+  const t = await getTranslations("features");
+
   return (
     <section
       id={"features"}
       className="w-[93%] px-[3.5%] flex justify-center flex flex-col gap-y-[5vh] xl:gap-y-[8vh] scroll-mt-[100px]"
     >
       <div className="flex flex-col w-full">
-        <LocalizedText
-          translationKey="features.subtitle"
-          fallback="maetry features"
-          id={3}
-        />
-        <LocalizedText
-          translationKey="features.title"
-          fallback="we adapt to any size business"
-          id={1}
-        />
+        <TextVariant variant="eyebrow" text={t("subtitle")} />
+        <TextVariant variant="display" text={t("title")} />
       </div>
 
       <div className="flex xl:flex-row flex-col gap-10 xl:gap-5 w-full">
         <Feature
-          titleKey="features.management.title"
-          titleFallback="management schedule"
-          descriptionKey="features.management.description"
-          descriptionFallback="Add new employees and make flexible work schedules without overlap"
+          variant="management"
+          title={t("management.title")}
+          description={t("management.description")}
         />
         <Feature
-          titleKey="features.notifications.title"
-          titleFallback="notices of record"
-          descriptionKey="features.notifications.description"
-          descriptionFallback="Automated appointment reminders to customers will help retain contact and increase profitability"
+          variant="notifications"
+          title={t("notifications.title")}
+          description={t("notifications.description")}
         />
         <Feature
-          titleKey="features.onlineBooking.title"
-          titleFallback="online appointment for clients"
-          descriptionKey="features.onlineBooking.description"
-          descriptionFallback="recording without a call will allow you to process more requests and not waste time on confirming visits"
+          variant="onlineBooking"
+          title={t("onlineBooking.title")}
+          description={t("onlineBooking.description")}
         />
       </div>
     </section>

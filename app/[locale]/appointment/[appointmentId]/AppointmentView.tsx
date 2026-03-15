@@ -263,6 +263,7 @@ const AppointmentView = ({ appointmentId, locale }: AppointmentViewProps) => {
                   fill
                   className="rounded-[20%] object-cover"
                   sizes="48px"
+                  unoptimized={!salonIcon.startsWith("/")}
                   onError={() => setSalonIcon(null)}
                 />
               </div>

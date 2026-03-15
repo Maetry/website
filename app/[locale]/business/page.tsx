@@ -1,15 +1,11 @@
-import React from "react";
-
 import { headers } from "next/headers";
-import Script from 'next/script';
+import Script from "next/script";
 
 import { HomeExperience } from "@/features/home-experience";
 import {
   buildExperienceSchemas,
   generateExperienceMetadata,
-  getExperienceFromHost,
 } from "@/lib/home-experience";
-
 
 export async function generateMetadata({
   params,
@@ -18,23 +14,22 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const host = (await headers()).get("host");
-  return generateExperienceMetadata(locale, host);
+  return generateExperienceMetadata(locale, host, "business");
 }
 
-export default async function LandingPage({
+export default async function BusinessLandingPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
   const host = (await headers()).get("host");
-  const experience = getExperienceFromHost(host);
-  const schemas = buildExperienceSchemas(locale, experience);
+  const schemas = buildExperienceSchemas(locale, "business");
 
   return (
     <>
       <Script
-        id="maetry-site-schema"
+        id="maetry-business-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(schemas),
@@ -43,10 +38,10 @@ export default async function LandingPage({
 
       <HomeExperience
         locale={locale}
-        experience={experience}
+        experience="business"
         host={host}
-        routeVariant={experience === "business" ? "business-host" : "home"}
+        routeVariant="business-path"
       />
     </>
-  )
+  );
 }

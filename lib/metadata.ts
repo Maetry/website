@@ -15,16 +15,16 @@ interface MetadataConfig {
 
 const metadataConfig: Record<Locale, MetadataConfig> = {
   ru: {
-    title: "Maetry - Info Page",
-    description: "Автоматизируйте бизнес-процессы",
+    title: "Maetry",
+    description: "Система управления салоном и маркетплейс для записи на бьюти-услуги",
   },
   en: {
-    title: "Maetry - Info Page",
-    description: "Automate your business processes",
+    title: "Maetry",
+    description: "Salon management software and beauty booking marketplace",
   },
   es: {
-    title: "Maetry - Info Page",
-    description: "Automatiza tus procesos de negocio",
+    title: "Maetry",
+    description: "Software de gestión para salones y marketplace de reservas de belleza",
   },
 };
 

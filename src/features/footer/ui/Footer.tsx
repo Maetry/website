@@ -1,12 +1,15 @@
-import React from "react";
-
 import Link from "next/link";
 
-import { LocalizedText } from "@/shared/ui";
+import { getTranslations } from "next-intl/server";
+
+import { TextVariant } from "@/shared/ui";
 import LanguageSwitcher from "@/shared/ui/locale/LanguageSwitcher";
 import ThemeSwitcher from "@/shared/ui/theme-switcher/ThemeSwitcher";
 
-const Footer = () => {
+const Footer = async () => {
+  const footerT = await getTranslations("footer");
+  const navT = await getTranslations("navigation");
+
   return (
     <footer className="w-full bg-white dark:bg-dark-bg">
       <div className="max-w-7xl mx-auto px-6 py-16">
@@ -15,13 +18,7 @@ const Footer = () => {
           {/* Product */}
           <div className="col-span-1">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
-              <span className="font-bold">
-                <LocalizedText
-                  translationKey="footer.product"
-                  id={2}
-                  fallback="Product"
-                />
-              </span>
+              {footerT("product")}
             </h3>
             <ul className="space-y-3">
               <li>
@@ -29,11 +26,7 @@ const Footer = () => {
                   href="#features"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedText
-                    translationKey="navigation.features"
-                    id={2}
-                    fallback="Features"
-                  />
+                  <TextVariant variant="body" text={navT("features")} />
                 </Link>
               </li>
               <li>
@@ -41,11 +34,7 @@ const Footer = () => {
                   href="#about"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedText
-                    translationKey="navigation.about"
-                    id={2}
-                    fallback="About"
-                  />
+                  <TextVariant variant="body" text={navT("about")} />
                 </Link>
               </li>
               <li>
@@ -53,11 +42,7 @@ const Footer = () => {
                   href="#reviews"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedText
-                    translationKey="navigation.reviews"
-                    id={2}
-                    fallback="Reviews"
-                  />
+                  <TextVariant variant="body" text={navT("reviews")} />
                 </Link>
               </li>
             </ul>
@@ -66,11 +51,7 @@ const Footer = () => {
           {/* Company */}
           <div className="col-span-1">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
-              <LocalizedText
-                translationKey="footer.company"
-                id={2}
-                fallback="Company"
-              />
+              {footerT("company")}
             </h3>
             <ul className="space-y-3">
               <li>
@@ -80,11 +61,7 @@ const Footer = () => {
                   rel="noopener noreferrer"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedText
-                    translationKey="footer.careers"
-                    id={2}
-                    fallback="Careers"
-                  />
+                  <TextVariant variant="body" text={footerT("careers")} />
                 </Link>
               </li>
               <li>
@@ -92,11 +69,7 @@ const Footer = () => {
                   href="/ambassadors"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedText
-                    translationKey="footer.partnershipProgram"
-                    id={2}
-                    fallback="Partnership Program"
-                  />
+                  <TextVariant variant="body" text={footerT("partnershipProgram")} />
                 </Link>
               </li>
             </ul>
@@ -105,11 +78,7 @@ const Footer = () => {
           {/* Legal */}
           <div className="col-span-1">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
-              <LocalizedText
-                translationKey="footer.legal"
-                id={2}
-                fallback="Legal"
-              />
+              {footerT("legal")}
             </h3>
             <ul className="space-y-3">
               <li>
@@ -118,11 +87,7 @@ const Footer = () => {
                   target="_blank"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedText
-                    translationKey="footer.privacyPolicy"
-                    id={2}
-                    fallback="Privacy Policy"
-                  />
+                  <TextVariant variant="body" text={footerT("privacyPolicy")} />
                 </Link>
               </li>
               <li>
@@ -131,11 +96,7 @@ const Footer = () => {
                   target="_blank"
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <LocalizedText
-                    translationKey="footer.licenseAgreement"
-                    id={2}
-                    fallback="License Agreement"
-                  />
+                  <TextVariant variant="body" text={footerT("licenseAgreement")} />
                 </Link>
               </li>
             </ul>
@@ -144,11 +105,7 @@ const Footer = () => {
           {/* Connect */}
           <div className="col-span-1">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
-              <LocalizedText
-                translationKey="footer.connect"
-                id={2}
-                fallback="Connect"
-              />
+              {footerT("connect")}
             </h3>
             <ul className="space-y-3">
               <li>
@@ -187,11 +144,7 @@ const Footer = () => {
         <div className="pt-8 border-t border-gray-200 dark:border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-              <LocalizedText
-                translationKey="footer.allRightsReserved"
-                id={2}
-                fallback="© 2025 Maetry LLC. All rights reserved."
-              />
+              <TextVariant variant="body" text={footerT("allRightsReserved")} />
             </div>
 
             <div className="flex items-center gap-4">

@@ -1,28 +1,30 @@
-import React from "react";
-
 import Image from "next/image";
+
+import { getTranslations } from "next-intl/server";
 
 import { AboutSection } from "@/features/about-section";
 import { FAQSection } from "@/features/faq-section";
 import { FeaturesSection } from "@/features/features-section";
 import { Footer } from "@/features/footer";
-import { Header, MobileHeader } from "@/features/header";
+import { Header } from "@/features/header";
 import { HeroSection } from "@/features/hero-section";
+import { PricingSection } from "@/features/pricing-section";
 import { ReviewsSection } from "@/features/reviews-section";
 import prefooter from "@/public/images/prefooterImage.svg";
 import {
   AppleButton,
   BgImage,
   ImageTextFabric,
-  LocalizedText,
+  TextVariant,
 } from "@/shared/ui";
 
-const LandingLayout = () => {
+const LandingLayout = async () => {
+  const t = await getTranslations("prefooter");
+
   return (
     <>
       <Header />
-      <MobileHeader />
-      <main className="w-full pt-[10vh] flex flex-col items-center bg-white dark:bg-dark-bg gap-y-[9vh] xl:gap-y-[15vh]">
+      <main className="w-full pt-4 flex flex-col items-center bg-white dark:bg-dark-bg gap-y-[9vh] xl:gap-y-[15vh]">
         <HeroSection />
 
         <AboutSection />
@@ -44,29 +46,19 @@ const LandingLayout = () => {
 
         <FeaturesSection />
 
+        <PricingSection />
+
         <FAQSection />
 
         <section id={"prefooter"} className="w-full px-[3.5%] h-[70vh] ">
           <div className="w-full h-full bg-dark-bg dark:bg-white rounded-[21px] flex items-center justify-center shadow-xl relative">
             <div className="z-[1000] flex text-invert items-center text-center flex-col w-[80%] xl:w-[40%] gap-y-3 xl:gap-y-0 dark:text-black text-[#fdfdfd]">
-              <LocalizedText
-                id={7}
-                translationKey="prefooter.title"
-                fallback="free trial"
-              />
+              <TextVariant variant="eyebrowInverse" text={t("title")} />
               <div className="mt-[1%]">
-                <LocalizedText
-                  id={1}
-                  translationKey="prefooter.subtitle"
-                  fallback="start growing your business today"
-                />
+                <TextVariant variant="display" text={t("subtitle")} />
               </div>
               <div className="mt-[5%] mb-[5%]">
-                <LocalizedText
-                  id={2}
-                  translationKey="prefooter.description"
-                  fallback="fast implementation - we will help you transfer the necessary data and customize the service for your tasks"
-                />
+                <TextVariant variant="body" text={t("description")} />
               </div>
               <AppleButton></AppleButton>
             </div>
@@ -75,6 +67,7 @@ const LandingLayout = () => {
               src={prefooter}
               alt={""}
               fill
+              sizes="100vw"
               style={{ objectFit: "cover" }}
               className="rounded-[20px] dark:hidden"
             ></Image>

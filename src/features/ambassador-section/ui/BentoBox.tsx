@@ -1,29 +1,28 @@
-"use client";
-import React from "react";
-
-import { useTranslations } from "next-intl";
-
 interface BentoBoxProps {
   icon: string;
   title: string;
   problems: string[];
   solutions: string[];
   benefits: string[];
+  labels: {
+    problem: string;
+    solution: string;
+    benefit: string;
+  };
   size?: "small" | "medium" | "large" | "wide";
   color?: "blue" | "green" | "purple" | "orange" | "red" | "indigo";
 }
 
-const BentoBox: React.FC<BentoBoxProps> = ({
+const BentoBox = ({
   icon,
   title,
   problems,
   solutions,
   benefits,
+  labels,
   size = "medium",
   color = "blue",
-}) => {
-  const t = useTranslations("ambassador.labels");
-
+}: BentoBoxProps) => {
   const sizeClasses = {
     small: "col-span-1 row-span-1",
     medium: "col-span-1 row-span-2",
@@ -85,7 +84,7 @@ const BentoBox: React.FC<BentoBoxProps> = ({
         <div className="space-y-3">
           <div>
             <h4 className="font-semibold text-red-600 dark:text-red-400 mb-2 text-sm">
-              {t("problem")}
+              {labels.problem}
             </h4>
             <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
               {problems[0]}
@@ -98,10 +97,10 @@ const BentoBox: React.FC<BentoBoxProps> = ({
         <div className="space-y-4">
           <div>
             <h4 className="font-semibold text-red-600 dark:text-red-400 mb-2 text-sm">
-              {t("problem")}
+              {labels.problem}
             </h4>
             <ul className="text-sm space-y-1 text-gray-700 dark:text-gray-300">
-              {problems.slice(0, 2).map((problem, index) => (
+              {problems.slice(0, 2).map((problem: string, index: number) => (
                 <li key={index} className="flex items-start">
                   <span className="w-1 h-1 bg-red-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                   <span>{problem}</span>
@@ -111,10 +110,10 @@ const BentoBox: React.FC<BentoBoxProps> = ({
           </div>
           <div>
             <h4 className="font-semibold text-green-600 dark:text-green-400 mb-2 text-sm">
-              {t("solution")}
+              {labels.solution}
             </h4>
             <ul className="text-sm space-y-1 text-gray-700 dark:text-gray-300">
-              {solutions.slice(0, 2).map((solution, index) => (
+              {solutions.slice(0, 2).map((solution: string, index: number) => (
                 <li key={index} className="flex items-start">
                   <span className="w-1 h-1 bg-green-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                   <span>{solution}</span>
@@ -129,10 +128,10 @@ const BentoBox: React.FC<BentoBoxProps> = ({
         <div className="space-y-4">
           <div>
             <h4 className="font-semibold text-red-600 dark:text-red-400 mb-3 text-sm">
-              {t("problem")}
+              {labels.problem}
             </h4>
             <ul className="text-sm space-y-2 text-gray-700 dark:text-gray-300">
-              {problems.map((problem, index) => (
+              {problems.map((problem: string, index: number) => (
                 <li key={index} className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-red-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                   <span>{problem}</span>
@@ -143,10 +142,10 @@ const BentoBox: React.FC<BentoBoxProps> = ({
 
           <div>
             <h4 className="font-semibold text-green-600 dark:text-green-400 mb-3 text-sm">
-              {t("solution")}
+              {labels.solution}
             </h4>
             <ul className="text-sm space-y-2 text-gray-700 dark:text-gray-300">
-              {solutions.map((solution, index) => (
+              {solutions.map((solution: string, index: number) => (
                 <li key={index} className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                   <span>{solution}</span>
@@ -157,10 +156,10 @@ const BentoBox: React.FC<BentoBoxProps> = ({
 
           <div>
             <h4 className="font-semibold text-blue-600 dark:text-blue-400 mb-3 text-sm">
-              {t("benefit")}
+              {labels.benefit}
             </h4>
             <ul className="text-sm space-y-2 text-gray-700 dark:text-gray-300">
-              {benefits.map((benefit, index) => (
+              {benefits.map((benefit: string, index: number) => (
                 <li key={index} className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                   <span>{benefit}</span>

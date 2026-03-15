@@ -9,4 +9,5 @@ export * from "./faq-section";
 export * from "./features-section";
 export * from "./hero-section";
 export * from "./landing-layout";
+export * from "./pricing-section";
 export * from "./reviews-section";

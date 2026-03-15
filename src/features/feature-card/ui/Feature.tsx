@@ -7,22 +7,21 @@ import { useAppSelector } from "@/lib/hooks";
 import notice from "@/public/images/notice.svg";
 import online from "@/public/images/online.svg";
 import schedule from "@/public/images/schedule.svg";
-import { LocalizedText } from "@/shared/ui";
+import { TextVariant } from "@/shared/ui";
 // Стили подключены глобально в globals.css
 
 interface FeatureTextProps {
-  titleKey: string;
-  titleFallback: string;
-  descriptionKey: string;
-  descriptionFallback: string;
+  variant: "management" | "notifications" | "onlineBooking";
+  title: string;
+  description: string;
 }
 interface ImageFetureProps {
-  title: string;
+  variant: "management" | "notifications" | "onlineBooking";
 }
 
-const ImageFeature = ({ title }: ImageFetureProps) => {
-  switch (title) {
-    case "management schedule":
+const ImageFeature = ({ variant }: ImageFetureProps) => {
+  switch (variant) {
+    case "management":
       return (
         <Image
           src={schedule}
@@ -32,7 +31,7 @@ const ImageFeature = ({ title }: ImageFetureProps) => {
           className="w-[10vw] xl:w-[4vw]"
         />
       );
-    case "notices of record":
+    case "notifications":
       return (
         <Image
           src={notice}
@@ -42,7 +41,7 @@ const ImageFeature = ({ title }: ImageFetureProps) => {
           className="w-[10vw] xl:w-[4vw]"
         />
       );
-    case "online appointment for clients":
+    case "onlineBooking":
       return (
         <Image
           src={online}
@@ -55,12 +54,7 @@ const ImageFeature = ({ title }: ImageFetureProps) => {
   }
 };
 
-const Feature = ({
-  titleKey,
-  titleFallback,
-  descriptionKey,
-  descriptionFallback,
-}: FeatureTextProps) => {
+const Feature = ({ variant, title, description }: FeatureTextProps) => {
   const DarkTheme = useAppSelector((state) => state.theme.blackTheme);
 
   return (
@@ -73,19 +67,11 @@ const Feature = ({
         )}
       </div>
       <div className="flex z-[1000] w-full h-full flex-col px-[2em] py-[2em]">
-        <ImageFeature title={titleFallback}></ImageFeature>
+        <ImageFeature variant={variant}></ImageFeature>
 
         <div className="flex w-full flex-col gap-y-4 mt-[10%] xl:mt-[25%]">
-          <LocalizedText
-            translationKey={titleKey}
-            fallback={titleFallback}
-            id={6}
-          />
-          <LocalizedText
-            translationKey={descriptionKey}
-            fallback={descriptionFallback}
-            id={2}
-          />
+          <TextVariant variant="featureTitle" text={title} />
+          <TextVariant variant="body" text={description} />
         </div>
       </div>
     </div>

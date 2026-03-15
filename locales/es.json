@@ -1,10 +1,10 @@
 {
   "common": {
     "title": "Maetry",
-    "description": "Automatiza tus procesos de negocio",
+    "description": "Software de gestión para salones y marketplace de reservas de belleza",
     "loading": "Cargando...",
-    "error": "Ocurrió un error",
-    "success": "Éxito",
+    "error": "Algo salió mal",
+    "success": "Listo",
     "cancel": "Cancelar",
     "save": "Guardar",
     "edit": "Editar",
@@ -12,57 +12,57 @@
     "close": "Cerrar",
     "back": "Atrás",
     "next": "Siguiente",
-    "previous": "Anterior",
+    "previous": "Atrás",
     "submit": "Enviar",
     "confirm": "Confirmar"
   },
   "booking": {
-    "metaTitle": "Maetry — Reserva en línea",
-    "metaDescription": "Agenda una visita al salón con Maetry en pocos pasos",
-    "headline": "Reserva en línea",
-    "subtitle": "Elige un servicio, un profesional y un horario conveniente",
+    "metaTitle": "Maetry — Reserva online",
+    "metaDescription": "Reserva un servicio de belleza con un salón de Maetry en pocos pasos",
+    "headline": "Reserva online",
+    "subtitle": "Elige un servicio, un especialista y el horario que mejor te convenga",
     "steps": {
       "service": "Servicio",
-      "master": "Profesional",
+      "master": "Especialista",
       "time": "Horario",
       "details": "Contacto",
       "success": "Listo"
     },
     "serviceTitle": "Elige un servicio",
-    "serviceHint": "Consulta el catálogo completo del salón sin iniciar sesión.",
+    "serviceHint": "Consulta el menú de servicios del salón sin iniciar sesión.",
     "serviceDuration": "duración",
     "servicePriceFrom": "desde {value}",
     "servicePriceExact": "{value}",
-    "serviceSingleMaster": "El servicio lo realiza {name}.",
-    "masterTitle": "Elige un profesional",
-    "masterHint": "Los profesionales se muestran según disponibilidad.",
-    "masterAuto": "Profesional seleccionado automáticamente",
+    "serviceSingleMaster": "Este servicio lo realiza {name}.",
+    "masterTitle": "Elige un especialista",
+    "masterHint": "Los especialistas se muestran según disponibilidad.",
+    "masterAuto": "Especialista seleccionado automáticamente",
     "timeTitle": "Selecciona fecha y hora",
-    "timeHint": "Los horarios se muestran en la zona horaria del salón.",
+    "timeHint": "Todos los horarios se muestran en la zona horaria del salón.",
     "timeReload": "Actualizar horarios",
     "timeEmptyTitle": "No hay horarios disponibles",
-    "timeEmptyHint": "Prueba con otro día o servicio.",
+    "timeEmptyHint": "Prueba otro día o elige otro servicio.",
     "detailsTitle": "Déjanos tus datos",
-    "detailsHint": "Confirmaremos la reserva por teléfono.",
+    "detailsHint": "El salón usará tu teléfono solo para confirmar la cita.",
     "fieldNameLabel": "Nombre",
-    "fieldNamePlaceholder": "¿Cómo te llamas?",
+    "fieldNamePlaceholder": "¿Cómo debe llamarte el salón?",
     "fieldPhoneLabel": "Teléfono",
     "fieldPhonePlaceholder": "+34 600 123 456",
-    "fieldPhoneHelper": "Usamos tu número solo para confirmar la reserva.",
+    "fieldPhoneHelper": "Tu número se usa solo para confirmar la reserva.",
     "submitLabel": "Confirmar reserva",
     "backLabel": "Atrás",
-    "successTitle": "Reserva creada",
-    "successSubtitle": "Añade la reserva a tu cartera para no perder los detalles ni olvidar nada.",
+    "successTitle": "Reserva confirmada",
+    "successSubtitle": "Añade la cita a tu cartera para tener los detalles siempre a mano.",
     "successCreateAnother": "Crear otra reserva",
     "successClose": "Cerrar",
     "walletApple": "Añadir a Apple Wallet",
     "walletGoogle": "Añadir a Google Wallet",
     "walletShare": {
-      "toastApple": "Abre esta página en iPhone o iPad para añadir a Apple Wallet",
-      "toastGoogle": "Abre esta página en un dispositivo Android para añadir a Google Wallet"
+      "toastApple": "Abre esta página en iPhone o iPad para añadir el pase a Apple Wallet",
+      "toastGoogle": "Abre esta página en un dispositivo Android para añadir el pase a Google Wallet"
     },
     "errors": {
-      "loadProcedures": "No pudimos cargar los servicios. Vuelve a intentarlo.",
+      "loadProcedures": "No pudimos cargar los servicios del salón. Actualiza la página y vuelve a intentarlo.",
       "loadSlots": "No encontramos horarios disponibles para este servicio.",
       "createAppointment": "No pudimos crear la reserva. Inténtalo más tarde.",
       "validationName": "Introduce tu nombre",
@@ -77,375 +77,430 @@
   },
   "navigation": {
     "home": "Inicio",
-    "about": "Acerca de",
-    "features": "Características",
+    "about": "Producto",
+    "features": "Funciones",
     "pricing": "Precios",
     "contact": "Contacto",
     "ambassadors": "Socios",
     "clients": "Clientes",
-    "employees": "Empleados",
-    "reviews": "Reseñas",
+    "employees": "Equipo",
+    "reviews": "Opiniones",
     "menu": "Menú"
   },
   "header": {
-    "freeTrial": "Iniciar Sesión"
+    "freeTrial": "Abrir consola"
   },
   "hero": {
-    "subtitle": "múltiples tareas — un ecosistema",
-    "description": "Crea tu propio ecosistema para la automatización de registros"
+    "subtitle": "un solo ecosistema para la operación del salón y la reserva del cliente",
+    "description": "Maetry ayuda a los salones a gestionar reservas y a los clientes a descubrir y reservar servicios de belleza."
   },
   "about": {
-    "mission": "nuestra misión",
-    "title": "libera tu tiempo de la rutina y tu negocio de los errores",
-    "description": "maetry permite a los emprendedores hacer crecer su negocio desde cualquier parte del mundo a través de una aplicación móvil"
+    "mission": "qué hace Maetry",
+    "title": "Herramientas para la operación del salón y la reserva del cliente dentro de un mismo ecosistema",
+    "description": "Maetry da a los equipos de salón una forma más clara de gestionar reservas, horarios y comunicación con clientes, y a los clientes les ofrece un camino simple desde el descubrimiento hasta la cita."
   },
   "reviews": {
-    "subtitle": "por qué elegirnos",
-    "title": "haz el negocio más fácil",
+    "subtitle": "equipos de salón ya confían en nosotros",
+    "title": "Por qué los negocios de belleza eligen Maetry",
     "julia": {
       "name": "Julia",
       "role": "Propietaria de la cadena PROmanicure",
-      "text": "Maetry me ayuda a planificar cada día en el salón. Entiendo cuántos clientes están registrados y para qué servicios, quién es nuevo y quién es regular. La base de clientes se forma sin mi participación"
+      "text": "Con Maetry veo con claridad las reservas, los clientes recurrentes y la carga diaria. Gestionar el salón es más fácil porque la información por fin está reunida en un solo lugar."
     },
     "nikita": {
       "name": "Nikita",
-      "role": "fundador Lui Philipp",
-      "text": "Conozco muchos salones de belleza que no usan reservas en línea. Necesitamos ver qué errores cometen nuestros competidores y hacerlo mejor. Nuestro flujo principal de clientes viene a través de maetry"
+      "role": "Fundador de Lui Philipp",
+      "text": "La reserva online con Maetry elimina fricción para el cliente y genera demanda sin una coordinación manual constante."
     },
     "sofia": {
       "name": "Sofia",
-      "role": "Gerente del salón de belleza Bonny",
-      "text": "La aplicación se mejora constantemente junto con nuestra red de salones. En maetry, seguimos la analítica y monitoreamos la retroalimentación. Esto nos ayuda a trabajar en la calidad del servicio y mejorar el nivel de servicio"
+      "role": "Manager del salón Bonny",
+      "text": "Seguimos el feedback y el rendimiento diario dentro de un solo flujo, y eso ayuda al equipo a mantener un nivel de servicio alto."
     },
     "irina": {
       "name": "Irina",
-      "role": "Especialista en extensión de pestañas",
-      "text": "Empecé a gastar menos tiempo analizando el rendimiento financiero del salón. Esta opción me permite determinar qué servicios generan más ganancias y cuáles necesitan ser ajustados o mejorados"
+      "role": "Especialista en pestañas",
+      "text": "Dedico menos tiempo a cuadrar números y más a decidir qué servicios reforzar y cómo crecer en ingresos."
     },
     "vitaliy": {
       "name": "Vitaliy",
       "role": "Fundador de Maetry",
-      "text": "Maetry nació de la necesidad de automatizar procesos en mi propio negocio. Ahora ayudamos a otros emprendedores a hacer crecer sus negocios de manera eficiente"
+      "text": "Creamos Maetry para dar a los salones una operación más ordenada y a los clientes una experiencia de reserva más simple."
     }
   },
   "features": {
-    "subtitle": "características de maetry",
-    "title": "nos adaptamos a cualquier tamaño de negocio",
+    "subtitle": "visión general de la plataforma",
+    "title": "Herramientas clave para reservas, coordinación del equipo y comunicación con clientes",
     "management": {
-      "title": "gestión de horarios",
-      "description": "Agrega nuevos empleados y haz horarios de trabajo flexibles sin superposición"
+      "title": "Gestión de horarios",
+      "description": "Configura horarios laborales, evita solapamientos y mantén actualizada la disponibilidad de cada especialista."
     },
     "notifications": {
-      "title": "notificaciones de reserva",
-      "description": "Los recordatorios automáticos de citas a los clientes ayudarán a mantener el contacto y aumentar la rentabilidad"
+      "title": "Recordatorios para clientes",
+      "description": "Reduce ausencias con recordatorios automáticos y una comunicación más consistente."
     },
     "onlineBooking": {
-      "title": "reserva en línea para clientes",
-      "description": "la reserva sin llamada te permitirá procesar más solicitudes y no perder tiempo confirmando visitas"
+      "title": "Reserva online",
+      "description": "Permite que los clientes reserven sin llamar y libera al equipo de confirmaciones manuales."
     },
     "schedulePlanning": {
       "title": "Planificación de horarios",
-      "description": "Organiza tu tiempo y el de tu equipo de manera eficiente"
+      "description": "Organiza la agenda del equipo con una visión clara de disponibilidad y carga de trabajo."
     },
     "analyticsIntegration": {
-      "title": "Análisis e integración",
-      "description": "Obtén insights valiosos sobre tu negocio"
+      "title": "Análisis e integraciones",
+      "description": "Obtén una visión más clara del rendimiento del salón y conecta los procesos clave."
     },
     "clientManagement": {
       "title": "Gestión de clientes",
-      "description": "Mantén un registro completo de tus clientes"
+      "description": "Mantén el historial del cliente y el contexto de cada visita dentro de una sola herramienta."
     },
     "automation": {
       "title": "Automatización",
-      "description": "Automatiza procesos repetitivos y ahorra tiempo"
+      "description": "Automatiza tareas repetitivas para que el equipo tenga más tiempo para el servicio."
+    }
+  },
+  "pricing": {
+    "subtitle": "precios",
+    "title": "Precios simples que crecen con el equipo",
+    "description": "Empieza con una base clara y calcula el coste mensual a medida que el equipo se amplía.",
+    "volumeDiscounts": "Descuentos por volumen para equipos grandes",
+    "start": {
+      "name": "Start",
+      "from": "Desde ${price}/mes",
+      "additional": "+${price} por cada miembro adicional del equipo"
+    },
+    "grow": {
+      "name": "Grow",
+      "from": "Desde ${price}/mes",
+      "additional": "+${price} por cada miembro adicional del equipo"
+    },
+    "scale": {
+      "name": "Scale",
+      "from": "Desde ${price}/mes",
+      "additional": "+${price} por cada miembro adicional del equipo"
+    },
+    "calculator": {
+      "title": "¿Cuántas personas hay en tu equipo?",
+      "note": "La estimación asume que el precio base incluye a una persona del equipo.",
+      "inputLabel": "Equipo"
     }
   },
   "scrolling": {
     "schedulePlanning": "planificación de horarios",
-    "analyticsIntegration": "análisis e integración"
+    "analyticsIntegration": "análisis e integraciones"
   },
   "faq": {
-    "subtitle": "preguntas frecuentes",
-    "title": "preguntas frecuentes",
+    "subtitle": "faq",
+    "title": "Preguntas que hacen los equipos de salón",
     "q1": {
-      "question": "¿Qué características proporciona la aplicación?",
-      "answer": "Para optimizar el trabajo de los salones de belleza, maetry ofrece las siguientes características: reserva en línea, envío automático de notificaciones, formación de base de clientes, análisis de indicadores financieros e integración con otros servicios"
+      "question": "¿Qué puede gestionar un salón con Maetry?",
+      "answer": "Maetry reúne la reserva online, los horarios, los recordatorios, el historial de clientes y la operación diaria del salón en un solo lugar."
     },
     "q2": {
-      "question": "¿Podré trabajar en el salón de otra persona y al mismo tiempo ser propietario del mío?",
-      "answer": "Sí, podrás"
+      "question": "¿Puedo trabajar en otro salón y gestionar el mío a la vez?",
+      "answer": "Sí. Si tu cuenta tiene acceso a varios espacios de trabajo, puedes cambiar entre ellos."
     },
     "q3": {
-      "question": "¿Podré invitar a un empleado a mi salón?",
-      "answer": "Sí, podrás. Para esto necesitarás ir al salón y crear una invitación, luego enviar el enlace al empleado"
+      "question": "¿Cómo invito a un miembro del equipo?",
+      "answer": "Abre el espacio del salón, crea una invitación y envía el enlace al empleado."
     },
     "q4": {
-      "question": "¿Podré crear una reserva para un cliente que no tiene la aplicación?",
-      "answer": "Sí, podrás. Para esto no elijas un cliente inmediatamente. Después de crear la reserva tendrás un enlace que puedes enviar al cliente"
+      "question": "¿Puedo crear una reserva para un cliente que no usa la app?",
+      "answer": "Sí. Crea la cita sin seleccionar primero a un cliente existente y comparte el enlace generado si hace falta."
     },
     "q5": {
-      "question": "¿Podré agregar un enlace a una publicación en redes sociales a través de maetry?",
-      "answer": "Sí, podrás"
+      "question": "¿Puedo compartir un enlace de reserva en redes sociales?",
+      "answer": "Sí. El salón puede usar enlaces de reserva en redes sociales, mensajería y otros puntos de contacto con clientes."
     },
     "questions": [
       {
         "question": "¿Qué es Maetry?",
-        "answer": "Maetry es una plataforma integral que automatiza los procesos de negocio, permitiendo a los emprendedores gestionar sus operaciones de manera eficiente desde cualquier lugar."
+        "answer": "Maetry es una plataforma para la operación del salón y la reserva de clientes, diseñada para simplificar la gestión diaria."
       },
       {
-        "question": "¿Cómo puedo empezar?",
-        "answer": "Puedes comenzar con una prueba gratuita. Simplemente regístrate en nuestra plataforma y comienza a automatizar tus procesos de negocio en minutos."
+        "question": "¿Cómo empiezo?",
+        "answer": "Abre la consola de negocio o descarga la app, según el flujo que necesites, y continúa desde el enlace o la experiencia adecuada."
       },
       {
         "question": "¿Es seguro usar Maetry?",
-        "answer": "Sí, la seguridad es nuestra prioridad. Utilizamos encriptación de extremo a extremo y cumplimos con los estándares internacionales de seguridad de datos."
+        "answer": "Sí. La plataforma está pensada para operar con fiabilidad y tratar los datos del negocio con cuidado."
       },
       {
         "question": "¿Puedo integrar Maetry con otros sistemas?",
-        "answer": "Absolutamente. Maetry ofrece integraciones con las principales herramientas de negocio y APIs para conectar con tus sistemas existentes."
+        "answer": "Maetry está diseñado para convivir con flujos operativos del salón y seguir ampliando su ecosistema de trabajo."
       },
       {
         "question": "¿Qué tipo de soporte ofrecen?",
-        "answer": "Ofrecemos soporte 24/7 a través de chat en vivo, email y documentación completa. Nuestro equipo está aquí para ayudarte a tener éxito."
+        "answer": "Ofrecemos ayuda al equipo durante el onboarding y soporte para que la adopción sea más fluida."
       }
     ]
   },
   "prefooter": {
-    "title": "iniciar sesión",
-    "subtitle": "comienza a hacer crecer tu negocio hoy",
-    "description": "implementación rápida - te ayudaremos a transferir los datos necesarios y personalizar el servicio para tus tareas"
+    "title": "Iniciar sesión",
+    "subtitle": "Empieza a gestionar tu salón con menos trabajo manual",
+    "description": "Ayudamos al equipo a implantar el servicio rápido, mover los datos clave y adaptar el flujo a la operación real del salón."
   },
   "footer": {
     "product": "Producto",
     "company": "Empresa",
     "legal": "Legal",
-    "connect": "Conectar",
-    "careers": "Carreras",
-    "partnershipProgram": "Programa de Socios",
-    "privacyPolicy": "Política de Privacidad",
-    "licenseAgreement": "Acuerdo de Licencia",
-    "allRightsReserved": "© 2025 Maetry LLC. Todos los derechos reservados.",
+    "connect": "Contacto",
+    "careers": "Carrera",
+    "partnershipProgram": "Programa de socios",
+    "privacyPolicy": "Política de privacidad",
+    "licenseAgreement": "Acuerdo de licencia",
+    "allRightsReserved": "© 2026 Maetry LLC. Todos los derechos reservados.",
     "settings": "Configuración",
     "theme": "Tema",
     "language": "Idioma"
   },
   "ambassador": {
-    "title": "Programa de Socios",
-    "subtitle": "Gana ayudando a los salones de belleza a automatizar su negocio",
-    "aboutTitle": "Maetry — servicio de gestión de salones de belleza",
-    "aboutDescription": "Maetry ayuda a automatizar procesos, atraer clientes y controlar el negocio en una aplicación.",
-    "becomePartner": "Convertirse en Socio",
-    "readyToPartner": "¿Listo para convertirte en socio?",
-    "startEarning": "Comenzar a Ganar",
-    "partnerDescription": "Únete a nuestro programa de socios y gana ayudando a los salones de belleza a crecer",
+    "eyebrow": "Programa de socios",
+    "title": "Trae salones a Maetry y genera ingresos recurrentes como socio",
+    "subtitle": "Pensado para consultores, agencias y partners del sector que ya trabajan con dueños de salones. Refiere salones a Maetry y gana el 50% de la suscripción durante los primeros 6 meses.",
+    "aboutTitle": "Por qué los salones adoptan Maetry",
+    "aboutDescription": "Maetry ayuda a centralizar reservas, horarios, historial de clientes y recordatorios. Usa estos puntos para explicar con claridad el valor operativo del producto.",
+    "becomePartner": "Solicitar alianza",
+    "readyToPartner": "Trabaja con Maetry como socio",
+    "startEarning": "Solicitar ahora",
+    "partnerDescription": "Si ya asesoras, promocionas o incorporas a dueños de salones, envíanos una solicitud. Te responderemos con condiciones, materiales y el flujo de referidos.",
+    "offerLabel": "Comisión del socio",
+    "offerValue": "50% del ingreso por suscripción durante los primeros 6 meses por cada salón referido",
+    "benefit1Label": "Valor para el salón",
+    "benefit1Value": "Un sistema práctico para reservas, horarios, recordatorios y una coordinación más fluida del equipo",
+    "benefit2Label": "Valor para el socio",
+    "benefit2Value": "Economía clara e ingresos recurrentes de salones activos conectados",
+    "ctaNote": "Cuéntanos cómo trabajas con salones y te enviaremos los siguientes pasos.",
+    "email": {
+      "subject": "Quiero unirme al programa de socios de Maetry",
+      "body": "Hola, trabajo con dueños de salones y quiero unirme al programa de socios de Maetry. Por favor, envíenme las condiciones y los siguientes pasos."
+    },
+    "gridTitle": "Argumentos de venta que puede usar un socio",
+    "gridDescription": "Cada módulo convierte un problema del salón en un resultado concreto de Maetry que puedes usar en conversaciones, auditorías o demos.",
+    "gridHint": "Usa estos puntos en conversaciones con dueños y managers de salones",
     "labels": {
-      "problem": "Problema:",
-      "solution": "Solución Maetry:",
-      "benefit": "Valor para el Salón:"
+      "problem": "Problema del salón:",
+      "solution": "Cómo lo resuelve Maetry:",
+      "benefit": "Resultado de negocio:"
     },
     "features": {
       "appointments": {
-        "title": "Citas de Clientes",
+        "title": "Reservas",
         "problems": [
-          "Las citas se mantienen en cuadernos y calendarios, se pierden",
-          "No se ven los espacios libres",
-          "Es difícil distribuir citas entre maestros"
+          "Las citas se gestionan entre cuadernos, chats o calendarios personales",
+          "Cuesta ver de inmediato los huecos disponibles",
+          "El equipo administrativo pierde mucho tiempo repartiendo reservas"
         ],
         "solutions": [
-          "Todas las citas centralizadas en la aplicación",
-          "Horario diario visual",
-          "Mostrar todos los maestros en una pantalla"
+          "Calendario centralizado de reservas",
+          "Agenda visual del día",
+          "Una sola vista de disponibilidad del equipo"
         ],
         "benefits": [
-          "Ahorro de tiempo del administrador",
-          "Más clientes a través de la organización",
-          "Control del negocio desde el teléfono"
+          "Menos citas perdidas",
+          "Trabajo administrativo más rápido",
+          "Mayor control sobre la jornada"
         ]
       },
       "schedule": {
-        "title": "Horario de Trabajo",
+        "title": "Horarios de trabajo",
         "problems": [
-          "Los clientes llaman para verificar el horario",
-          "Es difícil configurar turnos de maestros",
-          "Los cambios de horario toman mucho tiempo"
+          "Los clientes llaman para preguntar quién trabaja",
+          "Los cambios de turno generan confusión",
+          "Actualizar horarios manualmente consume demasiado tiempo"
         ],
         "solutions": [
-          "Configuración flexible de días laborales",
-          "Horarios individuales de empleados",
-          "Editar solo los días necesarios"
+          "Configuración flexible de horas de trabajo",
+          "Horarios individuales por especialista",
+          "Ediciones rápidas cuando cambian los planes"
         ],
         "benefits": [
-          "Menos llamadas al salón",
-          "Carga de trabajo clara de maestros",
-          "El salón funciona sin superposiciones"
+          "Menos llamadas entrantes",
+          "Mejor equilibrio de carga",
+          "Menos confusión en la agenda"
         ]
       },
       "services": {
-        "title": "Catálogo de Servicios",
+        "title": "Catálogo de servicios",
         "problems": [
-          "Los servicios se mantienen en memoria o cuaderno",
-          "No está claro quién proporciona el servicio y a qué precio",
-          "Los clientes no están preparados para los procedimientos"
+          "La lista de servicios vive en la memoria o en notas",
+          "No está claro quién realiza cada servicio y a qué precio",
+          "Los clientes llegan sin saber cómo prepararse"
         ],
         "solutions": [
-          "Agregar servicios de lista lista o manualmente",
-          "Precios y descripciones individuales para maestros",
-          "Consejos de preparación para clientes"
+          "Catálogo estructurado de servicios",
+          "Precios y descripciones por especialista",
+          "Indicaciones previas a la cita"
         ],
         "benefits": [
-          "Ahorro de tiempo del administrador",
-          "Eliminación de errores",
-          "Mejora de la calidad del servicio"
+          "Menos errores al reservar",
+          "Expectativas más claras para el cliente",
+          "Mayor consistencia en el servicio"
         ]
       },
       "clients": {
-        "title": "Base de Datos de Clientes",
+        "title": "Base de clientes",
         "problems": [
-          "No hay historial de clientes y contactos",
-          "No se puede entender quién dejó de venir",
-          "Todo se mantiene en memoria"
+          "El historial del cliente no está centralizado",
+          "Cuesta detectar a los clientes inactivos",
+          "Los contactos dependen de la memoria o de móviles personales"
         ],
         "solutions": [
-          "Agregar clientes manualmente o a través de invitaciones",
-          "Seguimiento del historial de visitas y servicios"
+          "Alta manual o por invitación",
+          "Historial de visitas y servicios en un solo perfil",
+          "Registro compartido para todo el salón"
         ],
         "benefits": [
-          "Análisis de actividad de clientes",
-          "Aumento de lealtad",
-          "Base de datos para boletines y marketing"
+          "Mejor trabajo de retención",
+          "Segmentación más clara",
+          "Base más sólida para acciones de marketing"
         ]
       },
       "employees": {
-        "title": "Empleados",
+        "title": "Gestión del equipo",
         "problems": [
-          "No hay control sobre el trabajo de maestros",
-          "Posiciones y salarios poco claros",
-          "Es difícil rastrear la carga de trabajo"
+          "Falta visibilidad sobre la carga de cada especialista",
+          "Los roles y la compensación no son transparentes",
+          "Gestionar accesos es complejo"
         ],
         "solutions": [
-          "Crear roles y posiciones",
-          "Configurar acceso y salarios",
-          "Rastrear clientes para maestros específicos"
+          "Roles y permisos",
+          "Configuración de compensaciones dentro del sistema",
+          "Seguimiento de clientes y reservas por especialista"
         ],
         "benefits": [
-          "Transparencia y control",
-          "Automatización de salarios",
-          "Distribución conveniente de clientes"
+          "Mayor responsabilidad y claridad",
+          "Gestión del equipo más simple",
+          "Mejor reparto de citas"
         ]
       },
       "salon": {
-        "title": "Configuración del Salón",
+        "title": "Perfil del salón",
         "problems": [
-          "Los clientes no conocen contactos y dirección",
-          "No hay información centralizada",
-          "Los nuevos clientes no pueden encontrar el salón"
+          "A los clientes les cuesta encontrar contactos o ubicación",
+          "La información del salón está dispersa en varios canales",
+          "Los nuevos clientes no tienen un camino claro para descubrir el negocio"
         ],
         "solutions": [
-          "Tarjeta del salón con descripción y contactos",
-          "Dirección en mapa y ruta",
-          "Mostrar en búsqueda de Maetry"
+          "Perfil del salón con marca, contactos y descripción",
+          "Mapa y ruta",
+          "Visibilidad dentro del descubrimiento de Maetry"
         ],
         "benefits": [
-          "Más confianza de clientes",
-          "Menos llamadas",
-          "Flujo adicional de clientes"
+          "Más confianza antes de reservar",
+          "Menos preguntas repetitivas",
+          "Más visibilidad para captar nuevos clientes"
         ]
       },
       "attraction": {
-        "title": "Atracción de Clientes",
+        "title": "Captación de clientes",
         "problems": [
-          "Es difícil hablar de uno mismo y atraer nuevos clientes",
-          "Es inconveniente para los clientes llamar"
+          "Es difícil convertir el tráfico de redes sociales en reservas",
+          "Llamar al salón resulta incómodo para muchos clientes"
         ],
         "solutions": [
-          "Enlace de reserva en redes sociales y sitio web",
-          "Código QR para atracción offline"
+          "Enlaces de reserva para redes sociales y sitios web",
+          "Códigos QR para tráfico offline"
         ],
         "benefits": [
-          "Flujo adicional de clientes sin costos",
-          "El cliente se reserva solo",
-          "Herramienta moderna y conveniente"
+          "Más reservas autogestionadas",
+          "Flujo adicional de clientes",
+          "Una experiencia de reserva más moderna"
         ]
       },
       "workspaces": {
-        "title": "Espacios de Trabajo",
+        "title": "Varias ubicaciones",
         "problems": [
-          "Los maestros trabajan en diferentes lugares y pierden citas",
-          "Los propietarios de salones gastan tiempo en diferentes sistemas"
+          "Los especialistas trabajan en distintas sedes y pierden el control de sus citas",
+          "Los dueños cambian entre sistemas desconectados"
         ],
         "solutions": [
-          "Cambiar entre salones en un toque",
-          "Sincronización de citas",
-          "Gestión de redes de salones"
+          "Cambio entre salones desde una sola cuenta",
+          "Vista sincronizada de citas",
+          "Soporte para operación multisedes"
         ],
         "benefits": [
-          "Ahorro de tiempo",
-          "Control del negocio en un lugar",
-          "Versatilidad para maestros"
+          "Menos carga operativa",
+          "Mejor control entre ubicaciones",
+          "Más flexibilidad para el equipo"
         ]
       },
       "support": {
-        "title": "Soporte",
+        "title": "Soporte y onboarding",
         "problems": [
-          "Los propietarios temen a las nuevas aplicaciones",
-          "No hay tiempo para buscar instrucciones",
-          "El personal se pierde al trabajar"
+          "El equipo teme el cambio de sistema",
+          "Nadie quiere perder tiempo buscando instrucciones",
+          "El personal nuevo necesita apoyo al inicio"
         ],
         "solutions": [
-          "Chat de soporte en vivo dentro de la aplicación",
-          "Tutoriales para cada pantalla",
-          "Base de conocimientos con instrucciones"
+          "Soporte en vivo dentro de la app",
+          "Guías para las pantallas clave",
+          "Base de conocimiento para preguntas frecuentes"
         ],
         "benefits": [
-          "Inicio rápido sin entrenamiento",
-          "Mínimo estrés",
-          "Confianza en el trabajo con el sistema"
+          "Implementación más rápida",
+          "Menos estrés durante el cambio",
+          "Más confianza al usar el sistema"
         ]
       }
     }
   },
   "vitaliy": {
-    "question": "¿Tienes preguntas?",
+    "question": "¿Necesitas ayuda?",
     "supportTeam": "Equipo de soporte",
     "company": "Maetry",
-    "askQuestions": "hacer preguntas"
+    "askQuestions": "Hacer una consulta"
   },
   "invite": {
-    "followLink": "Seguir el enlace",
+    "followLink": "Abrir enlace de invitación",
     "heading": {
-      "employeeInvite": "Has sido invitado a trabajar como maestro",
-      "clientInvite": "Has sido invitado a ser cliente del salón",
-      "default": "Has sido invitado a unirte"
+      "employeeInvite": "Te han invitado a unirte al equipo de un salón",
+      "clientInvite": "Te han invitado a reservar con un salón",
+      "default": "Te han invitado a Maetry"
     },
     "subheading": {
-      "employeeInvite": "Gestiona tu agenda y amplía tu base de clientes",
-      "clientInvite": "Elige maestros y reserva en línea",
-      "default": "Descarga la aplicación Maetry para continuar"
+      "employeeInvite": "Abre Maetry para gestionar tu agenda y tu flujo de clientes",
+      "clientInvite": "Abre Maetry para ver el salón y reservar online",
+      "default": "Descarga la app de Maetry para continuar"
     },
     "badgeLabel": {
-      "employeeInvite": "Invitación para maestro",
+      "employeeInvite": "Invitación al equipo",
       "clientInvite": "Invitación para cliente",
       "default": "Invitación"
     },
-    "downloadTitle": "Descarga la aplicación Maetry",
-    "downloadDescription": "Descarga la aplicación Maetry, inicia sesión y vuelve a abrir el enlace para completar la invitación.",
-    "appStoreButtonTitle": "Descargar desde App Store",
-    "footerCopyright": "Todos los derechos reservados."
+    "downloadTitle": "Descarga Maetry",
+    "downloadDescription": "Instala la app, inicia sesión y vuelve a abrir el enlace para aceptar la invitación.",
+    "appStoreButtonTitle": "Descargar en App Store",
+    "footerCopyright": "© 2026 Maetry LLC. Todos los derechos reservados."
   },
   "linkHandler": {
     "processing": "Procesando enlace...",
-    "pleaseWait": "Por favor espera",
-    "errorTitle": "Ocurrió un error",
-    "errorCampaign": "No se pudo cargar los datos de la campaña",
-    "errorUnknownType": "Tipo de enlace desconocido",
-    "errorProcessing": "No se pudo procesar el enlace",
+    "pleaseWait": "Espera mientras abrimos la página correcta",
+    "errorTitle": "No pudimos abrir este enlace",
+    "errorCampaign": "No pudimos cargar los datos de la invitación o la campaña.",
+    "errorUnknownType": "Este tipo de enlace no está soportado.",
+    "errorProcessing": "No pudimos procesar este enlace.",
     "retry": "Intentar de nuevo"
   },
   "meta": {
     "ambassador": {
-      "title": "Programa de socios de Maetry - Gana con nosotros",
-      "description": "Únete al programa de socios de Maetry. Gana ayudando a los salones de belleza a automatizar el negocio y gestionar las citas de los clientes.",
-      "keywords": "programa de socios, maetry, salón de belleza, gestión, automatización, citas, horario de trabajo"
+      "title": "Programa de socios de Maetry | Refiere salones y genera ingresos recurrentes",
+      "description": "Programa de socios de Maetry para consultores, agencias y partners del sector que ayudan a salones a ordenar reservas y operación diaria.",
+      "keywords": "programa de socios maetry, referidos software para salones, software de gestión para salones, partnership belleza, ingresos recurrentes"
     }
+  },
+  "errorPage": {
+    "title": "Algo salió mal",
+    "retry": "Intentar de nuevo"
+  },
+  "linkNotFound": {
+    "title": "Este enlace ya no está disponible",
+    "description": "La invitación puede haber caducado o haber sido revocada. Pide al remitente un nuevo enlace o entra en Maetry.",
+    "cta": "Ir a maetry.com"
+  },
+  "inviteMeta": {
+    "employeeTitle": "Maetry — invitación al equipo",
+    "clientTitle": "Maetry — invitación para cliente"
   }
 }

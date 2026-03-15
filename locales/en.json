@@ -1,10 +1,10 @@
 {
   "common": {
     "title": "Maetry",
-    "description": "Automate your business processes",
+    "description": "Salon management software and beauty booking marketplace",
     "loading": "Loading...",
-    "error": "An error occurred",
-    "success": "Success",
+    "error": "Something went wrong",
+    "success": "Done",
     "cancel": "Cancel",
     "save": "Save",
     "edit": "Edit",
@@ -17,61 +17,61 @@
     "confirm": "Confirm"
   },
   "booking": {
-    "metaTitle": "Maetry — Online Booking",
-    "metaDescription": "Book a visit to the salon powered by Maetry in a few steps",
+    "metaTitle": "Maetry — Online booking",
+    "metaDescription": "Book a beauty appointment with a Maetry salon in just a few steps",
     "headline": "Online booking",
-    "subtitle": "Choose a service, a professional and a convenient time",
+    "subtitle": "Choose a service, a specialist and a time that works for you",
     "steps": {
       "service": "Service",
-      "master": "Professional",
+      "master": "Specialist",
       "time": "Time",
-      "details": "Contacts",
+      "details": "Contact details",
       "success": "Done"
     },
     "serviceTitle": "Choose a service",
-    "serviceHint": "Browse the full salon catalog without signing in.",
+    "serviceHint": "Browse the salon service menu without signing in.",
     "serviceDuration": "duration",
     "servicePriceFrom": "from {value}",
     "servicePriceExact": "{value}",
-    "serviceSingleMaster": "The service is performed by {name}.",
-    "masterTitle": "Choose a professional",
-    "masterHint": "Professionals are sorted by availability.",
-    "masterAuto": "Professional selected automatically",
-    "timeTitle": "Pick a date and time",
-    "timeHint": "Times are displayed in the salon time zone.",
-    "timeReload": "Refresh slots",
-    "timeEmptyTitle": "No available slots",
-    "timeEmptyHint": "Try another day or service.",
-    "detailsTitle": "Leave your contacts",
-    "detailsHint": "We will confirm the booking by phone.",
+    "serviceSingleMaster": "This service is provided by {name}.",
+    "masterTitle": "Choose a specialist",
+    "masterHint": "Specialists are sorted by availability.",
+    "masterAuto": "Specialist selected automatically",
+    "timeTitle": "Choose a date and time",
+    "timeHint": "All times are shown in the salon time zone.",
+    "timeReload": "Refresh times",
+    "timeEmptyTitle": "No available times",
+    "timeEmptyHint": "Try another day or choose a different service.",
+    "detailsTitle": "Leave your contact details",
+    "detailsHint": "The salon will use your phone number only to confirm the appointment.",
     "fieldNameLabel": "Name",
-    "fieldNamePlaceholder": "How should we call you?",
+    "fieldNamePlaceholder": "What should the salon call you?",
     "fieldPhoneLabel": "Phone",
     "fieldPhonePlaceholder": "+1 555 555 1234",
-    "fieldPhoneHelper": "We only use the number to confirm your booking.",
+    "fieldPhoneHelper": "Your number is used only to confirm the booking.",
     "submitLabel": "Confirm booking",
     "backLabel": "Back",
-    "successTitle": "Booking created",
-    "successSubtitle": "Add the booking to your wallet so you don't lose the details or forget anything.",
+    "successTitle": "Booking confirmed",
+    "successSubtitle": "Add the appointment to your wallet so the details stay close at hand.",
     "successCreateAnother": "Create another booking",
     "successClose": "Close",
     "walletApple": "Add to Apple Wallet",
     "walletGoogle": "Add to Google Wallet",
     "walletShare": {
-      "toastApple": "Open this page on iPhone or iPad to add to Apple Wallet",
-      "toastGoogle": "Open this page on an Android device to add to Google Wallet"
+      "toastApple": "Open this page on iPhone or iPad to add the pass to Apple Wallet",
+      "toastGoogle": "Open this page on an Android device to add the pass to Google Wallet"
     },
     "errors": {
-      "loadProcedures": "We could not load the services. Please refresh the page.",
-      "loadSlots": "We could not find available slots for this service.",
-      "createAppointment": "We could not create the booking. Please try again later.",
+      "loadProcedures": "We couldn't load the salon services. Please refresh the page.",
+      "loadSlots": "We couldn't find available times for this service.",
+      "createAppointment": "We couldn't create the booking. Please try again later.",
       "validationName": "Please enter your name",
       "validationPhone": "Please enter a valid phone number",
       "apiMessage": "{message}"
     },
     "loading": {
       "procedures": "Loading services...",
-      "slots": "Searching for available slots...",
+      "slots": "Looking for available times...",
       "submit": "Creating booking..."
     }
   },
@@ -83,326 +83,381 @@
     "contact": "Contact",
     "ambassadors": "Partners",
     "clients": "Clients",
-    "employees": "Employees",
+    "employees": "Team",
     "reviews": "Reviews",
     "menu": "Menu"
   },
   "header": {
-    "freeTrial": "Sign In"
+    "freeTrial": "Open console"
   },
   "hero": {
-    "subtitle": "multiple tasks — one ecosystem",
-    "description": "Create your own ecosystem for record automation"
+    "subtitle": "one ecosystem for salon operations and client booking",
+    "description": "Maetry helps salons manage bookings and helps clients discover and book beauty services."
   },
   "about": {
-    "mission": "our mission",
-    "title": "free your time from routine and your business from mistakes",
-    "description": "maetry allows entrepreneurs to grow their business from anywhere in the world via a mobile app"
+    "mission": "what Maetry does",
+    "title": "Tools for salon operations and client booking, built in one ecosystem",
+    "description": "Maetry gives salon teams a cleaner way to run bookings, schedules and client communication while giving clients a simpler path to discover and book services."
   },
   "reviews": {
-    "subtitle": "why choose us",
-    "title": "make business easier",
+    "subtitle": "trusted by salon teams",
+    "title": "Why beauty businesses choose Maetry",
     "julia": {
       "name": "Julia",
-      "role": "Owner of a chain PROmanicure",
-      "text": "Maetry helps me plan every day in the salon. I understand how many clients are registered and for which services, who is new and who is regular. The client base is formed without my participation"
+      "role": "Owner of the PROmanicure chain",
+      "text": "Maetry gives me a clear view of bookings, repeat clients and the daily workload. The salon feels easier to manage because the information is finally in one place."
     },
     "nikita": {
       "name": "Nikita",
-      "role": "founder Lui Philipp",
-      "text": "I know a lot of beauty salons that don't use online enrollment. We need to look at what mistakes our competitors are making and do better. Our main flow of clients comes through maetry"
+      "role": "Founder of Lui Philipp",
+      "text": "Online booking through Maetry removes friction for clients and brings in demand without constant manual coordination."
     },
     "sofia": {
       "name": "Sofia",
-      "role": "Manager of Bonny beauty salon",
-      "text": "The app is constantly being improved together with our network of salons. At maetry, we follow analytics and monitor feedback. This helps us to work on the quality of service and improve the level of service"
+      "role": "Manager at Bonny beauty salon",
+      "text": "We track feedback and daily performance inside one workflow, which helps the team keep service quality high."
     },
     "irina": {
       "name": "Irina",
-      "role": "Eyelash extension specialist",
-      "text": "I started spending less time analyzing the salon's financial performance. This option allows me to determine which services are generating more profit and which ones need to be adjusted or improved"
+      "role": "Lash specialist",
+      "text": "I spend less time piecing numbers together and more time deciding which services deserve attention and how to grow revenue."
     }
   },
   "features": {
-    "subtitle": "maetry features",
-    "title": "we adapt to any size business",
+    "subtitle": "platform overview",
+    "title": "Core tools for booking, team coordination and client communication",
     "management": {
-      "title": "management schedule",
-      "description": "Add new employees and make flexible work schedules without overlap"
+      "title": "Schedule management",
+      "description": "Set working hours, avoid overlaps and keep every specialist's availability up to date."
     },
     "notifications": {
-      "title": "notices of record",
-      "description": "Automated appointment reminders to customers will help retain contact and increase profitability"
+      "title": "Client reminders",
+      "description": "Reduce no-shows with automatic reminders and more consistent communication."
     },
     "onlineBooking": {
-      "title": "online appointment for clients",
-      "description": "recording without a call will allow you to process more requests and not waste time on confirming visits"
+      "title": "Online booking",
+      "description": "Let clients book without calling and give the team more time for service instead of manual confirmations."
+    }
+  },
+  "pricing": {
+    "subtitle": "pricing",
+    "title": "Simple pricing that grows with the team",
+    "description": "Start with a clear base plan, then estimate the monthly total as your team expands.",
+    "volumeDiscounts": "Volume pricing for larger teams",
+    "start": {
+      "name": "Start",
+      "from": "From ${price}/mo",
+      "additional": "+${price} per additional team member"
+    },
+    "grow": {
+      "name": "Grow",
+      "from": "From ${price}/mo",
+      "additional": "+${price} per additional team member"
+    },
+    "scale": {
+      "name": "Scale",
+      "from": "From ${price}/mo",
+      "additional": "+${price} per additional team member"
+    },
+    "calculator": {
+      "title": "How many team members do you have?",
+      "note": "The estimate assumes the base price includes one team member.",
+      "inputLabel": "Team members"
     }
   },
   "faq": {
     "subtitle": "faq",
-    "title": "frequent questions",
+    "title": "Questions salon teams ask",
     "q1": {
-      "question": "What features does the app provide?",
-      "answer": "To optimize the work of beauty salons maetry offers the following features: online appointment, automatic sending of notifications, formation of client base, analysis of financial indicators and integration with other services"
+      "question": "What can salon teams manage in Maetry?",
+      "answer": "Maetry supports online booking, schedules, reminders, client history and day-to-day salon operations in one place."
     },
     "q2": {
-      "question": "Will I be able to work in someone else's salon and own my own at the same time?",
-      "answer": "Yes, you can"
+      "question": "Can I work in another salon and manage my own?",
+      "answer": "Yes. If your account has access to multiple workspaces, you can switch between them."
     },
     "q3": {
-      "question": "Will I be able to bring an employee into my salon?",
-      "answer": "Yes, you can. To do this, you will need to go to the salon and create an invitation, then send the link to a staff member"
+      "question": "How do I invite a team member?",
+      "answer": "Open the salon workspace, create an invitation and send the link to the employee."
     },
     "q4": {
-      "question": "Will I be able to create an entry for a client that doesn't have the application?",
-      "answer": "Yes, you can. To do this, dont select a client right away. After you create the record, you will have a link that you can send to them"
+      "question": "Can I create a booking for a client who does not use the app?",
+      "answer": "Yes. Create the appointment without selecting an existing client first, then share the generated link if needed."
     },
     "q5": {
-      "question": "Will I be able to add a link to a social media post via maetry?",
-      "answer": "Yes, you can"
+      "question": "Can I share a booking link on social media?",
+      "answer": "Yes. Salons can use booking links in social media, messengers and other client touchpoints."
     }
   },
   "prefooter": {
-    "title": "sign in",
-    "subtitle": "start growing your business today",
-    "description": "fast implementation - we will help you transfer the necessary data and customize the service for your tasks"
+    "title": "Sign in",
+    "subtitle": "Start running your salon with less manual work",
+    "description": "We help teams onboard quickly, migrate essential data and set up the service around real salon workflows."
   },
   "ambassador": {
-    "title": "Partnership Program",
-    "subtitle": "Earn by helping beauty salons automate their business",
-    "aboutTitle": "Maetry — beauty salon management service",
-    "aboutDescription": "Maetry helps automate processes, attract clients and control business in one application.",
-    "becomePartner": "Become a Partner",
-    "readyToPartner": "Ready to become a partner?",
-    "startEarning": "Start Earning",
-    "partnerDescription": "Join our partnership program and earn by helping beauty salons grow",
+    "eyebrow": "Partner program",
+    "title": "Bring salons to Maetry and earn recurring partner revenue",
+    "subtitle": "For consultants, agencies and industry partners who already work with salon owners. Refer salons to Maetry and earn 50% of subscription payments during the first 6 months.",
+    "aboutTitle": "Why salons adopt Maetry",
+    "aboutDescription": "Maetry helps salons centralize bookings, schedules, client history and reminders. Use the points below to explain the operational value clearly.",
+    "becomePartner": "Apply for partnership",
+    "readyToPartner": "Work with Maetry as a partner",
+    "startEarning": "Apply now",
+    "partnerDescription": "If you already advise, market to or onboard salon owners, send us a request. We will reply with terms, materials and the referral workflow.",
+    "offerLabel": "Partner payout",
+    "offerValue": "50% of subscription revenue during the first 6 months for every referred salon",
+    "benefit1Label": "Value for salons",
+    "benefit1Value": "A practical system for bookings, schedules, reminders and smoother team coordination",
+    "benefit2Label": "Value for partners",
+    "benefit2Value": "Clear economics and recurring revenue from active referred salons",
+    "ctaNote": "Tell us how you work with salons and we will send the next steps.",
+    "email": {
+      "subject": "I want to join the Maetry partner program",
+      "body": "Hello! I work with salon owners and would like to join the Maetry partner program. Please send me the partnership terms and next steps."
+    },
+    "gridTitle": "Sales points partners can use",
+    "gridDescription": "Each module turns a salon pain point into a concrete Maetry outcome you can use in outreach, audits and demos.",
+    "gridHint": "Use these points in partner conversations with salon owners and managers",
     "labels": {
-      "problem": "Problem:",
-      "solution": "Maetry Solution:",
-      "benefit": "Value for Salon:"
+      "problem": "Salon problem:",
+      "solution": "How Maetry solves it:",
+      "benefit": "Business value:"
     },
     "features": {
       "appointments": {
-        "title": "Client Appointments",
+        "title": "Bookings",
         "problems": [
-          "Appointments are kept in notebooks and calendars, get lost",
-          "No visibility of free slots",
-          "Difficult to distribute appointments between masters"
+          "Appointments live in notebooks, chats or personal calendars",
+          "Free time is hard to see at a glance",
+          "Administrators spend too much time distributing bookings"
         ],
         "solutions": [
-          "All appointments centralized in the app",
+          "Centralized booking calendar",
           "Visual daily schedule",
-          "Display all masters on one screen"
+          "One view of team availability"
         ],
         "benefits": [
-          "Administrator time savings",
-          "More clients through organization",
-          "Business control from phone"
+          "Fewer missed appointments",
+          "Faster admin work",
+          "Clearer control of the day"
         ]
       },
       "schedule": {
-        "title": "Work Schedule",
+        "title": "Work schedules",
         "problems": [
-          "Clients call to check schedule",
-          "Hard to set up master shifts",
-          "Schedule changes take a lot of time"
+          "Clients call to ask who is working",
+          "Shift changes create confusion",
+          "Manual schedule updates take too much time"
         ],
         "solutions": [
-          "Flexible working days setup",
-          "Individual employee schedules",
-          "Edit only needed days"
+          "Flexible working hours",
+          "Individual schedules by specialist",
+          "Quick edits when plans change"
         ],
         "benefits": [
-          "Fewer calls to salon",
-          "Clear master workload",
-          "Salon works without overlaps"
+          "Fewer inbound calls",
+          "Better workload balance",
+          "Less schedule confusion"
         ]
       },
       "services": {
-        "title": "Service Catalog",
+        "title": "Service catalog",
         "problems": [
-          "Services kept in memory or notebook",
-          "Unclear who provides service and at what price",
-          "Clients not prepared for procedures"
+          "The service list lives in memory or notes",
+          "Prices and responsible specialists are unclear",
+          "Clients arrive unprepared"
         ],
         "solutions": [
-          "Add services from ready list or manually",
-          "Individual prices and descriptions for masters",
-          "Client preparation tips for procedures"
+          "Structured service catalog",
+          "Custom pricing and descriptions by specialist",
+          "Pre-appointment preparation notes"
         ],
         "benefits": [
-          "Administrator time savings",
-          "Error elimination",
-          "Service quality improvement"
+          "Fewer booking errors",
+          "Clearer client expectations",
+          "More consistent service delivery"
         ]
       },
       "clients": {
-        "title": "Client Database",
+        "title": "Client base",
         "problems": [
-          "No client history and contacts",
-          "Can't understand who stopped coming",
-          "Everything kept in memory"
+          "Client history is not stored in one place",
+          "It is hard to spot inactive clients",
+          "Contacts depend on memory or personal phones"
         ],
         "solutions": [
           "Add clients manually or through invitations",
-          "Track visit and service history"
+          "Keep visit and service history in one profile",
+          "Maintain a shared salon record"
         ],
         "benefits": [
-          "Client activity analysis",
-          "Loyalty increase",
-          "Database for newsletters and marketing"
+          "Better retention work",
+          "Clearer client segmentation",
+          "Stronger base for outreach and marketing"
         ]
       },
       "employees": {
-        "title": "Employees",
+        "title": "Team management",
         "problems": [
-          "No control over master work",
-          "Unclear positions and salaries",
-          "Hard to track workload"
+          "Limited visibility into specialist workload",
+          "Roles and pay structure are not transparent",
+          "Access is hard to manage"
         ],
         "solutions": [
-          "Create roles and positions",
-          "Setup access and salaries",
-          "Track clients for specific masters"
+          "Roles and permissions",
+          "Compensation setup inside the system",
+          "Client and booking tracking by specialist"
         ],
         "benefits": [
-          "Transparency and control",
-          "Salary automation",
-          "Convenient client distribution"
+          "Cleaner accountability",
+          "Simpler team management",
+          "Better distribution of appointments"
         ]
       },
       "salon": {
-        "title": "Salon Settings",
+        "title": "Salon profile",
         "problems": [
-          "Clients don't know contacts and address",
-          "No centralized information",
-          "New clients can't find salon"
+          "Clients struggle to find contacts or location",
+          "Salon information lives in different places",
+          "New clients have no clear discovery path"
         ],
         "solutions": [
-          "Salon card with description and contacts",
-          "Address on map and route",
-          "Display in Maetry search"
+          "Salon profile with brand, contacts and description",
+          "Map and route details",
+          "Visibility inside Maetry discovery"
         ],
         "benefits": [
-          "More client trust",
-          "Fewer calls",
-          "Additional client flow"
+          "More trust before booking",
+          "Fewer repetitive questions",
+          "More visibility for new client acquisition"
         ]
       },
       "attraction": {
-        "title": "Client Attraction",
+        "title": "Client acquisition",
         "problems": [
-          "Hard to tell about yourself and attract new clients",
-          "Inconvenient for clients to call"
+          "It is hard to turn social traffic into bookings",
+          "Calling the salon is inconvenient for many clients"
         ],
         "solutions": [
-          "Booking link in social media and website",
-          "QR code for offline attraction"
+          "Booking links for social profiles and websites",
+          "QR codes for offline traffic"
         ],
         "benefits": [
-          "Additional client flow without costs",
-          "Client books themselves",
-          "Modern convenient tool"
+          "More self-serve bookings",
+          "Additional client flow",
+          "A more modern booking journey"
         ]
       },
       "workspaces": {
-        "title": "Work Spaces",
+        "title": "Multiple locations",
         "problems": [
-          "Masters work in different places and lose appointments",
-          "Salon owners spend time on different systems"
+          "Specialists work across locations and lose track of appointments",
+          "Owners switch between disconnected systems"
         ],
         "solutions": [
-          "Switch between salons in one touch",
-          "Appointment synchronization",
-          "Salon network management"
+          "Switch between salons from one account",
+          "Synchronized appointment view",
+          "Support for multi-location operations"
         ],
         "benefits": [
-          "Time savings",
-          "Business control in one place",
-          "Versatility for masters"
+          "Less operational overhead",
+          "Better control across locations",
+          "More flexibility for teams"
         ]
       },
       "support": {
-        "title": "Support",
+        "title": "Support and onboarding",
         "problems": [
-          "Owners afraid of new applications",
-          "No time to find instructions",
-          "Staff gets lost when working"
+          "Teams worry about switching systems",
+          "Nobody wants to hunt for instructions",
+          "New staff need help ramping up"
         ],
         "solutions": [
-          "Live support chat inside application",
-          "Tutorials for each screen",
-          "Knowledge base with instructions"
+          "Live support inside the app",
+          "Guides for key screens",
+          "Knowledge base for recurring questions"
         ],
         "benefits": [
-          "Quick start without training",
-          "Minimum stress",
-          "Confidence in system work"
+          "Faster onboarding",
+          "Lower stress during rollout",
+          "More confidence using the system"
         ]
       }
     }
   },
   "vitaliy": {
-    "question": "Any question?",
+    "question": "Need help?",
     "supportTeam": "Support team",
     "company": "Maetry",
-    "askQuestions": "ask questions"
+    "askQuestions": "Ask a question"
   },
   "invite": {
-    "followLink": "Follow the link",
+    "followLink": "Open invitation link",
     "heading": {
-      "employeeInvite": "You have been invited to work as a master",
-      "clientInvite": "You have been invited to become a salon client",
-      "default": "You have been invited to join"
+      "employeeInvite": "You have been invited to join a salon team",
+      "clientInvite": "You have been invited to book with a salon",
+      "default": "You have been invited to Maetry"
     },
     "subheading": {
-      "employeeInvite": "Manage your schedule and expand your client base",
-      "clientInvite": "Choose masters and book online",
+      "employeeInvite": "Open Maetry to manage your schedule and client flow",
+      "clientInvite": "Open Maetry to view the salon and book online",
       "default": "Download the Maetry app to continue"
     },
     "badgeLabel": {
-      "employeeInvite": "Master invitation",
+      "employeeInvite": "Team invitation",
       "clientInvite": "Client invitation",
       "default": "Invitation"
     },
-    "downloadTitle": "Download Maetry app",
-    "downloadDescription": "Download the Maetry app, sign in and reopen the link to complete the invitation.",
-    "appStoreButtonTitle": "Download from App Store",
-    "footerCopyright": "All rights reserved."
+    "downloadTitle": "Download Maetry",
+    "downloadDescription": "Install the app, sign in and reopen the link to accept the invitation.",
+    "appStoreButtonTitle": "Download on the App Store",
+    "footerCopyright": "© 2026 Maetry LLC. All rights reserved."
   },
   "linkHandler": {
     "processing": "Processing link...",
-    "pleaseWait": "Please wait",
-    "errorTitle": "An error occurred",
-    "errorCampaign": "Failed to load campaign data",
-    "errorUnknownType": "Unknown link type",
-    "errorProcessing": "Failed to process link",
+    "pleaseWait": "Please wait while we open the right page",
+    "errorTitle": "This link could not be opened",
+    "errorCampaign": "We couldn't load the invitation or campaign data.",
+    "errorUnknownType": "This link type is not supported.",
+    "errorProcessing": "We couldn't process this link.",
     "retry": "Try again"
   },
   "footer": {
-    "privacyPolicy": "privacy policy",
-    "licenseAgreement": "license agreement",
+    "privacyPolicy": "Privacy policy",
+    "licenseAgreement": "License agreement",
     "product": "Product",
     "company": "Company",
     "legal": "Legal",
-    "connect": "Connect",
+    "connect": "Contact",
     "careers": "Careers",
-    "partnershipProgram": "Partnership Program",
-    "allRightsReserved": "All rights reserved.",
+    "partnershipProgram": "Partner program",
+    "allRightsReserved": "© 2026 Maetry LLC. All rights reserved.",
     "settings": "Settings",
     "theme": "Theme",
     "language": "Language"
   },
   "scrolling": {
     "schedulePlanning": "schedule planning",
-    "analyticsIntegration": "analytics and integration"
+    "analyticsIntegration": "analytics and integrations"
   },
   "meta": {
     "ambassador": {
-      "title": "Maetry Partnership Program - Earn with us",
-      "description": "Join Maetry partnership program. Earn by helping beauty salons automate business and manage client appointments.",
-      "keywords": "partnership program, maetry, beauty salon, management, automation, client appointments, work schedule"
+      "title": "Maetry partner program | Refer salons and earn recurring revenue",
+      "description": "Join the Maetry partner program for consultants, agencies and industry partners who help salons improve bookings and operations.",
+      "keywords": "maetry partner program, salon software referrals, beauty salon partnership, salon operations software, recurring partner revenue"
     }
+  },
+  "errorPage": {
+    "title": "Something went wrong",
+    "retry": "Try again"
+  },
+  "linkNotFound": {
+    "title": "This link is no longer available",
+    "description": "The invitation may have expired or been revoked. Ask the sender for a new link or go to Maetry.",
+    "cta": "Go to maetry.com"
+  },
+  "inviteMeta": {
+    "employeeTitle": "Maetry — Team invitation",
+    "clientTitle": "Maetry — Client invitation"
   }
 }
