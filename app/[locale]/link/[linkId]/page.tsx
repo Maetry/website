@@ -11,10 +11,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const InvitePage = async ({ params }: InvitePageProps) => {
-  const { linkId } = await params;
+  const { linkId, locale } = await params;
 
-  return <LinkHandler nanoId={linkId} />;
+  return <LinkHandler linkId={linkId} locale={locale} />;
 };
 
 export default InvitePage;
-

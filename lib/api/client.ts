@@ -8,6 +8,8 @@ interface ClientApiRequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: unknown;
   headers?: Record<string, string>;
+  signal?: AbortSignal;
+  cache?: RequestCache;
 }
 
 export async function clientApiRequest<T>({
@@ -15,6 +17,8 @@ export async function clientApiRequest<T>({
   method = "GET",
   body,
   headers = {},
+  signal,
+  cache = "no-store",
 }: ClientApiRequestOptions): Promise<T> {
   const fetchOptions: RequestInit = {
     method,
@@ -22,6 +26,8 @@ export async function clientApiRequest<T>({
       "Accept": "application/json",
       ...headers,
     },
+    cache,
+    signal,
   };
 
   if (body) {
@@ -39,4 +45,3 @@ export async function clientApiRequest<T>({
     throw error;
   }
 }
-

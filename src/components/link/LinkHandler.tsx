@@ -2,143 +2,214 @@
 
 import { useEffect, useState } from "react";
 
-import { useParams } from "next/navigation";
-
 import { useTranslations } from "next-intl";
 
-import BookingScreen from "@/app/[locale]/booking/[salonId]/BookingScreen";
 import { InviteScreen } from "@/components/invite";
-import { getMarketingCampaign } from "@/lib/api/getMarketingCampaign";
-import { registerClick } from "@/lib/api/registerClick";
+import { PublicBookingFlow } from "@/features/public-booking";
+import { ApiError, NotFoundError } from "@/lib/api/error-handler";
+import {
+  PublicClickResponse,
+  PublicMarketingCampaign,
+  getCampaignByLink,
+  registerLinkClick,
+  savePublicBookingContext,
+} from "@/lib/api/public-booking";
 import type { LinkKind } from "@/lib/api/shortLink";
 
-interface LinkHandlerProps {
-  nanoId: string;
+type LinkHandlerProps = {
+  linkId: string;
+  locale: string;
+};
+
+type LinkState =
+  | { status: "loading" }
+  | {
+      status: "booking";
+      campaign: PublicMarketingCampaign | null;
+      click: PublicClickResponse | null;
+      salonId: string;
+      trackingId?: string | null;
+    }
+  | {
+      status: "invite";
+      kind: Exclude<LinkKind, "marketing">;
+    }
+  | {
+      status: "error";
+      message: string;
+    };
+
+function readTrackingIdFromLocation() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return new URLSearchParams(window.location.search).get("trackingId");
 }
 
-interface MarketingCampaign {
-  salonId: string;
+function resolveLinkError(
+  error: unknown,
+  fallbackMessage: string,
+) {
+  if (error instanceof ApiError && error.message) {
+    return error.message;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallbackMessage;
 }
 
-export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
-  const params = useParams();
+export const LinkHandler = ({ linkId, locale }: LinkHandlerProps) => {
   const t = useTranslations("linkHandler");
-  const [isProcessing, setIsProcessing] = useState(true);
-  const [inviteKind, setInviteKind] = useState<LinkKind | null>(null);
-  const [marketingCampaign, setMarketingCampaign] = useState<MarketingCampaign | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  // Определяем локаль из params (как в других компонентах)
-  const locale = (params?.locale as string) || "en";
+  const [state, setState] = useState<LinkState>({ status: "loading" });
 
   useEffect(() => {
-    const handleLink = async () => {
-      try {
-        // Регистрируем клик и получаем тип ссылки
-        const magicLink = await registerClick(nanoId);
+    const controller = new AbortController();
 
-        // Обрабатываем в зависимости от типа
-        switch (magicLink.kind) {
-          case "marketing": {
-            try {
-              // Получаем информацию о кампании
-              const campaign = await getMarketingCampaign(nanoId);
-              
-              // Сохраняем данные кампании и показываем BookingScreen на той же странице
-              // Это защищает от обхода регистрации клика - пользователь не может поделиться
-              // прямой ссылкой на /booking/ без trackingId
-              setMarketingCampaign(campaign);
-              setIsProcessing(false);
-              return;
-            } catch {
-              setError(t("errorCampaign"));
-              setIsProcessing(false);
+    const resolveMarketingState = (
+      campaign: PublicMarketingCampaign | null,
+      click: PublicClickResponse | null,
+    ) => {
+      const trackingId = readTrackingIdFromLocation();
+      const salonId = campaign?.salonId ?? click?.payload?.salonId;
+
+      if (!salonId) {
+        setState({
+          message: t("errorCampaign"),
+          status: "error",
+        });
+        return;
+      }
+
+      savePublicBookingContext({
+        campaignId: campaign?.id ?? click?.payload?.campaignId ?? null,
+        kind: "marketing",
+        linkId,
+        salonId,
+        savedAt: new Date().toISOString(),
+        trackingId,
+      });
+
+      setState({
+        campaign,
+        click,
+        salonId,
+        status: "booking",
+        trackingId,
+      });
+    };
+
+    const fallbackToClickResolution = async () => {
+      const click = await registerLinkClick(linkId, {
+        signal: controller.signal,
+      });
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      if (click.kind === "employeeInvite" || click.kind === "clientInvite") {
+        setState({
+          kind: click.kind,
+          status: "invite",
+        });
+        return;
+      }
+
+      resolveMarketingState(null, click);
+    };
+
+    const run = async () => {
+      try {
+        const campaign = await getCampaignByLink(linkId, {
+          signal: controller.signal,
+        });
+
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        const click = await registerLinkClick(linkId, {
+          signal: controller.signal,
+        });
+
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        resolveMarketingState(campaign, click);
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        if (error instanceof NotFoundError || (error instanceof ApiError && error.status === 404)) {
+          try {
+            await fallbackToClickResolution();
+            return;
+          } catch (fallbackError) {
+            if (controller.signal.aborted) {
               return;
             }
-          }
 
-          case "employeeInvite":
-          case "clientInvite": {
-            // Показываем информационную страницу приглашения
-            setInviteKind(magicLink.kind);
-            setIsProcessing(false);
+            setState({
+              message: resolveLinkError(fallbackError, t("errorProcessing")),
+              status: "error",
+            });
             return;
           }
-
-          default: {
-            setError(t("errorUnknownType"));
-            setIsProcessing(false);
-          }
         }
-      } catch (error) {
-        // Показываем более информативное сообщение об ошибке
-        const errorMessage =
-          error instanceof Error ? error.message : t("errorProcessing");
-        setError(errorMessage);
-        setIsProcessing(false);
+
+        setState({
+          message: resolveLinkError(error, t("errorProcessing")),
+          status: "error",
+        });
       }
     };
 
-    handleLink();
-  }, [nanoId, locale, t]);
+    void run();
 
-  if (isProcessing) {
+    return () => {
+      controller.abort();
+    };
+  }, [linkId, t]);
+
+  if (state.status === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-slate-900">
-        <div className="flex flex-col items-center gap-4">
-          <svg
-            className="h-8 w-8 animate-spin text-slate-600 dark:text-slate-400"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
+      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.82),_transparent_36%),linear-gradient(135deg,_#f7c8a8_0%,_#ffdff4_35%,_#dce7ff_100%)] px-4">
+        <div className="w-full max-w-md rounded-[28px] border border-white/50 bg-white/75 p-6 text-center shadow-[0_30px_90px_rgba(85,71,117,0.18)] backdrop-blur-2xl">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
+          <div className="mt-5 space-y-2">
+            <h1 className="text-xl font-semibold text-slate-950">
+              {t("processing")}
+            </h1>
+            <p className="text-sm leading-6 text-slate-600">{t("pleaseWait")}</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (state.status === "error") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-slate-900">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
-            <svg
-              className="h-8 w-8 text-red-600 dark:text-red-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.82),_transparent_36%),linear-gradient(135deg,_#f7c8a8_0%,_#ffdff4_35%,_#dce7ff_100%)] px-4">
+        <div className="w-full max-w-md rounded-[28px] border border-white/50 bg-white/75 p-6 text-center shadow-[0_30px_90px_rgba(85,71,117,0.18)] backdrop-blur-2xl">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-xl text-red-600">
+            ×
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+          <div className="mt-5 space-y-2">
+            <h1 className="text-xl font-semibold text-slate-950">
               {t("errorTitle")}
-            </h2>
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </h1>
+            <p className="text-sm leading-6 text-red-600">{state.message}</p>
           </div>
           <button
+            className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
             onClick={() => window.location.reload()}
-            className="mt-4 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+            type="button"
           >
             {t("retry")}
           </button>
@@ -147,20 +218,17 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
     );
   }
 
-  // Показываем BookingScreen для маркетинговых ссылок
-  if (marketingCampaign) {
-    return (
-      <BookingScreen 
-        salonId={marketingCampaign.salonId} 
-        locale={locale}
-        trackingId={nanoId}
-      />
-    );
+  if (state.status === "invite") {
+    return <InviteScreen kind={state.kind} />;
   }
 
-  if (inviteKind) {
-    return <InviteScreen kind={inviteKind} />;
-  }
-
-  return null;
+  return (
+    <PublicBookingFlow
+      campaign={state.campaign}
+      initialTrackingId={state.trackingId}
+      linkId={linkId}
+      locale={locale}
+      salonId={state.salonId}
+    />
+  );
 };
