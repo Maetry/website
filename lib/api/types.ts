@@ -21,6 +21,7 @@ export interface ClickRequest {
   colorDepth: number;
   pixelRatio: number;
   timeZone: string;
+  userAgent?: string;
 }
 
 export interface MarketingCampaign {

@@ -136,20 +136,6 @@ function getLocaleFromRequest(req: NextRequest): Locale {
   );
 }
 
-function handleShortlinkHost(req: NextRequest, pathname: string): NextResponse | null {
-  // Если путь уже начинается с /link/, пропускаем
-  if (pathname.startsWith('/link/')) {
-    return null;
-  }
-
-  // Переписываем путь на /link/{nanoId}
-  const cleanPathname = pathname === '/' ? pathname : pathname.replace(/\/$/, '');
-  const rewriteUrl = req.nextUrl.clone();
-  rewriteUrl.pathname = `/link${cleanPathname}`;
-
-  return NextResponse.rewrite(rewriteUrl);
-}
-
 function handleLocaleRoute(
   req: NextRequest,
   pathname: string,
@@ -212,10 +198,11 @@ export function middleware(req: NextRequest) {
   }
 
   // Обработка tracking параметров для всех запросов (включая shortlink)
-  // Это нужно сделать до rewrite/redirect, чтобы параметры сохранились
   const encodedTracking = processTrackingParams(req, pathname);
 
   // 1. Обработка shortlink хоста (link.maetry.com)
+  // Публичные шаблоны: /b/{nano} booking, /ci/{nano} client invite, /si/{nano} staff invite (Console),
+  // либо легаси /{nano} → rewrite на /{locale}/link/{nano}
   if (isShortlinkHost(host)) {
     // Если путь уже начинается с /{locale}/link/, просто пропускаем дальше
     if (LOCALE_PREFIX_PATTERN.test(pathname) && pathname.includes('/link/')) {
@@ -226,7 +213,7 @@ export function middleware(req: NextRequest) {
       return response;
     }
 
-    // Определяем локаль и делаем rewrite на /{locale}/link/{nanoId}
+    // Определяем локаль и делаем rewrite на /{locale}/link/… (см. [[...slug]])
     const locale = getLocaleFromRequest(req);
     const cleanPathname = pathname === '/' ? pathname : pathname.replace(/\/$/, '');
     const rewriteUrl = req.nextUrl.clone();

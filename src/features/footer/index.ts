@@ -1,1 +1,1 @@
-export * from "./ui";
+export { Footer } from "@/shared/layout";

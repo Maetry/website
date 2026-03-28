@@ -1,77 +1,77 @@
 "use client";
+
 import { useCallback, useEffect, useState } from "react";
+
+import { useTheme } from "next-themes";
 
 import { setTheme } from "@/entities/theme";
 import { useAppDispatch } from "@/lib/hooks";
 
-import {
-  applyResolvedTheme,
-  getStoredThemePreference,
-  resolveThemePreference,
-  type ThemePreference,
-  persistThemePreference,
-} from "./theme";
+import type { ThemePreference } from "./theme";
 
-const ThemeSwitcher: React.FC = () => {
+type ThemeSwitcherProps = {
+  variant?: "default" | "onDark";
+};
+
+const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ variant = "default" }) => {
+  const onDark = variant === "onDark";
   const dispatch = useAppDispatch();
-  const [currentTheme, setCurrentTheme] = useState<ThemePreference>("system");
+  const { theme, setTheme: setNextTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  const applyDocumentTheme = useCallback(
-    (theme: ThemePreference) => {
-      if (typeof window === "undefined") {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const syncRedux = useCallback(
+    (resolved: string | undefined) => {
+      if (!resolved) {
         return;
       }
-
-      const resolved = resolveThemePreference(
-        theme,
-        window.matchMedia("(prefers-color-scheme: dark)").matches,
-      );
-
-      applyResolvedTheme(resolved);
       dispatch(setTheme(resolved === "dark"));
     },
     [dispatch],
   );
 
   useEffect(() => {
-    const preference = getStoredThemePreference();
-    setCurrentTheme(preference);
-    applyDocumentTheme(preference);
-  }, [applyDocumentTheme]);
+    syncRedux(resolvedTheme);
+  }, [resolvedTheme, syncRedux]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemThemeChange = () => {
-      if (currentTheme === "system") {
-        applyDocumentTheme("system");
-      }
-    };
-
-    mediaQuery.addEventListener("change", handleSystemThemeChange);
-
-    return () =>
-      mediaQuery.removeEventListener("change", handleSystemThemeChange);
-  }, [applyDocumentTheme, currentTheme]);
-
-  const handleThemeChange = (theme: ThemePreference) => {
-    setCurrentTheme(theme);
-    persistThemePreference(theme);
-    applyDocumentTheme(theme);
+  const handleThemeChange = (next: ThemePreference) => {
+    setNextTheme(next);
   };
 
+  if (!mounted) {
+    return (
+      <div
+        className={`flex h-9 min-w-[120px] items-center rounded-md p-0.5 ${
+          onDark ? "border border-white/20 bg-white/10" : "rounded-lg bg-gray-100 dark:bg-gray-800"
+        }`}
+      />
+    );
+  }
+
+  const currentTheme = (theme ?? "system") as ThemePreference;
+
+  const shellClass = onDark
+    ? "flex items-center rounded-md border border-white/20 bg-white/10 p-0.5"
+    : "flex items-center rounded-lg bg-gray-100 p-0.5 dark:bg-gray-800";
+
+  const inactiveBtn = onDark
+    ? "text-white/60 hover:text-white"
+    : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white";
+
+  const activeBtn = onDark
+    ? "bg-white/20 text-white shadow-sm"
+    : "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white";
+
   return (
-    <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
-      {/* System Theme Button */}
+    <div className={shellClass}>
       <button
+        type="button"
         onClick={() => handleThemeChange("system")}
-        className={`p-2 rounded-md transition-colors ${
-          currentTheme === "system"
-            ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+        className={`rounded-md p-2 transition-colors ${
+          currentTheme === "system" ? activeBtn : inactiveBtn
         }`}
         title="System"
       >
@@ -80,13 +80,11 @@ const ThemeSwitcher: React.FC = () => {
         </svg>
       </button>
 
-      {/* Light Theme Button */}
       <button
+        type="button"
         onClick={() => handleThemeChange("light")}
-        className={`p-2 rounded-md transition-colors ${
-          currentTheme === "light"
-            ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+        className={`rounded-md p-2 transition-colors ${
+          currentTheme === "light" ? activeBtn : inactiveBtn
         }`}
         title="Light"
       >
@@ -95,13 +93,11 @@ const ThemeSwitcher: React.FC = () => {
         </svg>
       </button>
 
-      {/* Dark Theme Button */}
       <button
+        type="button"
         onClick={() => handleThemeChange("dark")}
-        className={`p-2 rounded-md transition-colors ${
-          currentTheme === "dark"
-            ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+        className={`rounded-md p-2 transition-colors ${
+          currentTheme === "dark" ? activeBtn : inactiveBtn
         }`}
         title="Dark"
       >

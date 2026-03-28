@@ -8,7 +8,10 @@ import { getMessages } from "next-intl/server";
 import { FirebaseTracker } from "@/lib/firebase";
 import { PlatformProvider } from "@/lib/userAgent/PlatformProvider";
 import { StoreProvider } from "@/shared/store";
-import { ThemeBootstrap } from "@/shared/ui/theme-switcher";
+import {
+  AppThemeProvider,
+  ThemeBootstrap,
+} from "@/shared/ui/theme-switcher";
 
 import { locales, isSupportedLocale, type Locale } from '../../i18n';
 
@@ -67,11 +70,13 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <StoreProvider>
-        <ThemeBootstrap />
-        <PlatformProvider userAgent={userAgent}>
-          <FirebaseTracker />
-          {children}
-        </PlatformProvider>
+        <AppThemeProvider>
+          <ThemeBootstrap />
+          <PlatformProvider userAgent={userAgent}>
+            <FirebaseTracker />
+            {children}
+          </PlatformProvider>
+        </AppThemeProvider>
       </StoreProvider>
     </NextIntlClientProvider>
   )

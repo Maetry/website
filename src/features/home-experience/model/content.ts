@@ -108,6 +108,8 @@ type CommonContent = {
   productName: string;
   consumerLabel: string;
   businessLabel: string;
+  /** Заголовок колонки футера: салоны и частные мастера */
+  footerBusinessSectionTitle: string;
   appStoreLabel: string;
   openConsoleLabel: string;
   contactLabel: string;
@@ -117,12 +119,13 @@ type CommonContent = {
   languageLabel: string;
   productSectionLabel: string;
   legalSectionLabel: string;
+  /** Подпись ссылки на лендинг для бизнеса (maetry.com/…/business) */
   businessSubdomainLabel: string;
   consumerPathLabel: string;
   footerRights: string;
 };
 
-type LocaleContent = {
+export type LocaleContent = {
   common: CommonContent;
   consumer: ConsumerContent;
   business: BusinessContent;
@@ -134,6 +137,7 @@ const content: Record<MarketingLocale, LocaleContent> = {
       productName: "Maetry",
       consumerLabel: "For clients",
       businessLabel: "For salon teams",
+      footerBusinessSectionTitle: "For salons & independent pros",
       appStoreLabel: "Get the app",
       openConsoleLabel: "Open business console",
       contactLabel: "Contact Maetry",
@@ -142,8 +146,8 @@ const content: Record<MarketingLocale, LocaleContent> = {
       termsLabel: "Terms of use",
       languageLabel: "Language",
       productSectionLabel: "Product",
-      legalSectionLabel: "Legal",
-      businessSubdomainLabel: "business.maetry.com",
+      legalSectionLabel: "Documents",
+      businessSubdomainLabel: "maetry.com/business",
       consumerPathLabel: "maetry.com",
       footerRights: "© 2026 Maetry LLC. All rights reserved.",
     },
@@ -407,6 +411,7 @@ const content: Record<MarketingLocale, LocaleContent> = {
       productName: "Maetry",
       consumerLabel: "Для клиентов",
       businessLabel: "Для салонов",
+      footerBusinessSectionTitle: "Для салонов и мастеров",
       appStoreLabel: "Скачать приложение",
       openConsoleLabel: "Открыть бизнес-консоль",
       contactLabel: "Связаться с Maetry",
@@ -416,7 +421,7 @@ const content: Record<MarketingLocale, LocaleContent> = {
       languageLabel: "Язык",
       productSectionLabel: "Продукт",
       legalSectionLabel: "Документы",
-      businessSubdomainLabel: "business.maetry.com",
+      businessSubdomainLabel: "maetry.com/business",
       consumerPathLabel: "maetry.com",
       footerRights: "© 2026 Maetry LLC. Все права защищены.",
     },
@@ -680,6 +685,7 @@ const content: Record<MarketingLocale, LocaleContent> = {
       productName: "Maetry",
       consumerLabel: "Para clientes",
       businessLabel: "Para salones",
+      footerBusinessSectionTitle: "Para salones y profesionales independientes",
       appStoreLabel: "Descargar la app",
       openConsoleLabel: "Abrir consola de negocio",
       contactLabel: "Contactar a Maetry",
@@ -688,8 +694,8 @@ const content: Record<MarketingLocale, LocaleContent> = {
       termsLabel: "Términos de uso",
       languageLabel: "Idioma",
       productSectionLabel: "Producto",
-      legalSectionLabel: "Legal",
-      businessSubdomainLabel: "business.maetry.com",
+      legalSectionLabel: "Documentos",
+      businessSubdomainLabel: "maetry.com/business",
       consumerPathLabel: "maetry.com",
       footerRights: "© 2026 Maetry LLC. Todos los derechos reservados.",
     },
@@ -968,6 +974,27 @@ export function resolveSiteExperience(host: string | null): SiteExperience {
   return "consumer";
 }
 
+/** Базовый URL клиентской главной с учётом окружения (локально / продакшен). */
+export function getConsumerHomeHref(host: string | null, locale: string): string {
+  const normalizedLocale = normalizeMarketingLocale(locale);
+  const normalizedHost = host?.toLowerCase() ?? "";
+  const isLocal =
+    normalizedHost.includes("localhost") || normalizedHost.includes("127.0.0.1");
+  const isPreview =
+    normalizedHost.includes("vercel.app") || normalizedHost.includes("vercel.live");
+
+  if (isLocal || isPreview || !normalizedHost.includes("maetry.com")) {
+    return `/${normalizedLocale}`;
+  }
+
+  return `https://maetry.com/${normalizedLocale}`;
+}
+
+export function withDiscoverHash(href: string): string {
+  const base = href.includes("#") ? href.slice(0, href.indexOf("#")) : href;
+  return `${base}#discover`;
+}
+
 export function getMarketingContent(locale: string): LocaleContent {
   return content[normalizeMarketingLocale(locale)];
 }
@@ -992,5 +1019,11 @@ export function getBusinessHref(host: string | null, locale: string): string {
     return `/${normalizedLocale}/business`;
   }
 
-  return `https://business.maetry.com/${normalizedLocale}`;
+  // Уже на поддомене бизнеса — остаёмся на этом origin
+  if (normalizedHost.includes("business.maetry.com")) {
+    return `https://business.maetry.com/${normalizedLocale}`;
+  }
+
+  // Клиентский сайт: лендинг для бизнеса на основном домене
+  return `https://maetry.com/${normalizedLocale}/business`;
 }

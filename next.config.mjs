@@ -5,6 +5,17 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Прямые импорты иконок, стабильные server/client chunks (избегает ENOENT vendor-chunks)
+    optimizePackageImports: ["@chakra-ui/react", "lucide-react"],
+  },
+  async redirects() {
+    return [
+      { source: '/ambassadors', destination: '/affiliate', permanent: true },
+      { source: '/employees/invite', destination: '/staff/invite', permanent: true },
+      { source: '/clients/invite', destination: '/client/invite', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

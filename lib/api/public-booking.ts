@@ -37,6 +37,8 @@ export type PublicClickMetadata = {
   colorDepth: number;
   pixelRatio: number;
   timeZone: string;
+  /** Доп. сигнал для сопоставления клика с установкой приложения */
+  userAgent?: string;
 };
 
 export type PublicClickResponse = {
@@ -228,6 +230,15 @@ type RequestOptions = {
   signal?: AbortSignal;
 };
 
+/** Путь ссылки в URL API: `b/nano` → `b/nano` как несколько сегментов пути. */
+export function encodeLinkPathForApi(linkPath: string): string {
+  return linkPath
+    .split("/")
+    .filter((s) => s.length > 0)
+    .map(encodeURIComponent)
+    .join("/");
+}
+
 const PUBLIC_BOOKING_CONTEXT_KEY = "maetry-public-booking-context";
 
 const isNavigator = typeof navigator !== "undefined";
@@ -264,6 +275,9 @@ export function buildClickMetadata(): PublicClickMetadata {
     colorDepth,
     pixelRatio,
     timeZone,
+    ...(isNavigator && navigator.userAgent
+      ? { userAgent: navigator.userAgent }
+      : {}),
   };
 }
 
@@ -311,7 +325,7 @@ export async function getCampaignByLink(
   { signal }: RequestOptions = {},
 ): Promise<PublicMarketingCampaign> {
   return clientApiRequest<PublicMarketingCampaign>({
-    endpoint: `/api/marketing/campaigns/by-link/${encodeURIComponent(linkId)}`,
+    endpoint: `/api/marketing/campaigns/by-link/${encodeLinkPathForApi(linkId)}`,
     method: "GET",
     signal,
   });
@@ -322,7 +336,7 @@ export async function registerLinkClick(
   { signal }: RequestOptions = {},
 ): Promise<PublicClickResponse> {
   return clientApiRequest<PublicClickResponse>({
-    endpoint: `/api/clicks/${encodeURIComponent(linkId)}`,
+    endpoint: `/api/clicks/${encodeLinkPathForApi(linkId)}`,
     method: "POST",
     body: buildClickMetadata(),
     signal,

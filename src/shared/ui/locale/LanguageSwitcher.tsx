@@ -16,7 +16,21 @@ const languages: Language[] = [
   { key: "es", name: "Español", shortName: "es" },
 ];
 
-const LanguageSwitcher: React.FC = () => {
+const buttonDefaultClass =
+  "inline-flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors";
+
+const buttonOnDarkClass =
+  "inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors border border-white/20 bg-white/10 text-white/90 hover:bg-white/15";
+
+const menuDefaultClass =
+  "absolute right-0 bottom-full mb-2 w-32 rounded-md shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50 overflow-hidden";
+
+const menuOnDarkClass =
+  "absolute right-0 bottom-full mb-2 w-32 rounded-md shadow-lg z-50 overflow-hidden bg-[#1c1d24] border border-white/15";
+
+const LanguageSwitcher: React.FC<{ variant?: "default" | "onDark" }> = ({
+  variant = "default",
+}) => {
   const params = useParams();
   const pathname = usePathname();
   const locale = (params?.locale as string) || "ru";
@@ -49,12 +63,14 @@ const LanguageSwitcher: React.FC = () => {
     };
   }, []);
 
+  const onDark = variant === "onDark";
+
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
         type="button"
-        className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+        className={onDark ? buttonOnDarkClass : buttonDefaultClass}
         id="cursor-language-selector"
         aria-expanded={isOpen}
       >
@@ -77,7 +93,7 @@ const LanguageSwitcher: React.FC = () => {
 
       {isOpen && (
         <div
-          className="absolute right-0 bottom-full mb-2 w-32 rounded-md shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50 overflow-hidden"
+          className={onDark ? menuOnDarkClass : menuDefaultClass}
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="cursor-language-selector"
@@ -89,9 +105,13 @@ const LanguageSwitcher: React.FC = () => {
                 href={createLocalizedPath(language.key)}
                 onClick={() => setIsOpen(false)}
                 className={`${
-                  selectedLanguage.key === language.key
-                    ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  onDark
+                    ? selectedLanguage.key === language.key
+                      ? "bg-white/15 text-white"
+                      : "text-white/75 hover:bg-white/10"
+                    : selectedLanguage.key === language.key
+                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                 } flex px-4 py-2 text-sm items-center transition-colors duration-150 w-full`}
                 role="menuitem"
               >

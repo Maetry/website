@@ -17,7 +17,8 @@ import {
 import type { LinkKind } from "@/lib/api/shortLink";
 
 type LinkHandlerProps = {
-  linkId: string;
+  /** Полный путь ссылки: `nanoId`, `b/nanoId`, `ci/nanoId`, `si/nanoId`. */
+  linkPath: string;
   locale: string;
 };
 
@@ -62,7 +63,12 @@ function resolveLinkError(
   return fallbackMessage;
 }
 
-export const LinkHandler = ({ linkId, locale }: LinkHandlerProps) => {
+/**
+ * Обработка link.maetry.com (и /{locale}/link/…):
+ * 1) Сразу регистрируем клик с fingerprint в теле запроса — бэкенд может сопоставить установку приложения.
+ * 2) Затем подгружаем кампанию (маркетинг) или ветвимся по kind из ответа клика (инвайты).
+ */
+export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
   const t = useTranslations("linkHandler");
   const [state, setState] = useState<LinkState>({ status: "loading" });
 
@@ -87,7 +93,7 @@ export const LinkHandler = ({ linkId, locale }: LinkHandlerProps) => {
       savePublicBookingContext({
         campaignId: campaign?.id ?? click?.payload?.campaignId ?? null,
         kind: "marketing",
-        linkId,
+        linkId: linkPath,
         salonId,
         savedAt: new Date().toISOString(),
         trackingId,
@@ -102,29 +108,9 @@ export const LinkHandler = ({ linkId, locale }: LinkHandlerProps) => {
       });
     };
 
-    const fallbackToClickResolution = async () => {
-      const click = await registerLinkClick(linkId, {
-        signal: controller.signal,
-      });
-
-      if (controller.signal.aborted) {
-        return;
-      }
-
-      if (click.kind === "employeeInvite" || click.kind === "clientInvite") {
-        setState({
-          kind: click.kind,
-          status: "invite",
-        });
-        return;
-      }
-
-      resolveMarketingState(null, click);
-    };
-
     const run = async () => {
       try {
-        const campaign = await getCampaignByLink(linkId, {
+        const click = await registerLinkClick(linkPath, {
           signal: controller.signal,
         });
 
@@ -132,35 +118,45 @@ export const LinkHandler = ({ linkId, locale }: LinkHandlerProps) => {
           return;
         }
 
-        const click = await registerLinkClick(linkId, {
-          signal: controller.signal,
-        });
-
-        if (controller.signal.aborted) {
+        if (click.kind === "employeeInvite" || click.kind === "clientInvite") {
+          setState({
+            kind: click.kind,
+            status: "invite",
+          });
           return;
         }
 
-        resolveMarketingState(campaign, click);
+        try {
+          const campaign = await getCampaignByLink(linkPath, {
+            signal: controller.signal,
+          });
+
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          resolveMarketingState(campaign, click);
+        } catch (error) {
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          if (
+            error instanceof NotFoundError ||
+            (error instanceof ApiError && error.status === 404)
+          ) {
+            resolveMarketingState(null, click);
+            return;
+          }
+
+          setState({
+            message: resolveLinkError(error, t("errorProcessing")),
+            status: "error",
+          });
+        }
       } catch (error) {
         if (controller.signal.aborted) {
           return;
-        }
-
-        if (error instanceof NotFoundError || (error instanceof ApiError && error.status === 404)) {
-          try {
-            await fallbackToClickResolution();
-            return;
-          } catch (fallbackError) {
-            if (controller.signal.aborted) {
-              return;
-            }
-
-            setState({
-              message: resolveLinkError(fallbackError, t("errorProcessing")),
-              status: "error",
-            });
-            return;
-          }
         }
 
         setState({
@@ -175,7 +171,7 @@ export const LinkHandler = ({ linkId, locale }: LinkHandlerProps) => {
     return () => {
       controller.abort();
     };
-  }, [linkId, t]);
+  }, [linkPath, t]);
 
   if (state.status === "loading") {
     return (
@@ -226,7 +222,7 @@ export const LinkHandler = ({ linkId, locale }: LinkHandlerProps) => {
     <PublicBookingFlow
       campaign={state.campaign}
       initialTrackingId={state.trackingId}
-      linkId={linkId}
+      linkId={linkPath}
       locale={locale}
       salonId={state.salonId}
     />

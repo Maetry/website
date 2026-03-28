@@ -30,6 +30,9 @@ const buildClickRequest = (): ClickRequest => {
     colorDepth,
     pixelRatio,
     timeZone,
+    ...(isNavigator && navigator.userAgent
+      ? { userAgent: navigator.userAgent }
+      : {}),
   };
 };
 

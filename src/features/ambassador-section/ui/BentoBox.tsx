@@ -1,5 +1,11 @@
+"use client";
+
+import type { ReactNode } from "react";
+
+import { Box, Flex, Text } from "@chakra-ui/react";
+
 interface BentoBoxProps {
-  icon: string;
+  icon: ReactNode;
   title: string;
   problems: string[];
   solutions: string[];
@@ -10,8 +16,39 @@ interface BentoBoxProps {
     benefit: string;
   };
   size?: "small" | "medium" | "large" | "wide";
-  color?: "blue" | "green" | "purple" | "orange" | "red" | "indigo";
 }
+
+function ListRow({ children }: { children: React.ReactNode }) {
+  return (
+    <Flex
+      as="li"
+      align="flex-start"
+      gap={2}
+      fontSize="sm"
+      lineHeight={1.55}
+      color="marketing.fgMuted"
+    >
+      <Box
+        mt="0.45em"
+        w="1.5"
+        h="1.5"
+        rounded="full"
+        bg="marketing.fgSubtle"
+        flexShrink={0}
+      />
+      <Box>{children}</Box>
+    </Flex>
+  );
+}
+
+const sectionLabel = {
+  fontSize: "xs",
+  fontWeight: "semibold",
+  textTransform: "uppercase",
+  letterSpacing: "0.14em",
+  color: "marketing.fgSubtle",
+  mb: 2,
+} as const;
 
 const BentoBox = ({
   icon,
@@ -21,155 +58,152 @@ const BentoBox = ({
   benefits,
   labels,
   size = "medium",
-  color = "blue",
 }: BentoBoxProps) => {
-  const sizeClasses = {
-    small: "col-span-1 row-span-1",
-    medium: "col-span-1 row-span-2",
-    large: "col-span-2 row-span-2",
-    wide: "col-span-2 row-span-1",
-  };
-
-  const colorClasses = {
-    blue: "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700",
-    green:
-      "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700",
-    purple:
-      "bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700",
-    orange:
-      "bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700",
-    red: "bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700",
-    indigo:
-      "bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-700",
-  };
-
-  const iconColorClasses = {
-    blue: "text-blue-600 dark:text-blue-400",
-    green: "text-green-600 dark:text-green-400",
-    purple: "text-purple-600 dark:text-purple-400",
-    orange: "text-orange-600 dark:text-orange-400",
-    red: "text-red-600 dark:text-red-400",
-    indigo: "text-indigo-600 dark:text-indigo-400",
-  };
-
   return (
-    <div
-      className={`
-      ${sizeClasses[size]} 
-      ${colorClasses[color]}
-      rounded-2xl p-6 border-2 
-      hover:shadow-xl hover:scale-[1.02] 
-      transition-all duration-300 ease-out
-      backdrop-blur-sm
-    `}
+    <Box
+      h="full"
+      display="flex"
+      flexDirection="column"
+      rounded="2xl"
+      borderWidth="1px"
+      borderColor="marketing.border"
+      bg="marketing.surface"
+      p={6}
+      transition="border-color 0.2s ease"
+      _hover={{
+        borderColor: { base: "rgba(19,19,26,0.14)", _dark: "rgba(255,255,255,0.14)" },
+      }}
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div
-          className={`
-          text-3xl p-3 rounded-xl 
-          bg-white/50 dark:bg-gray-800/50 
-          ${iconColorClasses[color]}
-        `}
+      <Flex align="center" gap={3} mb={4}>
+        <Flex
+          align="center"
+          justify="center"
+          h={11}
+          w={11}
+          flexShrink={0}
+          rounded="lg"
+          borderWidth="2px"
+          borderColor="marketing.accent"
+          color="marketing.accent"
         >
           {icon}
-        </div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+        </Flex>
+        <Text
+          as="h3"
+          fontSize={{ base: "md", sm: "lg" }}
+          fontWeight="semibold"
+          color="marketing.fg"
+          lineHeight={1.25}
+        >
           {title}
-        </h3>
-      </div>
+        </Text>
+      </Flex>
 
-      {/* Content based on size */}
       {size === "small" && (
-        <div className="space-y-3">
-          <div>
-            <h4 className="font-semibold text-red-600 dark:text-red-400 mb-2 text-sm">
-              {labels.problem}
-            </h4>
-            <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-              {problems[0]}
-            </p>
-          </div>
-        </div>
+        <Box>
+          <Text {...sectionLabel}>{labels.problem}</Text>
+          <Text fontSize="sm" lineHeight={1.6} color="marketing.fgMuted" lineClamp={2}>
+            {problems[0]}
+          </Text>
+        </Box>
       )}
 
       {size === "medium" && (
-        <div className="space-y-4">
-          <div>
-            <h4 className="font-semibold text-red-600 dark:text-red-400 mb-2 text-sm">
-              {labels.problem}
-            </h4>
-            <ul className="text-sm space-y-1 text-gray-700 dark:text-gray-300">
-              {problems.slice(0, 2).map((problem: string, index: number) => (
-                <li key={index} className="flex items-start">
-                  <span className="w-1 h-1 bg-red-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                  <span>{problem}</span>
-                </li>
+        <Flex direction="column" gap={4} flex={1}>
+          <Box>
+            <Text {...sectionLabel}>{labels.problem}</Text>
+            <Box
+              as="ul"
+              listStyleType="none"
+              pl={0}
+              m={0}
+              display="flex"
+              flexDirection="column"
+              gap={1}
+            >
+              {problems.slice(0, 2).map((problem, index) => (
+                <ListRow key={index}>{problem}</ListRow>
               ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-green-600 dark:text-green-400 mb-2 text-sm">
-              {labels.solution}
-            </h4>
-            <ul className="text-sm space-y-1 text-gray-700 dark:text-gray-300">
-              {solutions.slice(0, 2).map((solution: string, index: number) => (
-                <li key={index} className="flex items-start">
-                  <span className="w-1 h-1 bg-green-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                  <span>{solution}</span>
-                </li>
+            </Box>
+          </Box>
+          <Box>
+            <Text {...sectionLabel}>{labels.solution}</Text>
+            <Box
+              as="ul"
+              listStyleType="none"
+              pl={0}
+              m={0}
+              display="flex"
+              flexDirection="column"
+              gap={1}
+            >
+              {solutions.slice(0, 2).map((solution, index) => (
+                <ListRow key={index}>{solution}</ListRow>
               ))}
-            </ul>
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Flex>
       )}
 
       {(size === "large" || size === "wide") && (
-        <div className="space-y-4">
-          <div>
-            <h4 className="font-semibold text-red-600 dark:text-red-400 mb-3 text-sm">
+        <Flex direction="column" gap={4} flex={1}>
+          <Box>
+            <Text {...sectionLabel} mb={3}>
               {labels.problem}
-            </h4>
-            <ul className="text-sm space-y-2 text-gray-700 dark:text-gray-300">
-              {problems.map((problem: string, index: number) => (
-                <li key={index} className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-red-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  <span>{problem}</span>
-                </li>
+            </Text>
+            <Box
+              as="ul"
+              listStyleType="none"
+              pl={0}
+              m={0}
+              display="flex"
+              flexDirection="column"
+              gap={2}
+            >
+              {problems.map((problem, index) => (
+                <ListRow key={index}>{problem}</ListRow>
               ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-green-600 dark:text-green-400 mb-3 text-sm">
+            </Box>
+          </Box>
+          <Box>
+            <Text {...sectionLabel} mb={3}>
               {labels.solution}
-            </h4>
-            <ul className="text-sm space-y-2 text-gray-700 dark:text-gray-300">
-              {solutions.map((solution: string, index: number) => (
-                <li key={index} className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  <span>{solution}</span>
-                </li>
+            </Text>
+            <Box
+              as="ul"
+              listStyleType="none"
+              pl={0}
+              m={0}
+              display="flex"
+              flexDirection="column"
+              gap={2}
+            >
+              {solutions.map((solution, index) => (
+                <ListRow key={index}>{solution}</ListRow>
               ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-blue-600 dark:text-blue-400 mb-3 text-sm">
+            </Box>
+          </Box>
+          <Box>
+            <Text {...sectionLabel} mb={3}>
               {labels.benefit}
-            </h4>
-            <ul className="text-sm space-y-2 text-gray-700 dark:text-gray-300">
-              {benefits.map((benefit: string, index: number) => (
-                <li key={index} className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  <span>{benefit}</span>
-                </li>
+            </Text>
+            <Box
+              as="ul"
+              listStyleType="none"
+              pl={0}
+              m={0}
+              display="flex"
+              flexDirection="column"
+              gap={2}
+            >
+              {benefits.map((benefit, index) => (
+                <ListRow key={index}>{benefit}</ListRow>
               ))}
-            </ul>
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Flex>
       )}
-    </div>
+    </Box>
   );
 };
 

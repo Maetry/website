@@ -516,6 +516,19 @@
     "retry": "Intentar de nuevo"
   },
   "meta": {
+    "home": {
+      "title": "Maetry — Software de gestión para salones y marketplace de reservas de belleza",
+      "description": "Maetry ayuda a los salones a gestionar reservas y a los clientes a descubrir y reservar servicios de belleza."
+    },
+    "business": {
+      "title": "Maetry para salones — Reservas, horarios y gestión del salón",
+      "description": "Gestiona reservas, horarios del equipo, recordatorios y la operación diaria del salón en un solo lugar."
+    },
+    "affiliate": {
+      "title": "Programa de socios de Maetry | Refiere salones y genera ingresos recurrentes",
+      "description": "Programa de socios de Maetry para consultores, agencias y partners del sector que ayudan a salones a ordenar reservas y operación diaria.",
+      "keywords": "programa de socios maetry, referidos software para salones, software de gestión para salones, partnership belleza, ingresos recurrentes"
+    },
     "ambassador": {
       "title": "Programa de socios de Maetry | Refiere salones y genera ingresos recurrentes",
       "description": "Programa de socios de Maetry para consultores, agencias y partners del sector que ayudan a salones a ordenar reservas y operación diaria.",

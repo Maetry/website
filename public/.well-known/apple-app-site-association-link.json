@@ -5,7 +5,14 @@
       {
         "appID": "HWPQBM32W8.com.maetry",
         "paths": [
-          "/*"
+          "/b/*",
+          "/ci/*"
+        ]
+      },
+      {
+        "appID": "HWPQBM32W8.com.maetry.console",
+        "paths": [
+          "/si/*"
         ]
       }
     ]
@@ -16,4 +23,3 @@
     ]
   }
 }
-

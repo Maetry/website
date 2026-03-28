@@ -1,6 +1,13 @@
 # *
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /*/booking/
+Disallow: /*/visits/
+Disallow: /*/billing
+Disallow: /*/staff/invite
+Disallow: /*/client/invite
+Disallow: /*/link/
 
 # Host
 Host: https://maetry.com

@@ -2,55 +2,22 @@
 
 import { useEffect } from "react";
 
+import { useTheme } from "next-themes";
+
 import { setTheme } from "@/entities/theme";
 import { useAppDispatch } from "@/lib/hooks";
 
-import {
-  THEME_STORAGE_KEY,
-  applyResolvedTheme,
-  getStoredThemePreference,
-  resolveThemePreference,
-} from "./theme";
-
+/** Синхронизация Redux с resolved-темой next-themes (источник — класс на html) */
 const ThemeBootstrap = () => {
   const dispatch = useAppDispatch();
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (!resolvedTheme) {
       return;
     }
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const syncTheme = () => {
-      const preference = getStoredThemePreference();
-      const resolved = resolveThemePreference(preference, mediaQuery.matches);
-
-      applyResolvedTheme(resolved);
-      dispatch(setTheme(resolved === "dark"));
-    };
-
-    const handleSystemThemeChange = () => {
-      if (getStoredThemePreference() === "system") {
-        syncTheme();
-      }
-    };
-
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === null || event.key === THEME_STORAGE_KEY) {
-        syncTheme();
-      }
-    };
-
-    syncTheme();
-    mediaQuery.addEventListener("change", handleSystemThemeChange);
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleSystemThemeChange);
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [dispatch]);
+    dispatch(setTheme(resolvedTheme === "dark"));
+  }, [resolvedTheme, dispatch]);
 
   return null;
 };

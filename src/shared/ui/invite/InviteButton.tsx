@@ -16,7 +16,7 @@ const InviteButton = () => {
 
   useEffect(() => {
     if (id && salonId) {
-      setUrl(`/clients/invite?id=${id}&salonId=${salonId}`);
+      setUrl(`/client/invite?id=${id}&salonId=${salonId}`);
     }
   }, [id, salonId]);
 

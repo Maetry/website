@@ -5,8 +5,12 @@
       {
         "appID": "HWPQBM32W8.com.maetry",
         "paths": [
-          "/appointment/*",
-          "/*/appointment/*",
+          "/visits/*",
+          "/*/visits/*",
+          "/booking",
+          "/*/booking",
+          "/booking/*",
+          "/*/booking/*",
           "/*/mirror/*",
           "/mirror/*",
           "/*/mirror",
@@ -21,4 +25,3 @@
     ]
   }
 }
-

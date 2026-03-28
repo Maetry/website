@@ -473,6 +473,19 @@
     "analyticsIntegration": "analytics and integrations"
   },
   "meta": {
+    "home": {
+      "title": "Maetry — Salon management software and beauty booking marketplace",
+      "description": "Maetry helps salons manage bookings and helps clients discover and book beauty services."
+    },
+    "business": {
+      "title": "Maetry for salons — Booking, schedules and salon operations",
+      "description": "Manage bookings, staff schedules, client reminders and day-to-day salon operations in one place."
+    },
+    "affiliate": {
+      "title": "Maetry partner program | Refer salons and earn recurring revenue",
+      "description": "Join the Maetry partner program for consultants, agencies and industry partners who help salons improve bookings and operations.",
+      "keywords": "maetry partner program, salon software referrals, beauty salon partnership, salon operations software, recurring partner revenue"
+    },
     "ambassador": {
       "title": "Maetry partner program | Refer salons and earn recurring revenue",
       "description": "Join the Maetry partner program for consultants, agencies and industry partners who help salons improve bookings and operations.",
