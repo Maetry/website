@@ -4,9 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import {
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  Clock3,
+  MapPin,
+  WalletCards,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
-  Avatar,
   Button,
   Paragraph,
   Separator,
@@ -29,24 +37,6 @@ type VisitViewProps = {
   visitId: string;
   locale: string;
 };
-
-function getInitials(value?: string | null) {
-  if (!value) {
-    return "M";
-  }
-
-  const parts = value
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
-
-  if (!parts.length) {
-    return "M";
-  }
-
-  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
-}
 
 const formatCurrency = (
   amount?: number | null,
@@ -85,6 +75,65 @@ const getWalletUrl = (response: AppointmentResponse | null) => {
   return { apple, google };
 };
 
+function VisitInfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  value?: string | null;
+}) {
+  return (
+    <XStack alignItems="flex-start" gap="$3">
+      {icon ? (
+        <XStack
+          alignItems="center"
+          backgroundColor="rgba(0,122,255,0.08)"
+          borderRadius="$4"
+          height={36}
+          justifyContent="center"
+          width={36}
+        >
+          <Text color="$primary">{icon}</Text>
+        </XStack>
+      ) : null}
+      <YStack flex={1} gap="$1">
+        <Text color="$textSecondary" fontSize="$2" fontWeight="600" textTransform="uppercase">
+          {label}
+        </Text>
+        <Text color="$textPrimary" fontSize="$5" fontWeight="600" lineHeight={22}>
+          {value || "—"}
+        </Text>
+      </YStack>
+    </XStack>
+  );
+}
+
+function HeaderCircleButton({
+  children,
+  onPress,
+}: {
+  children: React.ReactNode;
+  onPress?: () => void;
+}) {
+  return (
+    <Button
+      alignItems="center"
+      backgroundColor="rgba(255,255,255,0.92)"
+      borderRadius={999}
+      chromeless
+      height={44}
+      justifyContent="center"
+      onPress={onPress}
+      pressStyle={{ opacity: 0.78 }}
+      width={44}
+    >
+      {children}
+    </Button>
+  );
+}
+
 export function VisitView({ visitId, locale }: VisitViewProps) {
   const t = useTranslations("booking");
   const router = useRouter();
@@ -93,7 +142,6 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [salonIcon, setSalonIcon] = useState<string | null>(null);
   const [salonName, setSalonName] = useState<string | null>(null);
   const [salonId, setSalonId] = useState<string | null>(null);
   const [timeZoneId] = useState<string>("UTC");
@@ -116,11 +164,6 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
         if (appointmentData.salonName) {
           setSalonName(appointmentData.salonName);
         }
-
-        if (appointmentData.salonIcon) {
-          setSalonIcon(appointmentData.salonIcon);
-        }
-
         if (appointmentData.procedureId && appointmentData.salonId) {
           try {
             const proceduresData = await getSalonProcedures({
@@ -206,7 +249,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
     return (
       <YStack
         alignItems="center"
-        backgroundColor="$background"
+        backgroundColor="$appBackground"
         flex={1}
         justifyContent="center"
         padding="$6"
@@ -228,7 +271,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
     return (
       <YStack
         alignItems="center"
-        backgroundColor="$background"
+        backgroundColor="$appBackground"
         flex={1}
         justifyContent="center"
         padding="$6"
@@ -247,142 +290,168 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
   }
 
   return (
-    <YStack backgroundColor="$background" flex={1}>
+    <YStack
+      backgroundColor="$appBackground"
+      flex={1}
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(242,242,247,0.96) 0%, rgba(233,233,238,1) 100%)",
+      }}
+    >
       <YStack alignSelf="center" gap="$4" maxWidth={560} padding="$4" width="100%">
-        <YStack
-          alignItems="center"
-          backgroundColor="$background"
-          borderColor="$borderColor"
-          borderRadius="$6"
-          borderWidth={1}
-          gap="$3"
-          padding="$4"
-        >
-          <Avatar circular size="$6">
-            <Avatar.Image src={salonIcon ?? undefined} />
-            <Avatar.Fallback alignItems="center" justifyContent="center">
-              <Text fontSize="$5" fontWeight="800">
-                {getInitials(salonName ?? t("salonFallbackName"))}
+        <YStack gap="$3">
+          <XStack alignSelf="center" backgroundColor="rgba(60,60,67,0.18)" borderRadius={999} height={5} width={46} />
+          <XStack alignItems="center" justifyContent="space-between">
+            <HeaderCircleButton onPress={() => (salonId ? router.push(`/${locale}/booking/${salonId}`) : router.push(`/${locale}/booking`))}>
+              <Text color="$textPrimary">
+                <ChevronLeft size={20} />
               </Text>
-            </Avatar.Fallback>
-          </Avatar>
-          <YStack gap="$1">
-            <Text fontSize="$8" fontWeight="800" textAlign="center">
-              {t("successTitle")}
+            </HeaderCircleButton>
+            <Text color="$textPrimary" fontSize="$5" fontWeight="700">
+              {t("summaryTitle")}
             </Text>
-            <Paragraph color="$color11" textAlign="center">
-              {t("successSubtitle")}
-            </Paragraph>
-            <Text fontSize="$6" fontWeight="700" textAlign="center">
+            <HeaderCircleButton>
+              <Text color="$primary">
+                <Check size={20} />
+              </Text>
+            </HeaderCircleButton>
+          </XStack>
+
+          <YStack alignItems="center" gap="$1.5" paddingHorizontal="$3">
+            <Text color="$textPrimary" fontSize="$9" fontWeight="800" textAlign="center">
+              {procedure?.serviceTitle ?? procedure?.serviceDescription ?? t("headline")}
+            </Text>
+            <Paragraph color="#ff5a5f" fontSize="$4" fontWeight="500" textAlign="center">
               {salonName ?? t("salonFallbackName")}
-            </Text>
+            </Paragraph>
             {appointmentDate ? (
-              <Paragraph color="$color11" size="$3" textAlign="center">
+              <Text color="$textPrimary" fontSize="$5" fontWeight="600" textAlign="center">
                 {appointmentDate}
+              </Text>
+            ) : null}
+            {appointmentTime ? (
+              <Paragraph color="$textSecondary" textAlign="center">
+                {appointmentTime}
               </Paragraph>
             ) : null}
           </YStack>
         </YStack>
 
         <YStack
-          backgroundColor="$background"
-          borderColor="$borderColor"
-          borderRadius="$6"
-          borderWidth={1}
+          backgroundColor="$cardBackground"
+          borderRadius="$8"
           overflow="hidden"
+          padding="$4"
         >
-          {procedure ? (
-            <YStack padding="$3">
-              <XStack justifyContent="space-between">
-                <YStack flex={1} gap="$1">
-                  <Text color="$color11" fontSize="$2" textTransform="uppercase">
-                    {t("summaryService")}
-                  </Text>
-                  <Text fontSize="$5" fontWeight="600">
-                    {procedure.serviceTitle ??
-                      procedure.serviceDescription ??
-                      t("headline")}
-                  </Text>
-                  <Paragraph color="$color11" size="$3">
-                    {procedure.masterNickname ?? t("masterAny")}
-                  </Paragraph>
-                </YStack>
+          <YStack gap="$4">
+            {procedure ? (
+              <YStack gap="$3">
+                <VisitInfoRow
+                  icon={<WalletCards size={18} />}
+                  label={t("summaryService")}
+                  value={
+                    procedure.serviceTitle ??
+                    procedure.serviceDescription ??
+                    t("headline")
+                  }
+                />
+                <VisitInfoRow
+                  icon={<CheckCircle2 size={18} />}
+                  label={t("summarySpecialist")}
+                  value={procedure.masterNickname ?? t("masterAny")}
+                />
                 {appointmentPrice ? (
-                  <Text color="$color11" fontSize="$3">
-                    {appointmentPrice}
-                  </Text>
-                ) : null}
-              </XStack>
-              <Separator marginTop="$3" />
-            </YStack>
-          ) : null}
-
-          {appointmentDate ? (
-            <YStack padding="$3">
-              <XStack justifyContent="space-between">
-                <YStack flex={1} gap="$1">
-                  <Text color="$color11" fontSize="$2" textTransform="uppercase">
-                    {t("summaryDate")}
-                  </Text>
-                  <Text fontSize="$5" fontWeight="600">
-                    {appointmentDate}
-                  </Text>
-                  {appointmentTime ? (
-                    <Paragraph color="$color11" size="$3">
-                      {appointmentTime}
-                    </Paragraph>
-                  ) : null}
-                </YStack>
-              </XStack>
-              <Separator marginTop="$3" />
-            </YStack>
-          ) : null}
-
-          <YStack padding="$3">
-            <XStack justifyContent="space-between">
-              <YStack flex={1} gap="$1">
-                <Text color="$color11" fontSize="$2" textTransform="uppercase">
-                  {t("summarySalon")}
-                </Text>
-                <Text fontSize="$5" fontWeight="600">
-                  {salonName ?? t("salonFallbackName")}
-                </Text>
-                {appointmentPrice ? (
-                  <Paragraph color="$color11" size="$3">
-                    {appointmentPrice}
-                  </Paragraph>
+                  <VisitInfoRow
+                    icon={<WalletCards size={18} />}
+                    label={t("summaryPrice")}
+                    value={appointmentPrice}
+                  />
                 ) : null}
               </YStack>
-            </XStack>
+            ) : null}
+
+            {procedure ? <Separator /> : null}
+
+            {appointmentDate ? (
+              <YStack gap="$3">
+                <VisitInfoRow
+                  icon={<CalendarDays size={18} />}
+                  label={t("summaryDate")}
+                  value={appointmentDate}
+                />
+                {appointmentTime ? (
+                  <VisitInfoRow
+                    icon={<Clock3 size={18} />}
+                    label={t("summaryTime")}
+                    value={appointmentTime}
+                  />
+                ) : null}
+              </YStack>
+            ) : null}
+
+            {appointmentDate ? <Separator /> : null}
+
+            <VisitInfoRow
+              icon={<MapPin size={18} />}
+              label={t("summarySalon")}
+              value={salonName ?? t("salonFallbackName")}
+            />
           </YStack>
         </YStack>
 
-        <Button onPress={handleCreateAnother} width="100%">
-          {t("successCreateAnother")}
-        </Button>
-
         {appleWalletUrl || googleWalletUrl ? (
-          <YStack gap="$3">
+          <YStack
+            backgroundColor="$cardBackground"
+            borderRadius="$8"
+            gap="$3"
+            padding="$4"
+          >
+            <Text color="$textPrimary" fontSize="$6" fontWeight="700">
+              Wallet
+            </Text>
+            <Paragraph color="$textSecondary" size="$3">
+              {t("successBookingHint")}
+            </Paragraph>
             {appleWalletUrl ? (
               <Button
+                backgroundColor="$primary"
+                borderRadius={999}
                 onPress={() => handleOpenWallet(appleWalletUrl)}
-                variant="outlined"
                 width="100%"
               >
-                {t("walletApple")}
+                <Text color="white" fontSize="$4" fontWeight="600">
+                  {t("walletApple")}
+                </Text>
               </Button>
             ) : null}
             {googleWalletUrl ? (
               <Button
+                backgroundColor="$cardBackground"
+                borderColor="$separator"
+                borderRadius={999}
+                borderWidth={1}
                 onPress={() => handleOpenWallet(googleWalletUrl)}
-                variant="outlined"
                 width="100%"
               >
-                {t("walletGoogle")}
+                <Text color="$textPrimary" fontSize="$4" fontWeight="600">
+                  {t("walletGoogle")}
+                </Text>
               </Button>
             ) : null}
           </YStack>
         ) : null}
+
+        <Button
+          backgroundColor="rgba(255,255,255,0.92)"
+          borderRadius={999}
+          onPress={handleCreateAnother}
+          width={170}
+          alignSelf="center"
+        >
+          <Text color="#ff4d4f" fontSize="$4" fontWeight="500">
+            {t("successCreateAnother")}
+          </Text>
+        </Button>
       </YStack>
     </YStack>
   );
