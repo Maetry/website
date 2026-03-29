@@ -23,6 +23,18 @@
     ],
     "baseUrl": ".",
     "paths": {
+      "@maetry/shared-dtos": [
+        "../Shared/modules/TypeScriptDTOs/src/index.ts"
+      ],
+      "@maetry/shared-dtos/*": [
+        "../Shared/modules/TypeScriptDTOs/src/*"
+      ],
+      "@maetry/shared-sdk": [
+        "../Shared/modules/TypeScriptSDK/src/index.ts"
+      ],
+      "@maetry/shared-sdk/*": [
+        "../Shared/modules/TypeScriptSDK/src/*"
+      ],
       "@/public/*": [
         "./public/*"
       ],

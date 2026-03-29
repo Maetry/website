@@ -60,6 +60,11 @@
     "masterNotRequired": "Si hace falta, el salón asignará el especialista adecuado.",
     "timeSelectDate": "Elige una fecha",
     "timeSelectTime": "Elige una hora",
+    "timePeriods": {
+      "morning": "Mañana",
+      "day": "Tarde",
+      "evening": "Noche"
+    },
     "summaryTitle": "Resumen de la reserva",
     "summaryService": "Servicio",
     "summarySpecialist": "Especialista",
@@ -522,7 +527,8 @@
     },
     "business": {
       "title": "Maetry para salones — Reservas, horarios y gestión del salón",
-      "description": "Gestiona reservas, horarios del equipo, recordatorios y la operación diaria del salón en un solo lugar."
+      "description": "Gestiona reservas, horarios del equipo, recordatorios y la operación diaria del salón en un solo lugar.",
+      "keywords": "maetry, software para salones, gestión de salón, sistema de reservas, horarios del equipo, crm salón"
     },
     "affiliate": {
       "title": "Programa de socios de Maetry | Refiere salones y genera ingresos recurrentes",

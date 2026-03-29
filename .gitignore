@@ -42,3 +42,4 @@ public/.DS_Store
 /.build
 .env.production
 .env.staging
+/.cursor

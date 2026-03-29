@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+import "@telegram-apps/telegram-ui/dist/styles.css";
+
+import type { Metadata, Viewport } from "next";
 import { getTranslations } from "next-intl/server";
 
 import BookingScreen from "./BookingScreen";
@@ -32,6 +34,10 @@ export async function generateMetadata({
     },
   };
 }
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
 
 const BookingPage = async ({ params }: BookingPageProps) => {
   const resolvedParams = await params;

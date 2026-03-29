@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { MarketingHeader } from "./MarketingHeader";
 import type { HeaderAction, HeaderLink } from "./types";
 
-interface HeaderProps {
+export type HeaderProps = {
   nav?: HeaderLink[];
   primaryAction?: HeaderAction;
   secondaryAction?: HeaderAction;
@@ -11,7 +11,7 @@ interface HeaderProps {
   showThemeSwitcher?: boolean;
   showLocaleSwitcher?: boolean;
   navStyle?: "pill" | "inline";
-}
+};
 
 const Header = async ({
   nav,

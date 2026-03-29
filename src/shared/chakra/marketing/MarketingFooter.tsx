@@ -20,8 +20,7 @@ import ThemeSwitcher from "@/shared/ui/theme-switcher/ThemeSwitcher";
 
 type FooterLink = { href: string; label: string; newTab?: boolean };
 
-export type MarketingFooterLandingProps = {
-  mode: "landing";
+export type MarketingFooterProps = {
   tagline: string;
   businessHref: string;
   appHref: string;
@@ -32,7 +31,7 @@ export type MarketingFooterLandingProps = {
   partnershipLabel: string;
   privacyLabel: string;
   termsLabel: string;
-  languageLabel: string;
+  appearanceLabel: string;
   legalSectionLabel: string;
   footerRights: string;
   telegramLabel: string;
@@ -44,59 +43,10 @@ export type MarketingFooterLandingProps = {
   /** Якорь на секцию Discover на клиентской главной */
   discoverHref: string;
   discoverLabel: string;
-  /** Подпись ссылки на лендинг для бизнеса */
-  businessSiteLabel: string;
 };
-
-export type MarketingFooterSiteProps = {
-  mode: "site";
-  locale: string;
-  productTitle: string;
-  companyTitle: string;
-  legalTitle: string;
-  connectTitle: string;
-  productLinks: FooterLink[];
-  companyLinks: FooterLink[];
-  legalLinks: FooterLink[];
-  connectLinks: FooterLink[];
-  allRightsReserved: string;
-};
-
-export type MarketingFooterProps =
-  | MarketingFooterLandingProps
-  | MarketingFooterSiteProps;
 
 function isExternal(href: string) {
   return href.startsWith("http") || href.startsWith("mailto:");
-}
-
-function FooterNavLink({ href, label, newTab }: FooterLink) {
-  const linkProps = {
-    fontSize: "sm",
-    color: "marketing.fgMuted",
-    _hover: { color: "marketing.fg" },
-  };
-
-  if (isExternal(href) || newTab) {
-    return (
-      <ChakraLink
-        href={href}
-        target={newTab || isExternal(href) ? "_blank" : undefined}
-        rel={newTab || isExternal(href) ? "noopener noreferrer" : undefined}
-        {...linkProps}
-      >
-        {label}
-      </ChakraLink>
-    );
-  }
-
-  return (
-    <NextLink href={href} style={{ textDecoration: "none" }}>
-      <Box as="span" cursor="pointer" {...linkProps}>
-        {label}
-      </Box>
-    </NextLink>
-  );
 }
 
 const landingDarkLink = {
@@ -128,7 +78,7 @@ function LandingFooterNavLink({ href, label, newTab }: FooterLink) {
   );
 }
 
-function LandingFooter(p: MarketingFooterLandingProps) {
+export function MarketingFooter(p: MarketingFooterProps) {
   const columnTitle = {
     fontSize: "sm",
     fontWeight: "semibold",
@@ -137,7 +87,12 @@ function LandingFooter(p: MarketingFooterLandingProps) {
   };
 
   return (
-    <Box as="footer" bg="marketing.cardDark" color="white">
+    <Box
+      as="footer"
+      bg="marketing.cardDark"
+      color="white"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
       <Box maxW="7xl" mx="auto" px={{ base: 4, sm: 6, lg: 8 }} py={{ base: 10, lg: 14 }}>
         <Grid
           templateColumns={{
@@ -177,7 +132,7 @@ function LandingFooter(p: MarketingFooterLandingProps) {
           <Box>
             <Text {...columnTitle}>{p.businessSectionTitle}</Text>
             <VStack gap={2.5} align="stretch">
-              <LandingFooterNavLink href={p.businessHref} label={p.businessSiteLabel} />
+              <LandingFooterNavLink href={p.businessHref} label={p.discoverLabel} />
               <LandingFooterNavLink
                 href={`/${p.activeLocale}/affiliate`}
                 label={p.partnershipLabel}
@@ -232,7 +187,7 @@ function LandingFooter(p: MarketingFooterLandingProps) {
           flexWrap="wrap"
         >
           <Text fontSize="sm" fontWeight="medium" color="rgba(255,255,255,0.85)">
-            {p.languageLabel}
+            {p.appearanceLabel}
           </Text>
           <HStack gap={2} align="center" flexWrap="wrap">
             <LanguageSwitcher variant="onDark" />
@@ -261,90 +216,4 @@ function LandingFooter(p: MarketingFooterLandingProps) {
       </Box>
     </Box>
   );
-}
-
-function SiteFooter(p: MarketingFooterSiteProps) {
-  return (
-    <Box
-      as="footer"
-      w="full"
-      borderTopWidth="1px"
-      borderColor="marketing.border"
-      bg={{ base: "white", _dark: "#13131A" }}
-    >
-      <Box maxW="7xl" mx="auto" px={6} py={16}>
-        <Grid
-          templateColumns={{ base: "repeat(2,1fr)", md: "repeat(4,1fr)" }}
-          gap={8}
-          mb={12}
-        >
-          <Box>
-            <Text fontSize="sm" fontWeight="bold" color="marketing.fg" mb={4}>
-              {p.productTitle}
-            </Text>
-            <VStack gap={3} align="stretch">
-              {p.productLinks.map((item) => (
-                <FooterNavLink key={item.href} {...item} />
-              ))}
-            </VStack>
-          </Box>
-          <Box>
-            <Text fontSize="sm" fontWeight="bold" color="marketing.fg" mb={4}>
-              {p.companyTitle}
-            </Text>
-            <VStack gap={3} align="stretch">
-              {p.companyLinks.map((item) => (
-                <FooterNavLink key={item.href} {...item} />
-              ))}
-            </VStack>
-          </Box>
-          <Box>
-            <Text fontSize="sm" fontWeight="bold" color="marketing.fg" mb={4}>
-              {p.legalTitle}
-            </Text>
-            <VStack gap={3} align="stretch">
-              {p.legalLinks.map((item) => (
-                <FooterNavLink key={item.href} {...item} />
-              ))}
-            </VStack>
-          </Box>
-          <Box>
-            <Text fontSize="sm" fontWeight="bold" color="marketing.fg" mb={4}>
-              {p.connectTitle}
-            </Text>
-            <VStack gap={3} align="stretch">
-              {p.connectLinks.map((item) => (
-                <FooterNavLink key={item.href} {...item} />
-              ))}
-            </VStack>
-          </Box>
-        </Grid>
-
-        <Flex
-          pt={8}
-          borderTopWidth="1px"
-          borderColor="marketing.border"
-          direction={{ base: "column", md: "row" }}
-          justify="space-between"
-          align="center"
-          gap={4}
-        >
-          <Text fontSize="sm" color="marketing.fgMuted" whiteSpace="nowrap">
-            {p.allRightsReserved}
-          </Text>
-          <HStack gap={4}>
-            <ThemeSwitcher />
-            <LanguageSwitcher />
-          </HStack>
-        </Flex>
-      </Box>
-    </Box>
-  );
-}
-
-export function MarketingFooter(props: MarketingFooterProps) {
-  if (props.mode === "landing") {
-    return <LandingFooter {...props} />;
-  }
-  return <SiteFooter {...props} />;
 }

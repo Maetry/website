@@ -6,6 +6,7 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
+    externalDir: true,
     // Прямые импорты иконок, стабильные server/client chunks (избегает ENOENT vendor-chunks)
     optimizePackageImports: ["@chakra-ui/react", "lucide-react"],
   },

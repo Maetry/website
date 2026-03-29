@@ -1,7 +1,19 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { handleValidationError, proxyApiRequest } from "@/lib/api/route-handler";
+import {
+  getPublicBookingSalonCatalog,
+  getPublicBookingSalonMasters,
+  getPublicBookingSalonProfile,
+} from "@maetry/shared-sdk";
+
+import {
+  MAETRY_THROW_ON_ERROR_OPTIONS,
+  createMaetryServerClient,
+  maetrySdkErrorResponse,
+  unwrapMaetrySdkResult,
+} from "@/lib/api/maetry-sdk.server";
+import { handleValidationError } from "@/lib/api/route-handler";
 import { validateId } from "@/lib/api/validation";
 
 const RESOURCE_PATHS = {
@@ -35,17 +47,38 @@ export async function GET(request: NextRequest, context: RouteParams) {
 
   try {
     const salonId = validateId(rawSalonId, "salonId");
-    const path = `/salon/${encodeURIComponent(salonId)}/${RESOURCE_PATHS[resource]}`;
+    const client = createMaetryServerClient();
 
-    return proxyApiRequest({
-      method: "GET",
-      path,
-      request,
-      errorCode: `FAILED_TO_FETCH_${resource.toUpperCase()}`,
+    if (resource === "profile") {
+      const result = await getPublicBookingSalonProfile({
+        client,
+        path: { salonId },
+        ...MAETRY_THROW_ON_ERROR_OPTIONS,
+      });
+      return NextResponse.json(unwrapMaetrySdkResult(result));
+    }
+
+    if (resource === "catalog") {
+      const result = await getPublicBookingSalonCatalog({
+        client,
+        path: { salonId },
+        ...MAETRY_THROW_ON_ERROR_OPTIONS,
+      });
+      return NextResponse.json(unwrapMaetrySdkResult(result));
+    }
+
+    const result = await getPublicBookingSalonMasters({
+      client,
+      path: { salonId },
+      ...MAETRY_THROW_ON_ERROR_OPTIONS,
     });
+    return NextResponse.json(unwrapMaetrySdkResult(result));
   } catch (error) {
     const validationError = handleValidationError(error, "INVALID_SALON_ID");
     if (validationError) return validationError;
-    throw error;
+    return maetrySdkErrorResponse(
+      error,
+      `FAILED_TO_FETCH_${resource.toUpperCase()}`,
+    );
   }
 }

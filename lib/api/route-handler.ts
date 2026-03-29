@@ -27,12 +27,28 @@ export async function proxyApiRequest({
   try {
     const apiUrl = resolveApiUrl();
     const targetUrl = `${apiUrl}${path}`;
+    const authorization = request.headers.get("authorization");
+    const deviceId = request.headers.get("device-id") ?? request.headers.get("Device-ID");
+    const idempotencyKey =
+      request.headers.get("idempotency-key") ?? request.headers.get("Idempotency-Key");
 
     const defaultHeaders: Record<string, string> = {
       "Accept": "application/json",
       "User-Agent": request.headers.get("user-agent") ?? "",
       ...headers,
     };
+
+    if (authorization) {
+      defaultHeaders.Authorization = authorization;
+    }
+
+    if (deviceId) {
+      defaultHeaders["Device-ID"] = deviceId;
+    }
+
+    if (idempotencyKey && !defaultHeaders["Idempotency-Key"]) {
+      defaultHeaders["Idempotency-Key"] = idempotencyKey;
+    }
 
     const fetchOptions: RequestInit = {
       method,

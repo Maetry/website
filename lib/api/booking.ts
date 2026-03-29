@@ -1,44 +1,45 @@
-import { handleApiResponse } from './error-handler';
+"use client";
 
-// Типы
-export type Step = 'service' | 'master' | 'time' | 'details';
+import { clientApiRequest } from "./client";
+
+export type Step = "service" | "master" | "time" | "details";
 
 export type Procedure = {
-  id: string;
   alias?: string;
   duration?: number;
-  price?: {
-    amount: number;
-    currency: string;
-  };
-  serviceTitle?: string;
-  serviceDescription?: string;
+  id: string;
+  masterAvatar?: string | null;
   masterId?: string | null;
   masterNickname?: string | null;
-  masterAvatar?: string | null;
   parameters?: Array<{
-    id: string;
-    title: string;
     cases?: Array<{
       id: string;
-      title: string;
       price?: {
         amount: number;
         currency: string;
       };
+      title: string;
     }>;
+    id: string;
+    title: string;
   }>;
+  price?: {
+    amount: number;
+    currency: string;
+  };
+  serviceDescription?: string;
+  serviceTitle?: string;
 };
 
 export type ProcedureGroup = {
-  id: string;
-  title: string;
-  description?: string;
   currency?: string | null;
-  minPrice?: number | null;
-  maxPrice?: number | null;
+  description?: string;
   duration?: number | null;
+  id: string;
+  maxPrice?: number | null;
+  minPrice?: number | null;
   procedures: Procedure[];
+  title: string;
 };
 
 export type ProceduresResponse = {
@@ -46,8 +47,8 @@ export type ProceduresResponse = {
 };
 
 export type SlotInterval = {
-  start: string;
   end: string;
+  start: string;
 };
 
 export type SlotsResponse = {
@@ -57,39 +58,39 @@ export type SlotsResponse = {
 
 export type AppointmentResponse = {
   appointmentId?: string;
-  salonId?: string;
-  salonName?: string;
-  salonIcon?: string;
-  procedureId?: string;
-  time?: SlotInterval;
+  appleWalletUrl?: string;
+  googleWalletUrl?: string;
+  masterId?: string | null;
+  masterNickname?: string | null;
   price?: {
     amount: number;
     currency: string;
   };
-  masterId?: string | null;
-  masterNickname?: string | null;
-  appleWalletUrl?: string;
-  googleWalletUrl?: string;
-  walletLinks?: {
+  procedureId?: string;
+  salonIcon?: string;
+  salonId?: string;
+  salonName?: string;
+  time?: SlotInterval;
+  wallet?: {
     apple?: string;
     google?: string;
   };
-  wallet?: {
+  walletLinks?: {
     apple?: string;
     google?: string;
   };
 };
 
-// Обратная совместимость - используем ApiError напрямую
-export { ApiError as BookingApiError } from './error-handler';
+export { ApiError as BookingApiError } from "./error-handler";
 
 export type CreateAppointmentPayload = {
   clientName: string;
   clientPhone: string;
+  executorId?: string | null;
   procedureId: string;
   time: {
-    start: string;
     end: string;
+    start: string;
   };
   trackingId?: string | null;
 };
@@ -98,7 +99,6 @@ type FetchOptions = {
   salonId: string;
 };
 
-// Функции
 export type GetSalonProceduresParams = FetchOptions & {
   locale: string;
   signal?: AbortSignal;
@@ -109,47 +109,37 @@ export async function getSalonProcedures({
   locale,
   signal,
 }: GetSalonProceduresParams): Promise<ProceduresResponse> {
-  const response = await fetch(
-    `/api/booking/salon/${encodeURIComponent(salonId)}/procedures`,
-    {
-      method: 'GET',
-      headers: {
-        languages: locale,
-      },
-      cache: 'no-store',
-      signal,
+  return clientApiRequest<ProceduresResponse>({
+    endpoint: `/api/booking/salon/${encodeURIComponent(salonId)}/procedures`,
+    headers: {
+      languages: locale,
     },
-  );
-
-  return handleApiResponse<ProceduresResponse>(response);
+    method: "GET",
+    signal,
+  });
 }
 
 export type SearchSalonSlotsParams = FetchOptions & {
-  procedureId: string;
   daysAhead: number;
+  executorId?: string | null;
+  procedureId: string;
 };
 
 export async function searchSalonSlots({
   salonId,
   procedureId,
+  executorId,
   daysAhead,
 }: SearchSalonSlotsParams): Promise<SlotsResponse> {
-  const response = await fetch(
-    `/api/booking/salon/${encodeURIComponent(salonId)}/search-slots`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        procedureId,
-        daysAhead,
-      }),
-      cache: 'no-store',
+  return clientApiRequest<SlotsResponse>({
+    body: {
+      daysAhead,
+      executorId,
+      procedureId,
     },
-  );
-
-  return handleApiResponse<SlotsResponse>(response);
+    endpoint: `/api/booking/salon/${encodeURIComponent(salonId)}/search-slots`,
+    method: "POST",
+  });
 }
 
 export type CreateSalonAppointmentParams = FetchOptions & {
@@ -160,19 +150,11 @@ export async function createSalonAppointment({
   salonId,
   payload,
 }: CreateSalonAppointmentParams): Promise<AppointmentResponse> {
-  const response = await fetch(
-    `/api/booking/salon/${encodeURIComponent(salonId)}/appointment`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-      cache: 'no-store',
-    },
-  );
-
-  return handleApiResponse<AppointmentResponse>(response);
+  return clientApiRequest<AppointmentResponse>({
+    body: payload,
+    endpoint: `/api/booking/salon/${encodeURIComponent(salonId)}/appointment`,
+    method: "POST",
+  });
 }
 
 export type GetSalonAppointmentParams = FetchOptions & {
@@ -183,15 +165,10 @@ export async function getSalonAppointment({
   salonId,
   appointmentId,
 }: GetSalonAppointmentParams): Promise<AppointmentResponse> {
-  const response = await fetch(
-    `/api/booking/salon/${encodeURIComponent(salonId)}/appointment/${encodeURIComponent(appointmentId)}`,
-    {
-      method: 'GET',
-      cache: 'no-store',
-    },
-  );
-
-  return handleApiResponse<AppointmentResponse>(response);
+  return clientApiRequest<AppointmentResponse>({
+    endpoint: `/api/booking/salon/${encodeURIComponent(salonId)}/appointment/${encodeURIComponent(appointmentId)}`,
+    method: "GET",
+  });
 }
 
 export type GetAppointmentParams = {
@@ -201,38 +178,27 @@ export type GetAppointmentParams = {
 export async function getAppointment({
   appointmentId,
 }: GetAppointmentParams): Promise<AppointmentResponse> {
-  const response = await fetch(
-    `/api/booking/appointment/${encodeURIComponent(appointmentId)}`,
-    {
-      method: 'GET',
-      cache: 'no-store',
-    },
-  );
-
-  return handleApiResponse<AppointmentResponse>(response);
+  return clientApiRequest<AppointmentResponse>({
+    endpoint: `/api/booking/appointment/${encodeURIComponent(appointmentId)}`,
+    method: "GET",
+  });
 }
 
 export type GetWalletUrlParams = {
   appointmentId: string;
-  type: 'apple' | 'google';
+  type: "apple" | "google";
 };
 
 export async function getWalletUrl({
   appointmentId,
   type,
 }: GetWalletUrlParams): Promise<{ url: string }> {
-  const response = await fetch(
-    `/api/wallet/${type}?id=${encodeURIComponent(appointmentId)}`,
-    {
-      method: 'GET',
-      cache: 'no-store',
-    },
-  );
-
-  return handleApiResponse<{ url: string }>(response);
+  return clientApiRequest<{ url: string }>({
+    endpoint: `/api/wallet/${type}?id=${encodeURIComponent(appointmentId)}`,
+    method: "GET",
+  });
 }
 
-// Обратная совместимость
 export type GetAppleWalletUrlParams = {
   appointmentId: string;
 };
@@ -240,7 +206,7 @@ export type GetAppleWalletUrlParams = {
 export async function getAppleWalletUrl({
   appointmentId,
 }: GetAppleWalletUrlParams): Promise<{ url: string }> {
-  return getWalletUrl({ appointmentId, type: 'apple' });
+  return getWalletUrl({ appointmentId, type: "apple" });
 }
 
 export type GetGoogleWalletUrlParams = {
@@ -250,6 +216,5 @@ export type GetGoogleWalletUrlParams = {
 export async function getGoogleWalletUrl({
   appointmentId,
 }: GetGoogleWalletUrlParams): Promise<{ url: string }> {
-  return getWalletUrl({ appointmentId, type: 'google' });
+  return getWalletUrl({ appointmentId, type: "google" });
 }
-

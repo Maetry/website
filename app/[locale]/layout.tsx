@@ -1,12 +1,14 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 
 import { FirebaseTracker } from "@/lib/firebase";
 import { PlatformProvider } from "@/lib/userAgent/PlatformProvider";
+import { GlobalMarketingFooter } from "@/shared/chakra/marketing/GlobalMarketingFooter";
+import { MarketingProviders } from "@/shared/chakra/MarketingProviders";
 import { StoreProvider } from "@/shared/store";
 import {
   AppThemeProvider,
@@ -49,6 +51,11 @@ export function generateStaticParams(): { locale: Locale }[] {
   return locales.map((locale) => ({ locale }));
 }
 
+/** Чтобы env(safe-area-inset-*) работали на iOS (футер до края экрана). */
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
+
 export default async function LocaleLayout({
   children,
   params,
@@ -74,7 +81,10 @@ export default async function LocaleLayout({
           <ThemeBootstrap />
           <PlatformProvider userAgent={userAgent}>
             <FirebaseTracker />
-            {children}
+            <MarketingProviders>
+              {children}
+              <GlobalMarketingFooter locale={locale} />
+            </MarketingProviders>
           </PlatformProvider>
         </AppThemeProvider>
       </StoreProvider>

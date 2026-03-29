@@ -14,6 +14,9 @@ import ThemeSwitcher from "@/shared/ui/theme-switcher/ThemeSwitcher";
 
 import type { HeaderAction, HeaderLink } from "./types";
 
+/** Горизонтальные отступы полосы хедера и выпадающего меню (одна сетка с логотипом). */
+const MARKETING_HEADER_GUTTER_X = { base: 4, sm: 6, lg: 8 } as const;
+
 function isExternalHref(href: string) {
   return href.startsWith("http") || href.startsWith("mailto:");
 }
@@ -143,8 +146,7 @@ export function MarketingHeader({
 
   const menuItemStyles = {
     py: 3,
-    px: 3,
-    rounded: "lg",
+    rounded: "md",
     cursor: "pointer",
     color: "marketing.fgMuted",
     _highlighted: {
@@ -162,7 +164,7 @@ export function MarketingHeader({
           align="center"
           justify="space-between"
           gap={4}
-          px={{ base: 4, sm: 6, lg: 8 }}
+          px={MARKETING_HEADER_GUTTER_X}
           py={3}
           minH="64px"
         >
@@ -211,6 +213,13 @@ export function MarketingHeader({
                   plain={navStyle === "inline"}
                 />
               ))}
+              {secondaryAction?.linkVariant === "secondaryGhost" ? (
+                <DesktopNavLink
+                  href={secondaryAction.href}
+                  label={secondaryAction.label}
+                  plain={navStyle === "inline"}
+                />
+              ) : null}
             </Flex>
             {showPrefs ? (
               <Flex
@@ -231,15 +240,11 @@ export function MarketingHeader({
                 {showLocaleSwitcher ? <LanguageSwitcher /> : null}
               </Flex>
             ) : null}
-            {secondaryAction ? (
+            {secondaryAction && secondaryAction.linkVariant !== "secondaryGhost" ? (
               <MarketingButtonLink
                 href={secondaryAction.href}
                 label={secondaryAction.label}
-                variant={
-                  secondaryAction.linkVariant === "secondaryGhost"
-                    ? "secondaryGhost"
-                    : "secondary"
-                }
+                variant="secondary"
               />
             ) : null}
             {primaryAction ? (
@@ -304,7 +309,8 @@ export function MarketingHeader({
                     maxW="100vw"
                     maxH="min(70dvh, 28rem)"
                     overflowY="auto"
-                    p={2}
+                    py={2}
+                    px={MARKETING_HEADER_GUTTER_X}
                     borderTopWidth="1px"
                     borderBottomWidth="0"
                     borderX={0}
@@ -319,7 +325,7 @@ export function MarketingHeader({
                   >
                     {nav.map((item) => (
                       <Menu.Item
-                        key={item.href}
+                        key={`${item.href}-${item.label}`}
                         value={item.href}
                         {...menuItemStyles}
                         onSelect={() => {
@@ -333,27 +339,41 @@ export function MarketingHeader({
                     ))}
 
                     {secondaryAction ? (
-                      <>
-                        <Menu.Separator my={2} borderColor="marketing.border" />
+                      secondaryAction.linkVariant === "secondaryGhost" ? (
                         <Menu.Item
                           value={`secondary-${secondaryAction.href}`}
                           {...menuItemStyles}
-                          py={2}
-                          fontSize="sm"
-                          color="marketing.fgSubtle"
                           onSelect={() => {
                             followInPageOrPush(secondaryAction.href, router);
                           }}
                         >
-                          <Menu.ItemText fontWeight="medium">
+                          <Menu.ItemText fontSize="md" fontWeight="medium">
                             {secondaryAction.label}
                           </Menu.ItemText>
                         </Menu.Item>
-                      </>
+                      ) : (
+                        <>
+                          <Menu.Separator my={2} borderColor="marketing.border" />
+                          <Menu.Item
+                            value={`secondary-${secondaryAction.href}`}
+                            {...menuItemStyles}
+                            py={2}
+                            fontSize="sm"
+                            color="marketing.fgSubtle"
+                            onSelect={() => {
+                              followInPageOrPush(secondaryAction.href, router);
+                            }}
+                          >
+                            <Menu.ItemText fontWeight="medium">
+                              {secondaryAction.label}
+                            </Menu.ItemText>
+                          </Menu.Item>
+                        </>
+                      )
                     ) : null}
 
                     {primaryAction ? (
-                      <Box px={1} pt={3} pb={1}>
+                      <Box pt={4} pb={1}>
                         <MarketingButtonLink
                           href={primaryAction.href}
                           label={primaryAction.label}

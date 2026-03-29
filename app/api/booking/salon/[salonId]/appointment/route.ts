@@ -1,7 +1,16 @@
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-import { proxyApiRequest, handleValidationError } from "@/lib/api/route-handler";
-import { devLog } from "@/lib/api/utils";
+import { postPublicBookingBySalonId } from "@maetry/shared-sdk";
+
+import { adaptVisitToLegacyAppointment } from "@/lib/api/booking-legacy-adapter";
+import {
+  MAETRY_THROW_ON_ERROR_OPTIONS,
+  createMaetryServerClient,
+  maetrySdkErrorResponse,
+  unwrapMaetrySdkResult,
+} from "@/lib/api/maetry-sdk.server";
+import { handleValidationError } from "@/lib/api/route-handler";
 import { validateId } from "@/lib/api/validation";
 
 type RouteParams = {
@@ -14,21 +23,20 @@ export async function POST(request: NextRequest, context: RouteParams) {
   try {
     const salonId = validateId(rawSalonId, "salonId");
     const body = await request.json();
-    const path = `/public/booking/salon/${encodeURIComponent(salonId)}/appointment`;
-
-    devLog("[booking/appointment] Creating appointment for salon:", salonId);
-
-    return proxyApiRequest({
-      method: "POST",
-      path,
-      request,
+    const client = createMaetryServerClient();
+    const result = await postPublicBookingBySalonId({
       body,
-      errorCode: "FAILED_TO_CREATE_APPOINTMENT",
+      client,
+      path: { salonId },
+      ...MAETRY_THROW_ON_ERROR_OPTIONS,
     });
+
+    return NextResponse.json(
+      adaptVisitToLegacyAppointment(unwrapMaetrySdkResult(result)),
+    );
   } catch (error) {
     const validationError = handleValidationError(error, "INVALID_SALON_ID");
     if (validationError) return validationError;
-    throw error;
+    return maetrySdkErrorResponse(error, "FAILED_TO_CREATE_APPOINTMENT");
   }
 }
-

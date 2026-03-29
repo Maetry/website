@@ -60,6 +60,11 @@
     "masterNotRequired": "The salon will assign the right specialist if needed.",
     "timeSelectDate": "Choose a date",
     "timeSelectTime": "Choose a time",
+    "timePeriods": {
+      "morning": "Morning",
+      "day": "Afternoon",
+      "evening": "Evening"
+    },
     "summaryTitle": "Booking summary",
     "summaryService": "Service",
     "summarySpecialist": "Specialist",
@@ -479,7 +484,8 @@
     },
     "business": {
       "title": "Maetry for salons — Booking, schedules and salon operations",
-      "description": "Manage bookings, staff schedules, client reminders and day-to-day salon operations in one place."
+      "description": "Manage bookings, staff schedules, client reminders and day-to-day salon operations in one place.",
+      "keywords": "maetry, salon software, salon management, booking system, staff schedule, salon crm"
     },
     "affiliate": {
       "title": "Maetry partner program | Refer salons and earn recurring revenue",

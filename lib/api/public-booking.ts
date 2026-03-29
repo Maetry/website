@@ -2,239 +2,145 @@
 
 import { clientApiRequest } from "./client";
 import { ApiError } from "./error-handler";
+import type {
+  PublicBookingCreatePayload,
+  PublicClickMetadata,
+  PublicClickResponse,
+  PublicDateInterval,
+  PublicLinkKind,
+  PublicSalonCatalog,
+  PublicSalonMaster,
+  PublicSalonProfile,
+  PublicSearchComplexBody,
+  PublicSearchProcedureBody,
+  PublicSearchSlotsResponse,
+  SharedPublicBookingVisit,
+} from "./maetry-contracts";
 
-export type PublicLinkKind = "marketing" | "employeeInvite" | "clientInvite";
+export type {
+  PublicAddress,
+  PublicBookingCreatePayload,
+  PublicClickMetadata,
+  PublicClickPayload,
+  PublicClickResponse,
+  PublicComplexSlot,
+  PublicComplexSlotProcedure,
+  PublicComplexSlotsResponse,
+  PublicDateInterval,
+  PublicLinkKind,
+  PublicPrice,
+  PublicProcedureSlotsResponse,
+  PublicSalonCatalog,
+  PublicSalonCatalogComplex,
+  PublicSalonCatalogComplexProcedure,
+  PublicSalonCatalogProcedure,
+  PublicSalonMaster,
+  PublicSalonProfile,
+  PublicSearchComplexBody,
+  PublicSearchProcedureBody,
+  PublicSearchSlotsResponse,
+} from "./maetry-contracts";
 
 export type PublicMarketingCampaign = {
-  id?: string;
-  salonId?: string;
-  type?: string;
-  name?: string;
-  description?: string | null;
-  linkId?: string;
   affiliateOfferId?: string | null;
-  influencerContactId?: string | null;
-  clicksCount?: number;
   appointmentsCreated?: number;
+  clicksCount?: number;
   createdAt?: string;
-  updatedAt?: string;
-};
-
-export type PublicClickPayload = {
-  clientId?: string;
-  employeeId?: string;
-  campaignId?: string;
-  salonId?: string;
-};
-
-export type PublicClickMetadata = {
-  language: string;
-  languages: string[];
-  cores: number;
-  memory: number;
-  screenWidth: number;
-  screenHeight: number;
-  colorDepth: number;
-  pixelRatio: number;
-  timeZone: string;
-  /** Доп. сигнал для сопоставления клика с установкой приложения */
-  userAgent?: string;
-};
-
-export type PublicClickResponse = {
-  nanoId: string;
-  kind: PublicLinkKind;
-  payload?: PublicClickPayload;
-  isOneTime: boolean;
-  expiresAt?: string | null;
-  usedAt?: string | null;
-  createdAt?: string | null;
-};
-
-export type PublicPrice = {
-  amount?: number | null;
-  currency?: string | null;
-};
-
-export type PublicAddress = {
-  address?: string;
-  city?: string;
-  country?: string;
-  latitude?: number;
-  longitude?: number;
-};
-
-export type PublicSalonProfile = {
+  description?: string | null;
   id?: string;
+  influencerContactId?: string | null;
+  linkId?: string;
   name?: string;
+  salonId?: string;
   type?: string;
-  description?: string;
-  logo?: string;
-  isActive?: boolean;
-  isFavorite?: boolean;
-  localeId?: string;
-  timeZoneId?: string;
-  address?: PublicAddress;
-  inviteLink?: string;
-};
-
-export type PublicSalonMaster = {
-  id?: string;
-  nickname?: string;
-  logo?: string;
-  position?: string;
-};
-
-export type PublicProcedureExecution = {
-  id?: string;
-  procedureId?: string;
-  serviceId?: string;
-  masterId?: string;
-  masterName?: string;
-  masterAvatar?: string;
-  duration?: number;
-  price?: number;
-  currency?: string;
-};
-
-export type PublicSalonCatalogProcedure = {
-  id?: string;
-  title?: string;
-  serviceTitle?: string;
-  description?: string;
-  minDuration?: number;
-  minPrice?: PublicPrice;
-  currency?: string;
-  serviceId?: string;
-  serviceTags?: Array<{ tag?: string; translate?: string }>;
-  executions?: PublicProcedureExecution[];
-  onlineBookingEnabled?: boolean;
-  accessType?: string;
-  postServiceBreakDuration?: number | null;
-  archived?: boolean;
-};
-
-export type PublicComplexProcedureExecution = {
-  id?: string;
-  masterId?: string;
-  masterName?: string;
-  masterAvatar?: string;
-  duration?: number;
-  price?: number;
-  currency?: string;
-};
-
-export type PublicSalonCatalogComplexProcedure = {
-  id?: string;
-  title?: string;
-  serviceTitle?: string;
-  description?: string;
-  minDuration?: number;
-  minPrice?: PublicPrice;
-  currency?: string;
-  serviceId?: string;
-  serviceTags?: Array<{ tag?: string; translate?: string }>;
-  executions?: PublicComplexProcedureExecution[];
-};
-
-export type PublicSalonCatalogComplex = {
-  id?: string;
-  title?: string;
-  description?: string;
-  priceShift?: {
-    percent?: number;
-  };
-  procedures?: PublicSalonCatalogComplexProcedure[];
-};
-
-export type PublicSalonCatalog = {
-  procedures?: PublicSalonCatalogProcedure[];
-  complexes?: PublicSalonCatalogComplex[];
-};
-
-export type PublicDateInterval = {
-  start: string;
-  end: string;
-};
-
-export type PublicProcedureSlotsResponse = {
-  intervals: PublicDateInterval[];
-  timeZoneId: string;
-};
-
-export type PublicComplexSlotProcedure = {
-  id: string;
-  executorId: string;
-  time: PublicDateInterval;
-};
-
-export type PublicComplexSlot = {
-  total: PublicDateInterval;
-  procedures: PublicComplexSlotProcedure[];
-};
-
-export type PublicComplexSlotsResponse = {
-  slots: PublicComplexSlot[];
-  timeZoneId: string;
-};
-
-export type PublicSearchProcedureBody = {
-  id: string;
-  executorId?: string;
-};
-
-export type PublicSearchComplexBody = {
-  id: string;
-  procedures: PublicSearchProcedureBody[];
-};
-
-export type PublicSearchSlotsResponse =
-  | PublicProcedureSlotsResponse
-  | PublicComplexSlotsResponse;
-
-export type PublicBookingCreatePayload = {
-  clientName: string;
-  clientPhone: string;
-  procedureId?: string;
-  executorId?: string;
-  complexId?: string;
-  time: PublicDateInterval;
-  trackingId?: string;
+  updatedAt?: string;
 };
 
 export type PublicBookingVisit = {
   appointmentId?: string;
-  salonId?: string;
-  procedureId?: string;
-  time?: PublicDateInterval;
-  timezoneId?: string;
-  price?: PublicPrice;
   masterId?: string;
   masterNickname?: string;
-  salonName?: string;
-  salonLogo?: string;
-  salonAddress?: string;
+  price?: {
+    amount?: number | null;
+    currency?: string | null;
+  };
+  procedureId?: string;
   procedureName?: string;
+  salonAddress?: string;
+  salonId?: string;
+  salonLogo?: string;
+  salonName?: string;
+  time?: PublicDateInterval;
+  timezoneId?: string;
 };
 
 export type StoredPublicBookingContext = {
+  campaignId?: string | null;
+  kind?: PublicLinkKind;
   linkId: string;
   salonId?: string | null;
-  campaignId?: string | null;
-  trackingId?: string | null;
-  kind?: PublicLinkKind;
   savedAt: string;
+  trackingId?: string | null;
 };
 
 type RequestOptions = {
   signal?: AbortSignal;
 };
 
+function minorToMajor(value: number): number {
+  return value / 100;
+}
+
+function formatAddress(value?: PublicSalonProfile["address"]) {
+  if (!value) {
+    return undefined;
+  }
+
+  return [value.address, value.city, value.country]
+    .filter((part) => Boolean(part?.trim()))
+    .join(", ");
+}
+
+function adaptVisitToPublicBookingVisit(
+  visit: SharedPublicBookingVisit,
+): PublicBookingVisit {
+  const procedure =
+    "procedure" in visit.service ? visit.service.procedure : undefined;
+  const complex =
+    "complex" in visit.service ? visit.service.complex : undefined;
+  const firstComplexProcedure = complex?.procedures[0];
+  const executor = procedure?.executor ?? firstComplexProcedure?.executor;
+
+  return {
+    appointmentId: visit.id,
+    masterId: executor?.masterId,
+    masterNickname: executor?.name,
+    price: {
+      amount: minorToMajor(visit.priceMinor),
+      currency: visit.currency,
+    },
+    procedureId: procedure?.id ?? firstComplexProcedure?.id,
+    procedureName: procedure?.title ?? complex?.title,
+    salonAddress: formatAddress(visit.address),
+    salonId: visit.salon.id,
+    salonLogo: visit.salon.logoUrl,
+    salonName: visit.salon.name,
+    time:
+      visit.startTime && visit.endTime
+        ? {
+            end: visit.endTime,
+            start: visit.startTime,
+          }
+        : undefined,
+    timezoneId: visit.timezoneId,
+  };
+}
+
 /** Путь ссылки в URL API: `b/nano` → `b/nano` как несколько сегментов пути. */
 export function encodeLinkPathForApi(linkPath: string): string {
   return linkPath
     .split("/")
-    .filter((s) => s.length > 0)
+    .filter((segment) => segment.length > 0)
     .map(encodeURIComponent)
     .join("/");
 }
@@ -253,7 +159,8 @@ export function buildClickMetadata(): PublicClickMetadata {
   const cores = isNavigator ? navigator.hardwareConcurrency ?? 4 : 4;
   const memory =
     isNavigator && "deviceMemory" in navigator
-      ? Number((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4) * 1024
+      ? Number((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4) *
+        1024
       : 4096;
   const screenWidth = isWindow
     ? Math.round(window.screen.width * (window.devicePixelRatio || 1))
@@ -378,9 +285,9 @@ export async function getPublicSalonMasters(
 
 export async function searchPublicBookingSlots(
   params: {
-    salonId: string;
-    date: string;
     body: PublicSearchProcedureBody | PublicSearchComplexBody;
+    date: string;
+    salonId: string;
   },
   { signal }: RequestOptions = {},
 ): Promise<PublicSearchSlotsResponse> {
@@ -401,20 +308,24 @@ export async function createPublicBooking(
   salonId: string,
   payload: PublicBookingCreatePayload,
 ): Promise<PublicBookingVisit> {
-  return clientApiRequest<PublicBookingVisit>({
+  const response = await clientApiRequest<SharedPublicBookingVisit>({
     endpoint: `/api/public-booking/salon/${encodeURIComponent(salonId)}/bookings`,
     method: "POST",
     body: payload,
   });
+
+  return adaptVisitToPublicBookingVisit(response);
 }
 
 export async function getPublicBooking(
   bookingId: string,
   { signal }: RequestOptions = {},
 ): Promise<PublicBookingVisit> {
-  return clientApiRequest<PublicBookingVisit>({
+  const response = await clientApiRequest<SharedPublicBookingVisit>({
     endpoint: `/api/public-booking/bookings/${encodeURIComponent(bookingId)}`,
     method: "GET",
     signal,
   });
+
+  return adaptVisitToPublicBookingVisit(response);
 }

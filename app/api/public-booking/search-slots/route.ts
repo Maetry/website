@@ -1,8 +1,17 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { postTimetablesSearchSlots } from "@maetry/shared-sdk";
+
 import { ApiError } from "@/lib/api/error-handler";
-import { handleValidationError, proxyApiRequest } from "@/lib/api/route-handler";
+import {
+  MAETRY_THROW_ON_ERROR_OPTIONS,
+  createMaetryServerClient,
+  maetrySdkErrorResponse,
+  requireDeviceIdHeader,
+  unwrapMaetrySdkResult,
+} from "@/lib/api/maetry-sdk.server";
+import { handleValidationError } from "@/lib/api/route-handler";
 import { validateId } from "@/lib/api/validation";
 
 export async function POST(request: NextRequest) {
@@ -17,18 +26,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const query = new URLSearchParams({
-      salonId: validatedSalonId,
-      date,
+    const client = createMaetryServerClient();
+    const deviceId = requireDeviceIdHeader(request);
+    const result = await postTimetablesSearchSlots({
+      body,
+      client,
+      headers: {
+        "Device-ID": deviceId,
+      },
+      query: {
+        query: {
+          date,
+          salonId: validatedSalonId,
+        },
+      },
+      ...MAETRY_THROW_ON_ERROR_OPTIONS,
     });
 
-    return proxyApiRequest({
-      method: "POST",
-      path: `/timetables/search-slots?${query.toString()}`,
-      request,
-      body,
-      errorCode: "FAILED_TO_SEARCH_PUBLIC_BOOKING_SLOTS",
-    });
+    return NextResponse.json(unwrapMaetrySdkResult(result));
   } catch (error) {
     const validationError =
       handleValidationError(error, "INVALID_SEARCH_SLOTS_PARAMS") ??
@@ -43,6 +58,9 @@ export async function POST(request: NextRequest) {
         : null);
 
     if (validationError) return validationError;
-    throw error;
+    return maetrySdkErrorResponse(
+      error,
+      "FAILED_TO_SEARCH_PUBLIC_BOOKING_SLOTS",
+    );
   }
 }

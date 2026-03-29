@@ -1,5 +1,6 @@
 "use client";
 
+import { getOrCreateDeviceId } from "./device-id";
 import { handleApiResponse } from "./error-handler";
 import { devError } from "./utils";
 
@@ -20,20 +21,27 @@ export async function clientApiRequest<T>({
   signal,
   cache = "no-store",
 }: ClientApiRequestOptions): Promise<T> {
+  const deviceId = getOrCreateDeviceId();
+  const requestHeaders = new Headers({
+    Accept: "application/json",
+    ...headers,
+  });
+
+  if (deviceId && !requestHeaders.has("Device-ID")) {
+    requestHeaders.set("Device-ID", deviceId);
+  }
+
   const fetchOptions: RequestInit = {
     method,
-    headers: {
-      "Accept": "application/json",
-      ...headers,
-    },
+    headers: requestHeaders,
     cache,
     signal,
   };
 
   if (body) {
     fetchOptions.body = JSON.stringify(body);
-    if (!headers["Content-Type"]) {
-      (fetchOptions.headers as Record<string, string>)["Content-Type"] = "application/json";
+    if (!requestHeaders.has("Content-Type")) {
+      requestHeaders.set("Content-Type", "application/json");
     }
   }
 

@@ -1,6 +1,15 @@
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-import { handleValidationError, proxyApiRequest } from "@/lib/api/route-handler";
+import { getPublicVisitByBookingId } from "@maetry/shared-sdk";
+
+import {
+  MAETRY_THROW_ON_ERROR_OPTIONS,
+  createMaetryServerClient,
+  maetrySdkErrorResponse,
+  unwrapMaetrySdkResult,
+} from "@/lib/api/maetry-sdk.server";
+import { handleValidationError } from "@/lib/api/route-handler";
 import { validateId } from "@/lib/api/validation";
 
 type RouteParams = {
@@ -12,17 +21,17 @@ export async function GET(request: NextRequest, context: RouteParams) {
 
   try {
     const bookingId = validateId(rawBookingId, "bookingId");
-    const path = `/public/booking/${encodeURIComponent(bookingId)}`;
-
-    return proxyApiRequest({
-      method: "GET",
-      path,
-      request,
-      errorCode: "FAILED_TO_FETCH_PUBLIC_BOOKING",
+    const client = createMaetryServerClient();
+    const result = await getPublicVisitByBookingId({
+      client,
+      path: { id: bookingId },
+      ...MAETRY_THROW_ON_ERROR_OPTIONS,
     });
+
+    return NextResponse.json(unwrapMaetrySdkResult(result));
   } catch (error) {
     const validationError = handleValidationError(error, "INVALID_BOOKING_ID");
     if (validationError) return validationError;
-    throw error;
+    return maetrySdkErrorResponse(error, "FAILED_TO_FETCH_PUBLIC_BOOKING");
   }
 }

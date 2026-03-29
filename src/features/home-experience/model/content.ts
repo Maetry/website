@@ -1,3 +1,5 @@
+import type { MarketingFooterProps } from "@/shared/chakra/marketing/MarketingFooter";
+
 export type MarketingLocale = "en" | "ru" | "es";
 export type SiteExperience = "consumer" | "business";
 
@@ -116,11 +118,10 @@ type CommonContent = {
   partnershipLabel: string;
   privacyLabel: string;
   termsLabel: string;
-  languageLabel: string;
+  /** Подпись над переключателями языка и темы в футере */
+  appearanceLabel: string;
   productSectionLabel: string;
   legalSectionLabel: string;
-  /** Подпись ссылки на лендинг для бизнеса (maetry.com/…/business) */
-  businessSubdomainLabel: string;
   consumerPathLabel: string;
   footerRights: string;
 };
@@ -137,17 +138,16 @@ const content: Record<MarketingLocale, LocaleContent> = {
       productName: "Maetry",
       consumerLabel: "For clients",
       businessLabel: "For salon teams",
-      footerBusinessSectionTitle: "For salons & independent pros",
+      footerBusinessSectionTitle: "For salons & independent",
       appStoreLabel: "Get the app",
       openConsoleLabel: "Open business console",
-      contactLabel: "Contact Maetry",
+      contactLabel: "Contacts",
       partnershipLabel: "Partner program",
       privacyLabel: "Privacy policy",
       termsLabel: "Terms of use",
-      languageLabel: "Language",
+      appearanceLabel: "Appearance",
       productSectionLabel: "Product",
       legalSectionLabel: "Documents",
-      businessSubdomainLabel: "maetry.com/business",
       consumerPathLabel: "maetry.com",
       footerRights: "© 2026 Maetry LLC. All rights reserved.",
     },
@@ -414,14 +414,13 @@ const content: Record<MarketingLocale, LocaleContent> = {
       footerBusinessSectionTitle: "Для салонов и мастеров",
       appStoreLabel: "Скачать приложение",
       openConsoleLabel: "Открыть бизнес-консоль",
-      contactLabel: "Связаться с Maetry",
+      contactLabel: "Контакты",
       partnershipLabel: "Партнёрская программа",
       privacyLabel: "Политика конфиденциальности",
       termsLabel: "Условия использования",
-      languageLabel: "Язык",
+      appearanceLabel: "Оформление",
       productSectionLabel: "Продукт",
       legalSectionLabel: "Документы",
-      businessSubdomainLabel: "maetry.com/business",
       consumerPathLabel: "maetry.com",
       footerRights: "© 2026 Maetry LLC. Все права защищены.",
     },
@@ -688,14 +687,13 @@ const content: Record<MarketingLocale, LocaleContent> = {
       footerBusinessSectionTitle: "Para salones y profesionales independientes",
       appStoreLabel: "Descargar la app",
       openConsoleLabel: "Abrir consola de negocio",
-      contactLabel: "Contactar a Maetry",
+      contactLabel: "Contactos",
       partnershipLabel: "Programa de socios",
       privacyLabel: "Política de privacidad",
       termsLabel: "Términos de uso",
-      languageLabel: "Idioma",
+      appearanceLabel: "Apariencia",
       productSectionLabel: "Producto",
       legalSectionLabel: "Documentos",
-      businessSubdomainLabel: "maetry.com/business",
       consumerPathLabel: "maetry.com",
       footerRights: "© 2026 Maetry LLC. Todos los derechos reservados.",
     },
@@ -1026,4 +1024,53 @@ export function getBusinessHref(host: string | null, locale: string): string {
 
   // Клиентский сайт: лендинг для бизнеса на основном домене
   return `https://maetry.com/${normalizedLocale}/business`;
+}
+
+/** Пропсы MarketingFooter для варианта consumer или business (без дублирования в страницах). */
+export function buildMarketingFooterProps(
+  host: string | null,
+  locale: string,
+  variant: "consumer" | "business",
+): MarketingFooterProps {
+  const normalizedLocale = normalizeMarketingLocale(locale);
+  const content = getMarketingContent(normalizedLocale);
+  const consumerHref = getConsumerHomeHref(host, locale);
+  const businessHref = getBusinessHref(host, locale);
+  const isBusiness = variant === "business";
+  const appHref = buildAppStoreUrl(
+    isBusiness ? "business_landing" : "consumer_home",
+  );
+
+  return {
+    tagline: isBusiness
+      ? content.business.footerTagline
+      : content.consumer.footerTagline,
+    businessHref,
+    appHref,
+    consumerLabel: content.common.consumerLabel,
+    businessSectionTitle: content.common.footerBusinessSectionTitle,
+    appStoreLabel: content.common.appStoreLabel,
+    contactLabel: content.common.contactLabel,
+    partnershipLabel: content.common.partnershipLabel,
+    privacyLabel: content.common.privacyLabel,
+    termsLabel: content.common.termsLabel,
+    appearanceLabel: content.common.appearanceLabel,
+    legalSectionLabel: content.common.legalSectionLabel,
+    footerRights: content.common.footerRights,
+    telegramLabel: "Telegram",
+    instagramLabel: "Instagram",
+    telegramHref: TELEGRAM_URL,
+    instagramHref: INSTAGRAM_URL,
+    supportMailHref: SUPPORT_EMAIL_HREF,
+    activeLocale: normalizedLocale,
+    discoverHref: withDiscoverHash(consumerHref),
+    discoverLabel: content.consumer.nav[0]?.label ?? "Discover",
+  };
+}
+
+export function buildMarketingFooterPair(host: string | null, locale: string) {
+  return {
+    consumer: buildMarketingFooterProps(host, locale, "consumer"),
+    business: buildMarketingFooterProps(host, locale, "business"),
+  };
 }
