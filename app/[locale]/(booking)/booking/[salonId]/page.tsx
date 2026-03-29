@@ -1,5 +1,3 @@
-import "@telegram-apps/telegram-ui/dist/styles.css";
-
 import type { Metadata, Viewport } from "next";
 import { getTranslations } from "next-intl/server";
 

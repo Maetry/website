@@ -2,12 +2,20 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+import {
+  AppRoot,
+  Avatar,
+  Button,
+  Cell,
+  List,
+  Placeholder,
+  Section,
+  Spinner,
+} from "@telegram-apps/telegram-ui";
 import { useTranslations } from "next-intl";
 
-import { AddToAppleWalletBadge, AddToGoogleWalletBadge } from "@/components/wallet";
 import {
   BookingApiError,
   getAppointment,
@@ -22,10 +30,28 @@ type VisitViewProps = {
   locale: string;
 };
 
+function getInitials(value?: string | null) {
+  if (!value) {
+    return "M";
+  }
+
+  const parts = value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (!parts.length) {
+    return "M";
+  }
+
+  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
+}
+
 const formatCurrency = (
   amount?: number | null,
   currency?: string | null,
-  locale?: string
+  locale?: string,
 ) => {
   if (amount === null || amount === undefined || !currency) {
     return null;
@@ -70,7 +96,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
   const [salonIcon, setSalonIcon] = useState<string | null>(null);
   const [salonName, setSalonName] = useState<string | null>(null);
   const [salonId, setSalonId] = useState<string | null>(null);
-  const [timeZoneId, setTimeZoneId] = useState<string>("UTC");
+  const [timeZoneId] = useState<string>("UTC");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,6 +116,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
         if (appointmentData.salonName) {
           setSalonName(appointmentData.salonName);
         }
+
         if (appointmentData.salonIcon) {
           setSalonIcon(appointmentData.salonIcon);
         }
@@ -100,21 +127,21 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
               salonId: appointmentData.salonId,
               locale,
             });
-            setProcedures(Array.isArray(proceduresData?.procedures) ? proceduresData.procedures : []);
+            setProcedures(
+              Array.isArray(proceduresData?.procedures)
+                ? proceduresData.procedures
+                : [],
+            );
           } catch {
-            // Игнорируем ошибку получения процедур
+            setProcedures([]);
           }
         }
-
-        setTimeZoneId("UTC");
       } catch (err) {
-        console.error(err);
-        const message =
-          err instanceof BookingApiError ? err.message : undefined;
+        const message = err instanceof BookingApiError ? err.message : undefined;
         setError(
           message
             ? t("errors.apiMessage", { message })
-            : t("errors.createAppointment")
+            : t("errors.createAppointment"),
         );
       } finally {
         setLoading(false);
@@ -128,210 +155,163 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
     if (!appointment?.procedureId) {
       return null;
     }
-    return procedures.find((p) => p.id === appointment.procedureId) ?? null;
+
+    return procedures.find((item) => item.id === appointment.procedureId) ?? null;
   }, [appointment?.procedureId, procedures]);
 
   const { apple: appleWalletUrl, google: googleWalletUrl } = getWalletUrl(appointment);
 
-  const headline = salonName
-    ? `${t("headline")} в ${salonName}`
-    : t("headline");
+  const appointmentDate = appointment?.time?.start
+    ? new Intl.DateTimeFormat(locale, {
+        day: "numeric",
+        month: "long",
+        timeZone: timeZoneId,
+        weekday: "long",
+      }).format(new Date(appointment.time.start))
+    : null;
+
+  const appointmentTime = appointment?.time?.start
+    ? new Intl.DateTimeFormat(locale, {
+        hour: "2-digit",
+        hour12: false,
+        minute: "2-digit",
+        timeZone: timeZoneId,
+      }).format(new Date(appointment.time.start))
+    : null;
+
+  const appointmentPrice = formatCurrency(
+    appointment?.price?.amount,
+    appointment?.price?.currency,
+    locale,
+  );
 
   const handleCreateAnother = () => {
     if (salonId) {
       router.push(`/${locale}/booking/${salonId}`);
-    } else {
-      router.push(`/${locale}/booking`);
+      return;
     }
+
+    router.push(`/${locale}/booking`);
+  };
+
+  const handleOpenWallet = (url?: string) => {
+    if (!url || typeof window === "undefined") {
+      return;
+    }
+
+    window.location.assign(url);
   };
 
   if (loading) {
     return (
-      <div 
-        className="fixed flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#f6b68e] via-[#cf9bff] to-[#6672ff]"
-        style={{
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          paddingTop: 'max(env(safe-area-inset-top), 2.5rem)',
-          paddingBottom: 'max(env(safe-area-inset-bottom), 2.5rem)',
-          paddingLeft: 'max(env(safe-area-inset-left), 1rem)',
-          paddingRight: 'max(env(safe-area-inset-right), 1rem)',
-        }}
-      >
-        <div className="absolute inset-0 -z-10 opacity-80" style={{ background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 55%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.25), transparent 55%)" }} />
-        <div className="absolute inset-0 -z-20 bg-[url('/images/featureBG.svg')] bg-cover bg-center opacity-10" />
-
-        <div className="relative w-full min-w-[280px] max-w-[620px] rounded-[36px] border border-white/40 bg-white/80 p-6 text-slate-900 shadow-[0_55px_120px_rgba(49,45,105,0.35)] backdrop-blur-2xl sm:p-10">
-          <header className="flex flex-col gap-5">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 flex-shrink-0 animate-pulse rounded-[20%] bg-slate-200 sm:h-10 sm:w-10" />
-              <div className="flex-1 space-y-2">
-                <div className="h-6 w-3/4 animate-pulse rounded bg-slate-200 sm:h-5" />
-              </div>
-            </div>
-          </header>
-
-          <div className="mt-6 space-y-5">
-            <div className="space-y-2">
-              <div className="h-7 w-2/3 animate-pulse rounded bg-slate-200 sm:h-6" />
-              <div className="h-4 w-full animate-pulse rounded bg-slate-200 sm:h-3" />
-            </div>
-
-            <div className="rounded-3xl border border-slate-100 bg-white p-4">
-              <div className="space-y-3">
-                <div className="h-6 w-1/2 animate-pulse rounded bg-slate-200 sm:h-5" />
-                <div className="h-4 w-1/3 animate-pulse rounded bg-slate-200" />
-                <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200" />
-                <div className="h-5 w-1/4 animate-pulse rounded bg-slate-200 sm:h-4" />
-              </div>
-            </div>
-
-            <div className="h-14 w-full animate-pulse rounded-full bg-slate-200 sm:min-h-[52px]" />
-
-            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <div className="h-12 w-32 animate-pulse rounded-lg bg-slate-200" />
-              <div className="h-12 w-32 animate-pulse rounded-lg bg-slate-200" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <AppRoot>
+        <Placeholder
+          header={t("loading.confirmation")}
+          description={t("successBookingHint")}
+        >
+          <Spinner size="m" />
+        </Placeholder>
+      </AppRoot>
     );
   }
 
   if (error || !appointment) {
     return (
-      <div 
-        className="fixed flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#f6b68e] via-[#cf9bff] to-[#6672ff]"
-        style={{
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          paddingTop: 'max(env(safe-area-inset-top), 2.5rem)',
-          paddingBottom: 'max(env(safe-area-inset-bottom), 2.5rem)',
-          paddingLeft: 'max(env(safe-area-inset-left), 1rem)',
-          paddingRight: 'max(env(safe-area-inset-right), 1rem)',
-        }}
-      >
-        <div className="relative w-full min-w-[280px] max-w-[620px] rounded-[36px] border border-white/40 bg-white/80 p-6 text-slate-900 shadow-[0_55px_120px_rgba(49,45,105,0.35)] backdrop-blur-2xl sm:p-10">
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-base text-red-600 sm:text-sm">
-            {error ?? t("errors.createAppointment")}
-          </div>
-        </div>
-      </div>
+      <AppRoot>
+        <Placeholder
+          header={t("errors.createAppointment")}
+          description={error ?? t("errors.createAppointment")}
+          action={
+            <Button size="l" onClick={() => window.location.reload()}>
+              {t("backLabel")}
+            </Button>
+          }
+        />
+      </AppRoot>
     );
   }
 
   return (
-    <div 
-      className="fixed flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#f6b68e] via-[#cf9bff] to-[#6672ff]"
-      style={{
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        paddingTop: 'max(env(safe-area-inset-top), 2.5rem)',
-        paddingBottom: 'max(env(safe-area-inset-bottom), 2.5rem)',
-        paddingLeft: 'max(env(safe-area-inset-left), 1rem)',
-        paddingRight: 'max(env(safe-area-inset-right), 1rem)',
-      }}
-    >
-      <div className="absolute inset-0 -z-10 opacity-80" style={{ background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 55%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.25), transparent 55%)" }} />
-      <div className="absolute inset-0 -z-20 bg-[url('/images/featureBG.svg')] bg-cover bg-center opacity-10" />
-
-      <div className="relative w-full min-w-[280px] max-w-[620px] rounded-[36px] border border-white/40 bg-white/80 p-6 text-slate-900 shadow-[0_55px_120px_rgba(49,45,105,0.35)] backdrop-blur-2xl sm:p-10">
-        <header className="flex flex-col gap-5 text-slate-900">
-          <div className="flex items-center gap-3">
-            {salonIcon ? (
-              <div className="relative h-12 w-12 flex-shrink-0 aspect-square sm:h-10 sm:w-10">
-                <Image
-                  src={salonIcon}
-                  alt=""
-                  fill
-                  className="rounded-[20%] object-cover"
-                  sizes="48px"
-                  unoptimized={!salonIcon.startsWith("/")}
-                  onError={() => setSalonIcon(null)}
-                />
-              </div>
-            ) : (
-              <div className="h-12 w-12 flex-shrink-0 aspect-square rounded-[20%] border border-slate-200 bg-slate-50 sm:h-10 sm:w-10" />
-            )}
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-xl">
-                {headline}
-              </h1>
-            </div>
-          </div>
-        </header>
-
-        <div className="mt-6 space-y-5 text-slate-900">
-          <div>
-            <h2 className="text-xl font-semibold sm:text-lg">
-              {t("successTitle")}
-            </h2>
-            <p className="mt-1 text-base text-slate-500 sm:text-sm">{t("successSubtitle")}</p>
-          </div>
-
-          {appointment.time && (
-            <div className="rounded-3xl border border-slate-100 bg-white p-4 text-base text-slate-600 sm:text-sm">
-              {procedure && (
-                <>
-                  <p className="text-lg font-semibold text-slate-900 sm:text-base">
-                    {procedure.serviceTitle ?? procedure.serviceDescription ?? "Запись"}
-                  </p>
-                  {procedure.masterNickname && (
-                    <p className="mt-1 text-slate-500">
-                      {procedure.masterNickname}
-                    </p>
-                  )}
-                </>
-              )}
-              <p className="mt-2 text-slate-500">
-                {new Intl.DateTimeFormat(locale, {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  timeZone: timeZoneId,
-                }).format(new Date(appointment.time.start))}
-              </p>
-              {appointment.price?.amount && (
-                <p className="mt-2 text-base text-slate-900 sm:text-sm">
-                  {formatCurrency(
-                    appointment.price.amount,
-                    appointment.price.currency,
-                    locale
-                  )}
-                </p>
-              )}
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={handleCreateAnother}
-            className="w-full rounded-full bg-slate-900 px-4 py-3 text-lg font-semibold text-white transition hover:bg-slate-800 sm:min-h-[52px] sm:text-base"
+    <AppRoot>
+      <List>
+        <Section>
+          <Cell
+            before={
+              <Avatar
+                size={48}
+                src={salonIcon ?? undefined}
+                acronym={getInitials(salonName ?? t("salonFallbackName"))}
+              />
+            }
+            subtitle={appointmentDate ?? undefined}
           >
-            {t("successCreateAnother")}
-          </button>
+            {salonName ?? t("salonFallbackName")}
+          </Cell>
+        </Section>
 
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <AddToAppleWalletBadge
-              passId={visitId}
-              shareUrl={appleWalletUrl}
-            />
-            <AddToGoogleWalletBadge
-              passId={visitId}
-              shareUrl={googleWalletUrl}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+        <Section header={t("successTitle")} footer={t("successSubtitle")}>
+          {procedure ? (
+            <Cell
+              multiline
+              subhead={t("summaryService")}
+              subtitle={procedure.masterNickname ?? t("masterAny")}
+              after={appointmentPrice ?? undefined}
+            >
+              {procedure.serviceTitle ?? procedure.serviceDescription ?? t("headline")}
+            </Cell>
+          ) : null}
+
+          {appointmentDate ? (
+            <Cell
+              multiline
+              subhead={t("summaryDate")}
+              subtitle={appointmentTime ?? undefined}
+            >
+              {appointmentDate}
+            </Cell>
+          ) : null}
+
+          <Cell
+            multiline
+            subhead={t("summarySalon")}
+            subtitle={appointmentPrice ?? undefined}
+          >
+            {salonName ?? t("salonFallbackName")}
+          </Cell>
+        </Section>
+
+        <Section>
+          <Button size="l" stretched onClick={handleCreateAnother}>
+            {t("successCreateAnother")}
+          </Button>
+        </Section>
+
+        {appleWalletUrl || googleWalletUrl ? (
+          <Section>
+            {appleWalletUrl ? (
+              <Button
+                size="l"
+                stretched
+                mode="outline"
+                onClick={() => handleOpenWallet(appleWalletUrl)}
+              >
+                {t("walletApple")}
+              </Button>
+            ) : null}
+            {googleWalletUrl ? (
+              <Button
+                size="l"
+                stretched
+                mode="outline"
+                onClick={() => handleOpenWallet(googleWalletUrl)}
+              >
+                {t("walletGoogle")}
+              </Button>
+            ) : null}
+          </Section>
+        ) : null}
+      </List>
+    </AppRoot>
   );
 }
 

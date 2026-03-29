@@ -1,22 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 
 import {
-  Accordion,
   AppRoot,
   Avatar,
   Button,
-  Caption,
   Cell,
   Input,
   List,
   Placeholder,
   Section,
   Spinner,
-  Subheadline,
 } from "@telegram-apps/telegram-ui";
 import { useTranslations } from "next-intl";
 
@@ -58,58 +55,6 @@ type SlotDateGroup = {
 type TimePeriodKey = "morning" | "day" | "evening";
 
 const DAYS_AHEAD = 21;
-
-const viewportStyle: CSSProperties = {
-  minHeight: "100dvh",
-  padding:
-    "max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(18px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px))",
-};
-
-const shellStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-  width: "100%",
-  maxWidth: 480,
-  margin: "0 auto",
-};
-
-const rowStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 8,
-};
-
-const stackStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-};
-
-const chipRowStyle: CSSProperties = {
-  display: "flex",
-  gap: 8,
-  overflowX: "auto",
-  paddingBottom: 2,
-};
-
-const chipWrapStyle: CSSProperties = {
-  display: "flex",
-  flexWrap: "wrap",
-  gap: 8,
-};
-
-const statusStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  padding: 16,
-};
-
-const footerTextStyle: CSSProperties = {
-  paddingInline: 6,
-};
 
 function getInitials(value?: string | null) {
   if (!value) {
@@ -203,10 +148,6 @@ function formatCurrency(
   }
 }
 
-function formatMeta(...parts: Array<string | null | undefined>) {
-  return parts.filter(Boolean).join(" · ");
-}
-
 function getTimeZoneParts(date: Date, timeZone: string) {
   const formatter = new Intl.DateTimeFormat("en-CA", {
     day: "2-digit",
@@ -236,6 +177,37 @@ function getDateKeyForTimeZone(date: Date, timeZone: string) {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
+function validatePhone(value: string) {
+  const digits = value.replace(/[^\d+]/g, "");
+  return /^\+?\d{10,15}$/.test(digits);
+}
+
+function getVisitOrigin() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  const configuredShortlinkHost =
+    process.env.NEXT_PUBLIC_SHORTLINK_HOST || "link.maetry.com";
+  const shortlinkHost = configuredShortlinkHost
+    .replace(/^https?:\/\//, "")
+    .split("/")[0];
+
+  if (
+    window.location.hostname === shortlinkHost ||
+    window.location.hostname.includes(shortlinkHost)
+  ) {
+    const mainHost = window.location.hostname.replace(/^link\./, "");
+    return `${window.location.protocol}//${mainHost}`;
+  }
+
+  return window.location.origin;
+}
+
+function buildVisitUrl(locale: string, appointmentId: string) {
+  return new URL(`/${locale}/visits/${appointmentId}`, getVisitOrigin()).toString();
+}
+
 const BookingScreen = ({
   salonId,
   locale,
@@ -244,13 +216,15 @@ const BookingScreen = ({
   const t = useTranslations("booking");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const trackingId = trackingIdProp ?? searchParams.get("trackingId");
+  const trackingId =
+    trackingIdProp ??
+    searchParams.get("nanoid") ??
+    searchParams.get("trackingId");
 
   const [salonProfile, setSalonProfile] = useState<PublicSalonProfile | null>(null);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [proceduresLoading, setProceduresLoading] = useState(true);
   const [proceduresError, setProceduresError] = useState<string | null>(null);
-  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [selectedProcedureId, setSelectedProcedureId] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<SlotInterval | null>(null);
@@ -396,17 +370,6 @@ const BookingScreen = ({
     return Array.from(groupsMap.values());
   }, [procedures]);
 
-  useEffect(() => {
-    if (!procedureGroups.length) {
-      setExpandedGroupId(null);
-      return;
-    }
-
-    if (!expandedGroupId || !procedureGroups.some((group) => group.id === expandedGroupId)) {
-      setExpandedGroupId(selectedGroupId ?? procedureGroups[0].id);
-    }
-  }, [expandedGroupId, procedureGroups, selectedGroupId]);
-
   const selectedGroup = useMemo(
     () => procedureGroups.find((group) => group.id === selectedGroupId) ?? null,
     [procedureGroups, selectedGroupId],
@@ -419,18 +382,6 @@ const BookingScreen = ({
 
     return procedures.find((procedure) => procedure.id === selectedProcedureId) ?? null;
   }, [procedures, selectedProcedureId]);
-
-  const steps = useMemo(
-    () => [
-      { id: "service" as const, label: t("steps.service") },
-      { id: "master" as const, label: t("steps.master") },
-      { id: "time" as const, label: t("steps.time") },
-      { id: "details" as const, label: t("steps.details") },
-    ],
-    [t],
-  );
-
-  const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
 
   const resetTimingState = () => {
     setSelectedSlot(null);
@@ -472,7 +423,6 @@ const BookingScreen = ({
 
   const handleSelectGroup = (group: ProcedureGroup) => {
     setSelectedGroupId(group.id);
-    setExpandedGroupId(group.id);
     setSelectedProcedureId(null);
     resetTimingState();
     setGlobalError(null);
@@ -482,9 +432,10 @@ const BookingScreen = ({
       setSelectedProcedureId(onlyProcedure.id);
       setCurrentStep("time");
       void fetchSlotsForProcedure(onlyProcedure.id, onlyProcedure.masterId);
-    } else {
-      setCurrentStep("master");
+      return;
     }
+
+    setCurrentStep("master");
   };
 
   const handleSelectProcedure = (procedure: Procedure) => {
@@ -606,11 +557,6 @@ const BookingScreen = ({
     setFormErrors({});
   };
 
-  const validatePhone = (value: string) => {
-    const digits = value.replace(/[^\d+]/g, "");
-    return /^\+?\d{10,15}$/.test(digits);
-  };
-
   const isFormValid = clientName.trim().length > 0 && validatePhone(clientPhone.trim());
 
   const handleSubmitAppointment = async (event: FormEvent<HTMLFormElement>) => {
@@ -671,17 +617,9 @@ const BookingScreen = ({
         return;
       }
 
-      const shortlinkHost = process.env.NEXT_PUBLIC_SHORTLINK_HOST || "link.maetry.com";
-      const isShortlinkHost =
-        typeof window !== "undefined" &&
-        (window.location.hostname === shortlinkHost ||
-          window.location.hostname.includes(shortlinkHost));
-
-      if (isShortlinkHost) {
-        const currentHost = window.location.hostname;
-        const mainHost = currentHost.replace(/^link\./, "");
-        const mainDomain = `${window.location.protocol}//${mainHost}`;
-        window.location.href = `${mainDomain}/${locale}/visits/${appointmentId}`;
+      const visitUrl = buildVisitUrl(locale, appointmentId);
+      if (typeof window !== "undefined") {
+        window.location.assign(visitUrl);
         return;
       }
 
@@ -698,35 +636,31 @@ const BookingScreen = ({
     }
   };
 
-  const handleStepClick = (stepId: Step, stepIndex: number) => {
-    if (stepIndex >= currentStepIndex) {
-      return;
-    }
-
+  const handleBack = () => {
     setGlobalError(null);
 
-    if (stepId === "service") {
-      setCurrentStep("service");
-      return;
-    }
-
-    if (stepId === "master" && selectedGroup?.procedures.length && selectedGroup.procedures.length > 1) {
-      setCurrentStep("master");
-      return;
-    }
-
-    if (stepId === "time" && selectedProcedure) {
+    if (currentStep === "details") {
       setCurrentStep("time");
       return;
     }
 
-    if (stepId === "details" && selectedProcedure && selectedSlot) {
-      setCurrentStep("details");
+    if (currentStep === "time") {
+      if (selectedGroup?.procedures.length && selectedGroup.procedures.length > 1) {
+        setCurrentStep("master");
+        return;
+      }
+
+      setCurrentStep("service");
+      return;
+    }
+
+    if (currentStep === "master") {
+      setCurrentStep("service");
     }
   };
 
   const salonName = salonProfile?.name?.trim() || t("salonFallbackName");
-  const salonAddress = formatAddress(salonProfile?.address) || t("subtitle");
+  const salonAddress = formatAddress(salonProfile?.address) || undefined;
 
   const selectedProcedurePrice = formatCurrency(
     selectedProcedure?.price?.amount ?? selectedGroup?.minPrice ?? null,
@@ -756,28 +690,25 @@ const BookingScreen = ({
       }).format(new Date(selectedSlot.start))
     : null;
 
-  const renderStatus = (label: string) => (
-    <Section>
-      <div style={statusStyle}>
-        <Spinner size="s" />
-        <Subheadline level="2">{label}</Subheadline>
-      </div>
-    </Section>
-  );
-
-  const renderError = (message: string) => (
-    <Section>
-      <Cell multiline>{message}</Cell>
-    </Section>
-  );
-
   const renderServiceStep = () => {
     if (proceduresLoading) {
-      return renderStatus(t("loading.procedures"));
+      return (
+        <Placeholder
+          header={t("loading.procedures")}
+          description={t("subtitle")}
+        >
+          <Spinner size="m" />
+        </Placeholder>
+      );
     }
 
     if (proceduresError) {
-      return renderError(proceduresError);
+      return (
+        <Placeholder
+          header={t("errors.loadProcedures")}
+          description={proceduresError}
+        />
+      );
     }
 
     if (!procedureGroups.length) {
@@ -790,68 +721,32 @@ const BookingScreen = ({
     }
 
     return (
-      <div style={stackStyle}>
-        <Caption level="1">{t("serviceTitle")}</Caption>
-
+      <Section header={t("serviceTitle")}>
         {procedureGroups.map((group) => {
           const groupPrice = formatCurrency(group.minPrice, group.currency, locale);
-          const previewProcedures = group.procedures.slice(0, 3);
+          const groupDuration = formatDuration(group.duration, locale);
+          const after =
+            [groupPrice, groupDuration].filter(Boolean).join(" · ") || undefined;
 
           return (
-            <Section key={group.id}>
-              <Accordion
-                expanded={expandedGroupId === group.id}
-                onChange={(expanded) => setExpandedGroupId(expanded ? group.id : null)}
-              >
-                <Accordion.Summary
-                  subtitle={
-                    group.procedures.length > 1
-                      ? `${group.procedures.length} ${t("steps.master").toLowerCase()}`
-                      : t("masterAuto")
-                  }
-                  after={
-                    groupPrice
-                      ? group.maxPrice !== null &&
-                        group.minPrice !== null &&
-                        group.maxPrice !== group.minPrice
-                        ? t("servicePriceFrom", { value: groupPrice })
-                        : t("servicePriceExact", { value: groupPrice })
-                      : undefined
-                  }
-                >
-                  {group.title}
-                </Accordion.Summary>
-
-                <Accordion.Content>
-                  {previewProcedures.map((procedure) => {
-                    const previewPrice = formatCurrency(
-                      procedure.price?.amount ?? group.minPrice,
-                      procedure.price?.currency ?? group.currency,
-                      locale,
-                    );
-                    const previewDuration = formatDuration(
-                      procedure.duration ?? group.duration,
-                      locale,
-                    );
-
-                    return (
-                      <Cell
-                        key={procedure.id}
-                        Component="button"
-                        onClick={() => handleSelectGroup(group)}
-                        subtitle={procedure.masterNickname ?? t("masterAny")}
-                        after={formatMeta(previewPrice, previewDuration) || undefined}
-                      >
-                        {procedure.serviceTitle ?? group.title}
-                      </Cell>
-                    );
-                  })}
-                </Accordion.Content>
-              </Accordion>
-            </Section>
+            <Cell
+              key={group.id}
+              Component="button"
+              multiline
+              onClick={() => handleSelectGroup(group)}
+              subhead={
+                group.procedures.length > 1
+                  ? `${group.procedures.length} ${t("steps.master").toLowerCase()}`
+                  : t("masterAuto")
+              }
+              subtitle={group.description ?? undefined}
+              after={after}
+            >
+              {group.title}
+            </Cell>
           );
         })}
-      </div>
+      </Section>
     );
   };
 
@@ -861,62 +756,126 @@ const BookingScreen = ({
     }
 
     return (
-      <div style={stackStyle}>
-        <Caption level="1">{t("masterTitle")}</Caption>
+      <Section header={t("masterTitle")}>
+        {selectedGroup.procedures.map((procedure) => {
+          const priceLabel = formatCurrency(
+            procedure.price?.amount ?? selectedGroup.minPrice,
+            procedure.price?.currency ?? selectedGroup.currency,
+            locale,
+          );
+          const durationLabel = formatDuration(procedure.duration, locale);
+          const after =
+            [priceLabel, durationLabel].filter(Boolean).join(" · ") || undefined;
+          const subtitle =
+            procedure.alias && procedure.alias !== procedure.masterNickname
+              ? procedure.alias
+              : t("steps.master");
 
-        <Section>
-          {selectedGroup.procedures.map((procedure) => {
-            const priceLabel = formatCurrency(
-              procedure.price?.amount ?? selectedGroup.minPrice,
-              procedure.price?.currency ?? selectedGroup.currency,
-              locale,
-            );
-            const durationLabel = formatDuration(procedure.duration, locale);
-            const subtitle =
-              procedure.alias && procedure.alias !== procedure.masterNickname
-                ? procedure.alias
-                : t("steps.master");
-
-            return (
-              <Cell
-                key={procedure.id}
-                Component="button"
-                onClick={() => handleSelectProcedure(procedure)}
-                before={
-                  <Avatar
-                    size={40}
-                    src={procedure.masterAvatar ?? undefined}
-                    acronym={getInitials(
-                      procedure.masterNickname ?? procedure.alias ?? t("steps.master"),
-                    )}
-                  />
-                }
-                subtitle={subtitle}
-                after={formatMeta(priceLabel, durationLabel) || undefined}
-              >
-                {procedure.masterNickname ?? procedure.alias ?? t("masterAny")}
-              </Cell>
-            );
-          })}
-        </Section>
-      </div>
+          return (
+            <Cell
+              key={procedure.id}
+              Component="button"
+              multiline
+              onClick={() => handleSelectProcedure(procedure)}
+              before={
+                <Avatar
+                  size={40}
+                  src={procedure.masterAvatar ?? undefined}
+                  acronym={getInitials(
+                    procedure.masterNickname ?? procedure.alias ?? t("steps.master"),
+                  )}
+                />
+              }
+              subtitle={subtitle}
+              after={after}
+            >
+              {procedure.masterNickname ?? procedure.alias ?? t("masterAny")}
+            </Cell>
+          );
+        })}
+      </Section>
     );
   };
 
   const renderTimeStep = () => {
     if (slotsLoading) {
-      return renderStatus(t("loading.slots"));
+      return (
+        <Placeholder
+          header={t("loading.slots")}
+          description={t("timeEmptyHint")}
+        >
+          <Spinner size="m" />
+        </Placeholder>
+      );
+    }
+
+    if (slotsError) {
+      return (
+        <Section header={t("timeSelectDate")}>
+          <Cell multiline>{slotsError}</Cell>
+        </Section>
+      );
+    }
+
+    if (!slotDateGroups.length) {
+      return (
+        <Placeholder
+          header={t("timeEmptyTitle")}
+          description={t("timeEmptyHint")}
+          action={
+            <Button
+              size="l"
+              onClick={() =>
+                selectedProcedure &&
+                fetchSlotsForProcedure(selectedProcedure.id, selectedProcedure.masterId)
+              }
+            >
+              {t("timeReload")}
+            </Button>
+          }
+        />
+      );
     }
 
     return (
-      <div style={stackStyle}>
-        <div style={rowStyle}>
-          <Caption level="1">{t("timeSelectDate")}</Caption>
+      <>
+        <Section header={t("timeSelectDate")}>
+          {slotDateGroups.map((group) => (
+            <Cell
+              key={group.key}
+              Component="button"
+              onClick={() => setSelectedDateKey(group.key)}
+              after={selectedDateKey === group.key ? "✓" : undefined}
+            >
+              {group.label}
+            </Cell>
+          ))}
+        </Section>
 
+        {slotPeriods.map((period) => (
+          <Section key={period.key} header={period.label}>
+            {period.slots.map((slot) => {
+              const isSelected =
+                selectedSlot?.start === slot.start && selectedSlot?.end === slot.end;
+
+              return (
+                <Cell
+                  key={slot.start}
+                  Component="button"
+                  onClick={() => handleSelectSlot(slot)}
+                  after={isSelected ? "✓" : undefined}
+                >
+                  {slot.label}
+                </Cell>
+              );
+            })}
+          </Section>
+        ))}
+
+        <Section>
           <Button
-            size="s"
-            mode="plain"
-            disabled={slotsLoading || !selectedProcedure}
+            size="l"
+            stretched
             onClick={() =>
               selectedProcedure &&
               fetchSlotsForProcedure(selectedProcedure.id, selectedProcedure.masterId)
@@ -924,64 +883,52 @@ const BookingScreen = ({
           >
             {t("timeReload")}
           </Button>
-        </div>
+        </Section>
+      </>
+    );
+  };
 
-        {slotsError ? renderError(slotsError) : null}
+  const renderSummarySection = () => {
+    if (!selectedGroup) {
+      return null;
+    }
 
-        {!slotsLoading && !slotDateGroups.length && !slotsError ? (
-          <Placeholder
-            header={t("timeEmptyTitle")}
-            description={t("timeEmptyHint")}
-          />
+    return (
+      <Section header={t("summaryTitle")}>
+        <Cell
+          multiline
+          subhead={t("summaryService")}
+          subtitle={selectedProcedure?.masterNickname ?? t("masterAny")}
+          after={selectedProcedurePrice ?? undefined}
+        >
+          {selectedGroup.title}
+        </Cell>
+
+        {selectedSlot ? (
+          <Cell
+            multiline
+            subhead={t("summaryDate")}
+            subtitle={selectedTimeText ?? undefined}
+            after={selectedProcedureDuration ?? undefined}
+          >
+            {selectedDateText ?? "—"}
+          </Cell>
         ) : null}
 
-        {slotDateGroups.length ? (
-          <div style={chipRowStyle}>
-            {slotDateGroups.map((group) => (
-              <Button
-                key={group.key}
-                size="m"
-                mode={selectedDateKey === group.key ? "filled" : "white"}
-                onClick={() => setSelectedDateKey(group.key)}
-              >
-                {group.label}
-              </Button>
-            ))}
-          </div>
-        ) : null}
-
-        {slotPeriods.map((period) => (
-          <div key={period.key} style={stackStyle}>
-            <Caption level="1">{period.label}</Caption>
-
-            <div style={chipWrapStyle}>
-              {period.slots.map((slot) => {
-                const isSelected =
-                  selectedSlot?.start === slot.start && selectedSlot?.end === slot.end;
-
-                return (
-                  <Button
-                    key={slot.start}
-                    size="m"
-                    mode={isSelected ? "filled" : "white"}
-                    onClick={() => handleSelectSlot(slot)}
-                  >
-                    {slot.label}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
+        <Cell
+          multiline
+          subhead={t("summarySalon")}
+          subtitle={salonAddress}
+        >
+          {salonName}
+        </Cell>
+      </Section>
     );
   };
 
   const renderDetailsStep = () => (
-    <form onSubmit={handleSubmitAppointment} style={stackStyle}>
-      <Caption level="1">{t("detailsTitle")}</Caption>
-
-      <Section>
+    <form onSubmit={handleSubmitAppointment}>
+      <Section header={t("detailsTitle")} footer={t("fieldPhoneHelper")}>
         <Input
           value={clientName}
           onChange={(event) => {
@@ -990,6 +937,7 @@ const BookingScreen = ({
               setFormErrors((current) => ({ ...current, name: undefined }));
             }
           }}
+          header={t("fieldNameLabel")}
           placeholder={t("fieldNamePlaceholder")}
           autoComplete="name"
           aria-label={t("fieldNameLabel")}
@@ -1003,6 +951,7 @@ const BookingScreen = ({
               setFormErrors((current) => ({ ...current, phone: undefined }));
             }
           }}
+          header={t("fieldPhoneLabel")}
           placeholder={t("fieldPhonePlaceholder")}
           autoComplete="tel"
           aria-label={t("fieldPhoneLabel")}
@@ -1011,116 +960,58 @@ const BookingScreen = ({
         />
       </Section>
 
-      <Subheadline level="2" style={footerTextStyle}>
-        {t("fieldPhoneHelper")}
-      </Subheadline>
+      {formErrors.name || formErrors.phone || globalError ? (
+        <Section>
+          <Cell multiline>{formErrors.name || formErrors.phone || globalError}</Cell>
+        </Section>
+      ) : null}
 
-      {formErrors.name || formErrors.phone || globalError
-        ? renderError(formErrors.name || formErrors.phone || globalError || "")
-        : null}
+      {renderSummarySection()}
 
-      <Caption level="1">{t("summaryTitle")}</Caption>
-
-      <Section>
-        <Cell
-          multiline
-          subhead={t("summaryService")}
-          subtitle={selectedProcedure?.masterNickname ?? t("masterAny")}
+      <Section footer={t("detailsHint")}>
+        <Button
+          type="submit"
+          size="l"
+          stretched
+          loading={isSubmitting}
+          disabled={!isFormValid || isSubmitting}
         >
-          {selectedGroup?.title ?? "—"}
-        </Cell>
-        <Cell
-          multiline
-          subhead={t("summaryDate")}
-          subtitle={selectedTimeText ?? undefined}
-          after={selectedProcedureDuration ?? undefined}
-        >
-          {selectedDateText ?? "—"}
-        </Cell>
-        <Cell
-          multiline
-          subhead={t("summaryPrice")}
-          subtitle={salonAddress}
-          after={selectedProcedurePrice ?? undefined}
-        >
-          {salonName}
-        </Cell>
+          {isSubmitting ? t("loading.submit") : t("submitLabel")}
+        </Button>
       </Section>
-
-      <Button
-        type="submit"
-        size="l"
-        stretched
-        loading={isSubmitting}
-        disabled={!isFormValid || isSubmitting}
-      >
-        {isSubmitting ? t("loading.submit") : t("submitLabel")}
-      </Button>
     </form>
   );
 
   return (
-    <AppRoot appearance="light" platform="ios">
-      <div style={viewportStyle}>
-        <div style={shellStyle}>
-          <Section>
-            <Cell
-              before={
-                <Avatar
-                  size={48}
-                  src={salonProfile?.logo ?? undefined}
-                  acronym={getInitials(salonName)}
-                />
-              }
-              subtitle={salonAddress}
-            >
-              {salonName}
-            </Cell>
-          </Section>
-
-          <div style={chipWrapStyle}>
-            {steps.map((step, index) => {
-              const isActive = step.id === currentStep;
-              const isCompleted = index < currentStepIndex;
-
-              return (
-                <Button
-                  key={step.id}
-                  size="s"
-                  mode={isActive ? "filled" : "plain"}
-                  disabled={!isActive && !isCompleted}
-                  onClick={() => handleStepClick(step.id, index)}
-                >
-                  {step.label}
-                </Button>
-              );
-            })}
-          </div>
-
-          <List>
-            {currentStep === "service" && renderServiceStep()}
-            {currentStep === "master" && renderMastersStep()}
-            {currentStep === "time" && renderTimeStep()}
-            {currentStep === "details" && renderDetailsStep()}
-          </List>
-
-          {currentStep !== "details" && selectedGroup ? (
-            <Subheadline level="2" style={footerTextStyle}>
-              {formatMeta(
-                selectedGroup.title,
-                selectedProcedure?.masterNickname ?? selectedProcedureDuration,
-                selectedProcedurePrice,
-              )}
-            </Subheadline>
+    <AppRoot>
+      <List>
+        <Section>
+          <Cell
+            before={
+              <Avatar
+                size={48}
+                src={salonProfile?.logo ?? undefined}
+                acronym={getInitials(salonName)}
+              />
+            }
+            subtitle={salonAddress ?? t("subtitle")}
+          >
+            {salonName}
+          </Cell>
+          {currentStep !== "service" ? (
+            <Button size="s" mode="plain" onClick={handleBack}>
+              {t("backLabel")}
+            </Button>
           ) : null}
+        </Section>
 
-          {currentStep === "details" ? (
-            <Subheadline level="2" style={footerTextStyle}>
-              {t("detailsHint")}
-            </Subheadline>
-          ) : null}
-        </div>
-      </div>
+        {currentStep !== "details" ? renderSummarySection() : null}
+
+        {currentStep === "service" ? renderServiceStep() : null}
+        {currentStep === "master" ? renderMastersStep() : null}
+        {currentStep === "time" ? renderTimeStep() : null}
+        {currentStep === "details" ? renderDetailsStep() : null}
+      </List>
     </AppRoot>
   );
 };

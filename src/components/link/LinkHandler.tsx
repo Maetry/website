@@ -5,14 +5,11 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { InviteScreen } from "@/components/invite";
-import { PublicBookingFlow } from "@/features/public-booking";
 import { ApiError, NotFoundError } from "@/lib/api/error-handler";
 import {
-  PublicClickResponse,
   PublicMarketingCampaign,
   getCampaignByLink,
   registerLinkClick,
-  savePublicBookingContext,
 } from "@/lib/api/public-booking";
 import type { LinkKind } from "@/lib/api/shortLink";
 
@@ -24,13 +21,6 @@ type LinkHandlerProps = {
 
 type LinkState =
   | { status: "loading" }
-  | {
-      status: "booking";
-      campaign: PublicMarketingCampaign | null;
-      click: PublicClickResponse | null;
-      salonId: string;
-      trackingId?: string | null;
-    }
   | {
       status: "invite";
       kind: Exclude<LinkKind, "marketing">;
@@ -46,6 +36,53 @@ function readTrackingIdFromLocation() {
   }
 
   return new URLSearchParams(window.location.search).get("trackingId");
+}
+
+function readNanoIdFromLinkPath(linkPath: string) {
+  const segments = linkPath.split("/").filter(Boolean);
+  return segments.at(-1) ?? linkPath;
+}
+
+function getBookingOrigin() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  const configuredShortlinkHost =
+    process.env.NEXT_PUBLIC_SHORTLINK_HOST || "link.maetry.com";
+  const shortlinkHost = configuredShortlinkHost
+    .replace(/^https?:\/\//, "")
+    .split("/")[0];
+
+  if (
+    window.location.hostname === shortlinkHost ||
+    window.location.hostname.includes(shortlinkHost)
+  ) {
+    const mainHost = window.location.hostname.replace(/^link\./, "");
+    return `${window.location.protocol}//${mainHost}`;
+  }
+
+  return window.location.origin;
+}
+
+function buildBookingRedirectUrl(
+  locale: string,
+  salonId: string,
+  nanoId: string,
+  trackingId: string | null,
+) {
+  const url = new URL(
+    `/${locale}/booking/${encodeURIComponent(salonId)}`,
+    getBookingOrigin(),
+  );
+
+  url.searchParams.set("nanoid", nanoId);
+
+  if (trackingId) {
+    url.searchParams.set("trackingId", trackingId);
+  }
+
+  return url.toString();
 }
 
 function resolveLinkError(
@@ -75,12 +112,13 @@ export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
   useEffect(() => {
     const controller = new AbortController();
 
-    const resolveMarketingState = (
+    const redirectToBooking = (
       campaign: PublicMarketingCampaign | null,
-      click: PublicClickResponse | null,
+      salonIdFromClick?: string | null,
     ) => {
       const trackingId = readTrackingIdFromLocation();
-      const salonId = campaign?.salonId ?? click?.payload?.salonId;
+      const salonId = campaign?.salonId ?? salonIdFromClick;
+      const nanoId = readNanoIdFromLinkPath(linkPath);
 
       if (!salonId) {
         setState({
@@ -90,22 +128,9 @@ export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
         return;
       }
 
-      savePublicBookingContext({
-        campaignId: campaign?.id ?? click?.payload?.campaignId ?? null,
-        kind: "marketing",
-        linkId: linkPath,
-        salonId,
-        savedAt: new Date().toISOString(),
-        trackingId,
-      });
-
-      setState({
-        campaign,
-        click,
-        salonId,
-        status: "booking",
-        trackingId,
-      });
+      window.location.replace(
+        buildBookingRedirectUrl(locale, salonId, nanoId, trackingId),
+      );
     };
 
     const run = async () => {
@@ -135,7 +160,7 @@ export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
             return;
           }
 
-          resolveMarketingState(campaign, click);
+          redirectToBooking(campaign, click.payload?.salonId);
         } catch (error) {
           if (controller.signal.aborted) {
             return;
@@ -145,7 +170,7 @@ export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
             error instanceof NotFoundError ||
             (error instanceof ApiError && error.status === 404)
           ) {
-            resolveMarketingState(null, click);
+            redirectToBooking(null, click.payload?.salonId);
             return;
           }
 
@@ -171,7 +196,7 @@ export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
     return () => {
       controller.abort();
     };
-  }, [linkPath, t]);
+  }, [linkPath, locale, t]);
 
   if (state.status === "loading") {
     return (
@@ -218,13 +243,5 @@ export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
     return <InviteScreen kind={state.kind} />;
   }
 
-  return (
-    <PublicBookingFlow
-      campaign={state.campaign}
-      initialTrackingId={state.trackingId}
-      linkId={linkPath}
-      locale={locale}
-      salonId={state.salonId}
-    />
-  );
+  return null;
 };

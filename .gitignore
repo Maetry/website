@@ -43,3 +43,5 @@ public/.DS_Store
 .env.production
 .env.staging
 /.cursor
+/.playwright-cli
+/output
