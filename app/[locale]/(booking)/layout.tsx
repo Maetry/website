@@ -1,11 +1,13 @@
-import "@telegram-apps/telegram-ui/dist/styles.css";
+import "@tamagui/core/reset.css";
 
 import type { ReactNode } from "react";
+
+import { BookingUiProvider } from "./BookingUiProvider";
 
 export default function BookingLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  return children;
+  return <BookingUiProvider>{children}</BookingUiProvider>;
 }

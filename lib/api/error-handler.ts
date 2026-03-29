@@ -19,10 +19,14 @@ export class NotFoundError extends Error {
   }
 }
 
+function readStringField(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+}
+
 export async function extractErrorMessage(response: Response): Promise<string | undefined> {
   try {
-    const data = (await response.json()) as { message?: string; error?: string };
-    return data?.message ?? data?.error ?? undefined;
+    const data = (await response.json()) as { message?: unknown; error?: unknown };
+    return readStringField(data?.message) ?? readStringField(data?.error);
   } catch {
     return undefined;
   }
@@ -41,4 +45,3 @@ export async function handleApiResponse<T>(response: Response): Promise<T> {
 
   return (await response.json()) as T;
 }
-

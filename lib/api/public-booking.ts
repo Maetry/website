@@ -1,6 +1,7 @@
 "use client";
 
 import { clientApiRequest } from "./client";
+import { getOrCreateDeviceId } from "./device-id";
 import { ApiError } from "./error-handler";
 import type {
   PublicBookingCreatePayload,
@@ -86,6 +87,18 @@ export type StoredPublicBookingContext = {
 type RequestOptions = {
   signal?: AbortSignal;
 };
+
+function buildDeviceIdHeader(): Record<string, string> | undefined {
+  const deviceId = getOrCreateDeviceId();
+
+  if (!deviceId) {
+    return undefined;
+  }
+
+  return {
+    "Device-ID": deviceId,
+  };
+}
 
 function minorToMajor(value: number): number {
   return value / 100;
@@ -300,6 +313,7 @@ export async function searchPublicBookingSlots(
     endpoint: `/api/public-booking/search-slots?${query.toString()}`,
     method: "POST",
     body: params.body,
+    headers: buildDeviceIdHeader(),
     signal,
   });
 }

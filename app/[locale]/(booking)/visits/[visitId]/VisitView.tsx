@@ -4,17 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import { useTranslations } from "next-intl";
 import {
-  AppRoot,
   Avatar,
   Button,
-  Cell,
-  List,
-  Placeholder,
-  Section,
+  Paragraph,
+  Separator,
   Spinner,
-} from "@telegram-apps/telegram-ui";
-import { useTranslations } from "next-intl";
+  Text,
+  XStack,
+  YStack,
+} from "tamagui";
 
 import {
   BookingApiError,
@@ -204,114 +204,187 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
 
   if (loading) {
     return (
-      <AppRoot>
-        <Placeholder
-          header={t("loading.confirmation")}
-          description={t("successBookingHint")}
-        >
-          <Spinner size="m" />
-        </Placeholder>
-      </AppRoot>
+      <YStack
+        alignItems="center"
+        backgroundColor="$background"
+        flex={1}
+        justifyContent="center"
+        padding="$6"
+      >
+        <YStack alignItems="center" gap="$3" maxWidth={420}>
+          <Spinner />
+          <Text fontSize="$7" fontWeight="700" textAlign="center">
+            {t("loading.confirmation")}
+          </Text>
+          <Paragraph color="$color11" textAlign="center">
+            {t("successBookingHint")}
+          </Paragraph>
+        </YStack>
+      </YStack>
     );
   }
 
   if (error || !appointment) {
     return (
-      <AppRoot>
-        <Placeholder
-          header={t("errors.createAppointment")}
-          description={error ?? t("errors.createAppointment")}
-          action={
-            <Button size="l" onClick={() => window.location.reload()}>
-              {t("backLabel")}
-            </Button>
-          }
-        />
-      </AppRoot>
+      <YStack
+        alignItems="center"
+        backgroundColor="$background"
+        flex={1}
+        justifyContent="center"
+        padding="$6"
+      >
+        <YStack alignItems="center" gap="$3" maxWidth={420}>
+          <Text fontSize="$7" fontWeight="700" textAlign="center">
+            {t("errors.createAppointment")}
+          </Text>
+          <Paragraph color="$color11" textAlign="center">
+            {error ?? t("errors.createAppointment")}
+          </Paragraph>
+          <Button onPress={() => window.location.reload()}>{t("backLabel")}</Button>
+        </YStack>
+      </YStack>
     );
   }
 
   return (
-    <AppRoot>
-      <List>
-        <Section>
-          <Cell
-            before={
-              <Avatar
-                size={48}
-                src={salonIcon ?? undefined}
-                acronym={getInitials(salonName ?? t("salonFallbackName"))}
-              />
-            }
-            subtitle={appointmentDate ?? undefined}
-          >
-            {salonName ?? t("salonFallbackName")}
-          </Cell>
-        </Section>
+    <YStack backgroundColor="$background" flex={1}>
+      <YStack alignSelf="center" gap="$4" maxWidth={560} padding="$4" width="100%">
+        <YStack
+          alignItems="center"
+          backgroundColor="$background"
+          borderColor="$borderColor"
+          borderRadius="$6"
+          borderWidth={1}
+          gap="$3"
+          padding="$4"
+        >
+          <Avatar circular size="$6">
+            <Avatar.Image src={salonIcon ?? undefined} />
+            <Avatar.Fallback alignItems="center" justifyContent="center">
+              <Text fontSize="$5" fontWeight="800">
+                {getInitials(salonName ?? t("salonFallbackName"))}
+              </Text>
+            </Avatar.Fallback>
+          </Avatar>
+          <YStack gap="$1">
+            <Text fontSize="$8" fontWeight="800" textAlign="center">
+              {t("successTitle")}
+            </Text>
+            <Paragraph color="$color11" textAlign="center">
+              {t("successSubtitle")}
+            </Paragraph>
+            <Text fontSize="$6" fontWeight="700" textAlign="center">
+              {salonName ?? t("salonFallbackName")}
+            </Text>
+            {appointmentDate ? (
+              <Paragraph color="$color11" size="$3" textAlign="center">
+                {appointmentDate}
+              </Paragraph>
+            ) : null}
+          </YStack>
+        </YStack>
 
-        <Section header={t("successTitle")} footer={t("successSubtitle")}>
+        <YStack
+          backgroundColor="$background"
+          borderColor="$borderColor"
+          borderRadius="$6"
+          borderWidth={1}
+          overflow="hidden"
+        >
           {procedure ? (
-            <Cell
-              multiline
-              subhead={t("summaryService")}
-              subtitle={procedure.masterNickname ?? t("masterAny")}
-              after={appointmentPrice ?? undefined}
-            >
-              {procedure.serviceTitle ?? procedure.serviceDescription ?? t("headline")}
-            </Cell>
+            <YStack padding="$3">
+              <XStack justifyContent="space-between">
+                <YStack flex={1} gap="$1">
+                  <Text color="$color11" fontSize="$2" textTransform="uppercase">
+                    {t("summaryService")}
+                  </Text>
+                  <Text fontSize="$5" fontWeight="600">
+                    {procedure.serviceTitle ??
+                      procedure.serviceDescription ??
+                      t("headline")}
+                  </Text>
+                  <Paragraph color="$color11" size="$3">
+                    {procedure.masterNickname ?? t("masterAny")}
+                  </Paragraph>
+                </YStack>
+                {appointmentPrice ? (
+                  <Text color="$color11" fontSize="$3">
+                    {appointmentPrice}
+                  </Text>
+                ) : null}
+              </XStack>
+              <Separator marginTop="$3" />
+            </YStack>
           ) : null}
 
           {appointmentDate ? (
-            <Cell
-              multiline
-              subhead={t("summaryDate")}
-              subtitle={appointmentTime ?? undefined}
-            >
-              {appointmentDate}
-            </Cell>
+            <YStack padding="$3">
+              <XStack justifyContent="space-between">
+                <YStack flex={1} gap="$1">
+                  <Text color="$color11" fontSize="$2" textTransform="uppercase">
+                    {t("summaryDate")}
+                  </Text>
+                  <Text fontSize="$5" fontWeight="600">
+                    {appointmentDate}
+                  </Text>
+                  {appointmentTime ? (
+                    <Paragraph color="$color11" size="$3">
+                      {appointmentTime}
+                    </Paragraph>
+                  ) : null}
+                </YStack>
+              </XStack>
+              <Separator marginTop="$3" />
+            </YStack>
           ) : null}
 
-          <Cell
-            multiline
-            subhead={t("summarySalon")}
-            subtitle={appointmentPrice ?? undefined}
-          >
-            {salonName ?? t("salonFallbackName")}
-          </Cell>
-        </Section>
+          <YStack padding="$3">
+            <XStack justifyContent="space-between">
+              <YStack flex={1} gap="$1">
+                <Text color="$color11" fontSize="$2" textTransform="uppercase">
+                  {t("summarySalon")}
+                </Text>
+                <Text fontSize="$5" fontWeight="600">
+                  {salonName ?? t("salonFallbackName")}
+                </Text>
+                {appointmentPrice ? (
+                  <Paragraph color="$color11" size="$3">
+                    {appointmentPrice}
+                  </Paragraph>
+                ) : null}
+              </YStack>
+            </XStack>
+          </YStack>
+        </YStack>
 
-        <Section>
-          <Button size="l" stretched onClick={handleCreateAnother}>
-            {t("successCreateAnother")}
-          </Button>
-        </Section>
+        <Button onPress={handleCreateAnother} width="100%">
+          {t("successCreateAnother")}
+        </Button>
 
         {appleWalletUrl || googleWalletUrl ? (
-          <Section>
+          <YStack gap="$3">
             {appleWalletUrl ? (
               <Button
-                size="l"
-                stretched
-                mode="outline"
-                onClick={() => handleOpenWallet(appleWalletUrl)}
+                onPress={() => handleOpenWallet(appleWalletUrl)}
+                variant="outlined"
+                width="100%"
               >
                 {t("walletApple")}
               </Button>
             ) : null}
             {googleWalletUrl ? (
               <Button
-                size="l"
-                stretched
-                mode="outline"
-                onClick={() => handleOpenWallet(googleWalletUrl)}
+                onPress={() => handleOpenWallet(googleWalletUrl)}
+                variant="outlined"
+                width="100%"
               >
                 {t("walletGoogle")}
               </Button>
             ) : null}
-          </Section>
+          </YStack>
         ) : null}
-      </List>
-    </AppRoot>
+      </YStack>
+    </YStack>
   );
 }
 

@@ -20,6 +20,10 @@ type MaetryClientOptions = {
   authorization?: string | null;
 };
 
+function readStringField(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+}
+
 export const MAETRY_THROW_ON_ERROR_OPTIONS = {
   throwOnError: true as const,
 };
@@ -98,7 +102,9 @@ export function normalizeMaetrySdkError(error: unknown): ApiError {
 
     return new ApiError(
       typeof candidate.status === "number" ? candidate.status : 500,
-      candidate.message ?? candidate.error ?? "Maetry API request failed",
+      readStringField(candidate.message) ??
+        readStringField(candidate.error) ??
+        "Maetry API request failed",
     );
   }
 

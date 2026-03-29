@@ -20,6 +20,8 @@
     "@chakra-ui/react": "^3.34.0",
     "@emotion/react": "^11.14.0",
     "@reduxjs/toolkit": "^2.10.1",
+    "@tamagui/config": "^2.0.0-rc.33",
+    "@tamagui/font-inter": "^2.0.0-rc.33",
     "@telegram-apps/telegram-ui": "^2.1.13",
     "firebase": "^12.6.0",
     "flag-icons": "^7.5.0",
@@ -30,7 +32,10 @@
     "next-themes": "^0.4.6",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "react-redux": "^9.2.0"
+    "react-native": "^0.84.1",
+    "react-native-web": "^0.21.2",
+    "react-redux": "^9.2.0",
+    "tamagui": "^2.0.0-rc.33"
   },
   "devDependencies": {
     "@types/node": "^20",

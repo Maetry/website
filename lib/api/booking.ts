@@ -1,6 +1,7 @@
 "use client";
 
 import { clientApiRequest } from "./client";
+import { getOrCreateDeviceId } from "./device-id";
 
 export type Step = "service" | "master" | "time" | "details";
 
@@ -120,24 +121,37 @@ export async function getSalonProcedures({
 }
 
 export type SearchSalonSlotsParams = FetchOptions & {
-  daysAhead: number;
+  date: string;
   executorId?: string | null;
   procedureId: string;
 };
+
+function buildDeviceIdHeader(): Record<string, string> | undefined {
+  const deviceId = getOrCreateDeviceId();
+
+  if (!deviceId) {
+    return undefined;
+  }
+
+  return {
+    "Device-ID": deviceId,
+  };
+}
 
 export async function searchSalonSlots({
   salonId,
   procedureId,
   executorId,
-  daysAhead,
+  date,
 }: SearchSalonSlotsParams): Promise<SlotsResponse> {
   return clientApiRequest<SlotsResponse>({
     body: {
-      daysAhead,
+      date,
       executorId,
       procedureId,
     },
     endpoint: `/api/booking/salon/${encodeURIComponent(salonId)}/search-slots`,
+    headers: buildDeviceIdHeader(),
     method: "POST",
   });
 }
