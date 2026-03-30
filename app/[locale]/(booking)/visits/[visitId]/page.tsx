@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { getTranslations } from "next-intl/server";
 
-import VisitView from "./VisitView";
+import { VisitViewIsland } from "./VisitViewIsland";
 
 type PageParams = {
   locale: string;
@@ -41,7 +41,10 @@ const VisitPage = async ({ params }: VisitPageProps) => {
   const resolvedParams = await params;
 
   return (
-    <VisitView visitId={resolvedParams.visitId} locale={resolvedParams.locale} />
+    <VisitViewIsland
+      visitId={resolvedParams.visitId}
+      locale={resolvedParams.locale}
+    />
   );
 };
 

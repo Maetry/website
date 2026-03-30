@@ -14,14 +14,14 @@ import {
   styled,
 } from "tamagui";
 
-import {
-  detectBookingAdaptivePlatform,
-  getBookingPlatformVariant,
-  getBookingThemeName,
-} from "@/src/features/booking/utils/platform";
+import { getBookingThemeSubName } from "@/src/features/booking/bookingSurface";
 import type {
   BookingAdaptivePlatform as AdaptivePlatform,
   BookingPlatformVariant as PlatformVariant,
+} from "@/src/features/booking/utils/platform";
+import {
+  detectBookingAdaptivePlatform,
+  getBookingPlatformVariant,
 } from "@/src/features/booking/utils/platform";
 
 type BookingOption = {
@@ -264,7 +264,7 @@ export function PlatformAdaptiveBookingSheet({
 }: PlatformAdaptiveBookingSheetProps) {
   const adaptivePlatform = useMemo(detectBookingAdaptivePlatform, []);
   const platformVariant = getBookingPlatformVariant(adaptivePlatform);
-  const themeName = getBookingThemeName(adaptivePlatform);
+  const themeName = getBookingThemeSubName(platformVariant);
   const confirmDisabled = loading || !selectedDateId || !selectedTimeId;
 
   return (

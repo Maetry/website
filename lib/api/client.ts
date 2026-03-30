@@ -2,7 +2,7 @@
 
 import { getOrCreateDeviceId } from "./device-id";
 import { handleApiResponse } from "./error-handler";
-import { devError } from "./utils";
+import { devError, isAbortError } from "./utils";
 
 interface ClientApiRequestOptions {
   endpoint: string;
@@ -49,7 +49,9 @@ export async function clientApiRequest<T>({
     const response = await fetch(endpoint, fetchOptions);
     return handleApiResponse<T>(response);
   } catch (error) {
-    devError(`Failed to fetch ${endpoint}`, error);
+    if (!isAbortError(error)) {
+      devError(`Failed to fetch ${endpoint}`, error);
+    }
     throw error;
   }
 }

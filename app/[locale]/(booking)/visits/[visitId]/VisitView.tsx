@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 import {
+  ArrowUpRight,
   CalendarDays,
-  Check,
+  CalendarPlus,
   CheckCircle2,
-  ChevronLeft,
   Clock3,
   MapPin,
+  Smartphone,
   WalletCards,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -24,13 +25,22 @@ import {
   YStack,
 } from "tamagui";
 
+import { AddToAppleWalletBadge } from "@/components/wallet";
 import {
   ApiError,
 } from "@/lib/api/error-handler";
 import {
-  getPublicBooking,
+  waitForPublicBooking,
   type PublicBookingVisit,
 } from "@/lib/api/public-booking";
+import { isAbortError } from "@/lib/api/utils";
+import { usePlatform } from "@/lib/userAgent/PlatformProvider";
+import appStoreBadge from "@/public/images/appstore.svg";
+import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
+
+import { formatCurrency } from "../../_shared/formatting";
+
+const APP_STORE_URL = "https://apps.apple.com/app/id6746678571";
 
 type VisitViewProps = {
   /** Идентификатор public visit в URL; используется как booking/visit id. */
@@ -38,45 +48,29 @@ type VisitViewProps = {
   locale: string;
 };
 
-const formatCurrency = (
-  amount?: number | null,
-  currency?: string | null,
-  locale?: string,
-) => {
-  if (amount === null || amount === undefined || !currency) {
-    return null;
-  }
-
-  try {
-    return new Intl.NumberFormat(locale ?? "en", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    return `${amount} ${currency}`;
-  }
-};
-
 function VisitInfoRow({
   icon,
   label,
+  platform,
   value,
 }: {
   icon?: React.ReactNode;
   label: string;
+  platform: "android" | "ios";
   value?: string | null;
 }) {
+  const surface = getBookingSurfaceStyle(platform);
+
   return (
     <XStack alignItems="flex-start" gap="$3">
       {icon ? (
         <XStack
           alignItems="center"
-          backgroundColor="rgba(0,122,255,0.08)"
-          borderRadius="$4"
-          height={36}
+          backgroundColor="$primarySoft"
+          borderRadius={surface.visit.iconBadgeRadius}
+          height={surface.visit.iconBadgeSize}
           justifyContent="center"
-          width={36}
+          width={surface.visit.iconBadgeSize}
         >
           <Text color="$primary">{icon}</Text>
         </XStack>
@@ -93,59 +87,78 @@ function VisitInfoRow({
   );
 }
 
-function HeaderCircleButton({
-  children,
+function SecondaryActionButton({
+  icon,
+  label,
   onPress,
 }: {
-  children: React.ReactNode;
-  onPress?: () => void;
+  icon: React.ReactNode;
+  label: string;
+  onPress: () => void;
 }) {
   return (
     <Button
       alignItems="center"
-      backgroundColor="rgba(255,255,255,0.92)"
-      borderRadius={999}
+      backgroundColor="$chromeBackground"
+      borderRadius={16}
       chromeless
-      height={44}
-      justifyContent="center"
+      justifyContent="flex-start"
       onPress={onPress}
-      pressStyle={{ opacity: 0.78 }}
-      width={44}
+      paddingHorizontal="$4"
+      paddingVertical="$3.5"
+      pressStyle={{ opacity: 0.82 }}
+      width="100%"
     >
-      {children}
+      <XStack alignItems="center" gap="$3">
+        <Text color="$primary">{icon}</Text>
+        <Text color="$textPrimary" fontSize="$5" fontWeight="600">
+          {label}
+        </Text>
+      </XStack>
     </Button>
   );
 }
 
 export function VisitView({ visitId, locale }: VisitViewProps) {
   const t = useTranslations("booking");
-  const router = useRouter();
+  const platformInfo = usePlatform();
+  const platform = platformInfo.isAndroid ? "android" : "ios";
+  const surface = getBookingSurfaceStyle(platform);
 
   const [appointment, setAppointment] = useState<PublicBookingVisit | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [salonName, setSalonName] = useState<string | null>(null);
-  const [salonId, setSalonId] = useState<string | null>(null);
   const [timeZoneId, setTimeZoneId] = useState<string>("UTC");
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const appointmentData = await getPublicBooking(visitId);
+        const appointmentData = await waitForPublicBooking(visitId, {
+          retryDelaysMs: [200, 400, 800, 1_200],
+          signal: controller.signal,
+        });
+
+        if (controller.signal.aborted) {
+          return;
+        }
+
         setAppointment(appointmentData);
         setTimeZoneId(appointmentData.timezoneId || "UTC");
-
-        if (appointmentData.salonId) {
-          setSalonId(appointmentData.salonId);
-        }
 
         if (appointmentData.salonName) {
           setSalonName(appointmentData.salonName);
         }
       } catch (err) {
+        if (controller.signal.aborted || isAbortError(err)) {
+          return;
+        }
+
         const message =
           err instanceof ApiError
             ? err.message
@@ -158,11 +171,17 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
             : t("errors.createAppointment"),
         );
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     void fetchData();
+
+    return () => {
+      controller.abort();
+    };
   }, [visitId, t]);
 
   const appointmentDate = appointment?.time?.start
@@ -188,14 +207,59 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
     appointment?.price?.currency,
     locale,
   );
+  const appointmentTitle = appointment?.procedureName ?? t("headline");
+  const appointmentSalonName = salonName ?? t("salonFallbackName");
+  const appointmentDateTime =
+    appointmentDate && appointmentTime
+      ? `${appointmentDate} • ${appointmentTime}`
+      : appointmentDate ?? appointmentTime;
+  const preferredWalletType =
+    platformInfo.isAndroid || platformInfo.isDesktop ? "google" : "apple";
+  const walletLabel =
+    preferredWalletType === "google" ? t("walletGoogle") : t("walletApple");
+  const isApplePlatform = platformInfo.isIOS || platformInfo.isMacOS;
+  const mapsUrl = appointment?.salonAddress
+    ? platformInfo.isIOS || platformInfo.isMacOS
+      ? `https://maps.apple.com/?q=${encodeURIComponent(appointmentSalonName)}&address=${encodeURIComponent(appointment.salonAddress)}`
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${appointmentSalonName} ${appointment.salonAddress}`)}`
+    : null;
+  const calendarUrl =
+    appointment?.time?.start
+      ? (() => {
+          const startDate = new Date(appointment.time.start);
+          const endDate = appointment.time.end
+            ? new Date(appointment.time.end)
+            : new Date(startDate.getTime() + 60 * 60 * 1000);
+          const formatCalendarDate = (value: Date) =>
+            value.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 
-  const handleCreateAnother = () => {
-    if (salonId) {
-      router.push(`/${locale}/booking/${salonId}`);
+          const description = t("successProcedureAt", {
+            procedure: appointmentTitle,
+            salon: appointmentSalonName,
+          });
+
+          return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(appointmentTitle)}&dates=${formatCalendarDate(startDate)}/${formatCalendarDate(endDate)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(appointment.salonAddress ?? appointmentSalonName)}`;
+        })()
+      : null;
+
+  const openExternal = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleOpenInApp = () => {
+    window.location.href = APP_STORE_URL;
+  };
+
+  const handleDownloadApp = () => {
+    openExternal(APP_STORE_URL);
+  };
+
+  const handleAddToWallet = () => {
+    if (!appointment?.appointmentId) {
       return;
     }
 
-    router.push(`/${locale}/booking`);
+    window.location.href = `/api/wallet/${preferredWalletType}?id=${encodeURIComponent(appointment.appointmentId)}`;
   };
 
   if (loading) {
@@ -206,6 +270,9 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
         flex={1}
         justifyContent="center"
         padding="$6"
+        style={{
+          paddingBottom: "calc(24px + env(safe-area-inset-bottom, 0px))",
+        }}
       >
         <YStack alignItems="center" gap="$3" maxWidth={420}>
           <Spinner />
@@ -228,6 +295,9 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
         flex={1}
         justifyContent="center"
         padding="$6"
+        style={{
+          paddingBottom: "calc(24px + env(safe-area-inset-bottom, 0px))",
+        }}
       >
         <YStack alignItems="center" gap="$3" maxWidth={420}>
           <Text fontSize="$7" fontWeight="700" textAlign="center">
@@ -243,76 +313,160 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
   }
 
   return (
-    <YStack
-      backgroundColor="$appBackground"
-      flex={1}
-      style={{
-        background:
-          "linear-gradient(180deg, rgba(242,242,247,0.96) 0%, rgba(233,233,238,1) 100%)",
-      }}
-    >
-      <YStack alignSelf="center" gap="$4" maxWidth={560} padding="$4" width="100%">
-        <YStack gap="$3">
-          <XStack alignSelf="center" backgroundColor="rgba(60,60,67,0.18)" borderRadius={999} height={5} width={46} />
-          <XStack alignItems="center" justifyContent="space-between">
-            <HeaderCircleButton onPress={() => (salonId ? router.push(`/${locale}/booking/${salonId}`) : router.push(`/${locale}/booking`))}>
-              <Text color="$textPrimary">
-                <ChevronLeft size={20} />
-              </Text>
-            </HeaderCircleButton>
-            <Text color="$textPrimary" fontSize="$5" fontWeight="700">
-              {t("summaryTitle")}
+    <YStack backgroundColor="$appBackground" flex={1}>
+      <YStack
+        alignSelf="center"
+        gap="$4"
+        maxWidth={560}
+        padding="$4"
+        style={{
+          paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
+        }}
+        width="100%"
+      >
+        <YStack alignItems="center" gap="$2" paddingHorizontal="$3" paddingTop="$2">
+          <XStack
+            alignItems="center"
+            backgroundColor="$primarySoft"
+            borderRadius={999}
+            height={64}
+            justifyContent="center"
+            width={64}
+          >
+            <Text color="$primary">
+              <CheckCircle2 size={30} />
             </Text>
-            <HeaderCircleButton>
-              <Text color="$primary">
-                <Check size={20} />
-              </Text>
-            </HeaderCircleButton>
           </XStack>
-
-          <YStack alignItems="center" gap="$1.5" paddingHorizontal="$3">
-            <Text color="$textPrimary" fontSize="$9" fontWeight="800" textAlign="center">
-              {appointment.procedureName ?? t("headline")}
+          <Text color="$textPrimary" fontSize="$8" fontWeight="800" textAlign="center">
+            {t("successTitle")}
+          </Text>
+          {appointmentDateTime ? (
+            <Text color="$textPrimary" fontSize="$5" fontWeight="700" textAlign="center">
+              {appointmentDateTime}
             </Text>
-            <Paragraph color="#ff5a5f" fontSize="$4" fontWeight="500" textAlign="center">
-              {salonName ?? t("salonFallbackName")}
+          ) : null}
+          <Paragraph color="$textSecondary" fontSize="$4" textAlign="center">
+            {t("successProcedureAt", {
+              procedure: appointmentTitle,
+              salon: appointmentSalonName,
+            })}
+          </Paragraph>
+        </YStack>
+
+        <YStack
+          backgroundColor="$cardBackground"
+          borderRadius={surface.visit.cardRadius}
+          gap="$3"
+          padding="$4"
+        >
+          <YStack gap="$1.5">
+            <Text color="$textPrimary" fontSize="$6" fontWeight="800">
+              {t("successManageTitle")}
+            </Text>
+            <Paragraph color="$textSecondary">
+              {t("successManageSubtitle")}
             </Paragraph>
-            {appointmentDate ? (
-              <Text color="$textPrimary" fontSize="$5" fontWeight="600" textAlign="center">
-                {appointmentDate}
+          </YStack>
+
+          <YStack gap="$2">
+            <XStack alignItems="flex-start" gap="$2.5">
+              <Text color="$primary" fontSize="$5" lineHeight={20}>
+                •
               </Text>
-            ) : null}
-            {appointmentTime ? (
-              <Paragraph color="$textSecondary" textAlign="center">
-                {appointmentTime}
+              <Paragraph color="$textPrimary" flex={1}>
+                {t("successManageBulletReminders")}
               </Paragraph>
-            ) : null}
+            </XStack>
+            <XStack alignItems="flex-start" gap="$2.5">
+              <Text color="$primary" fontSize="$5" lineHeight={20}>
+                •
+              </Text>
+              <Paragraph color="$textPrimary" flex={1}>
+                {t("successManageBulletReschedule")}
+              </Paragraph>
+            </XStack>
+            <XStack alignItems="flex-start" gap="$2.5">
+              <Text color="$primary" fontSize="$5" lineHeight={20}>
+                •
+              </Text>
+              <Paragraph color="$textPrimary" flex={1}>
+                {t("successManageBulletBookings")}
+              </Paragraph>
+            </XStack>
+          </YStack>
+
+          <YStack gap="$2.5">
+            <Button
+              alignItems="center"
+              backgroundColor="$primary"
+              borderRadius={16}
+              justifyContent="center"
+              onPress={handleOpenInApp}
+              paddingVertical="$3.5"
+              pressStyle={{ opacity: 0.9 }}
+            >
+              <XStack alignItems="center" gap="$2.5">
+                <Text color="white">
+                  <Smartphone size={18} />
+                </Text>
+                <Text color="white" fontSize="$5" fontWeight="700">
+                  {t("successOpenApp")}
+                </Text>
+              </XStack>
+            </Button>
+
+            <XStack justifyContent="center">
+              <a
+                href={APP_STORE_URL}
+                rel="noopener noreferrer"
+                target="_blank"
+                aria-label={t("successDownloadApp")}
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleDownloadApp();
+                }}
+                style={{ display: "inline-flex" }}
+              >
+                <Image
+                  alt={t("successDownloadApp")}
+                  priority={false}
+                  src={appStoreBadge}
+                  style={{ height: 50, width: "auto" }}
+                />
+              </a>
+            </XStack>
           </YStack>
         </YStack>
 
         <YStack
           backgroundColor="$cardBackground"
-          borderRadius="$8"
+          borderRadius={surface.visit.cardRadius}
           overflow="hidden"
           padding="$4"
         >
           <YStack gap="$4">
+            <Text color="$textPrimary" fontSize="$6" fontWeight="800">
+              {t("successDetailsTitle")}
+            </Text>
             {appointment.procedureName ? (
               <YStack gap="$3">
                 <VisitInfoRow
                   icon={<WalletCards size={18} />}
                   label={t("summaryService")}
+                  platform={platform}
                   value={appointment.procedureName}
                 />
                 <VisitInfoRow
                   icon={<CheckCircle2 size={18} />}
                   label={t("summarySpecialist")}
+                  platform={platform}
                   value={appointment.masterNickname ?? t("masterAny")}
                 />
                 {appointmentPrice ? (
                   <VisitInfoRow
                     icon={<WalletCards size={18} />}
                     label={t("summaryPrice")}
+                    platform={platform}
                     value={appointmentPrice}
                   />
                 ) : null}
@@ -326,12 +480,14 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
                 <VisitInfoRow
                   icon={<CalendarDays size={18} />}
                   label={t("summaryDate")}
+                  platform={platform}
                   value={appointmentDate}
                 />
                 {appointmentTime ? (
                   <VisitInfoRow
                     icon={<Clock3 size={18} />}
                     label={t("summaryTime")}
+                    platform={platform}
                     value={appointmentTime}
                   />
                 ) : null}
@@ -343,21 +499,57 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
             <VisitInfoRow
               icon={<MapPin size={18} />}
               label={t("summarySalon")}
+              platform={platform}
               value={salonName ?? t("salonFallbackName")}
             />
           </YStack>
         </YStack>
 
+        <YStack gap="$2.5">
+          {appointment.appointmentId && isApplePlatform ? (
+            <XStack justifyContent="center">
+              <AddToAppleWalletBadge passId={appointment.appointmentId} />
+            </XStack>
+          ) : null}
+          {appointment.appointmentId && !isApplePlatform ? (
+            <SecondaryActionButton
+              icon={<WalletCards size={18} />}
+              label={walletLabel}
+              onPress={handleAddToWallet}
+            />
+          ) : null}
+          {calendarUrl ? (
+            <SecondaryActionButton
+              icon={<CalendarPlus size={18} />}
+              label={t("successAddToCalendar")}
+              onPress={() => openExternal(calendarUrl)}
+            />
+          ) : null}
+          {mapsUrl ? (
+            <SecondaryActionButton
+              icon={<MapPin size={18} />}
+              label={t("successOpenInMaps")}
+              onPress={() => openExternal(mapsUrl)}
+            />
+          ) : null}
+        </YStack>
+
         <Button
-          backgroundColor="rgba(255,255,255,0.92)"
-          borderRadius={999}
-          onPress={handleCreateAnother}
-          width={170}
-          alignSelf="center"
+          alignItems="center"
+          backgroundColor="transparent"
+          chromeless
+          justifyContent="center"
+          onPress={() => openExternal(`mailto:support@maetry.com?subject=${encodeURIComponent(`${appointmentSalonName} booking help`)}`)}
+          paddingVertical="$2"
         >
-          <Text color="#ff4d4f" fontSize="$4" fontWeight="500">
-            {t("successCreateAnother")}
-          </Text>
+          <XStack alignItems="center" gap="$2">
+            <Text color="$textSecondary" fontSize="$3" fontWeight="600">
+              {t("successHelpAction")}
+            </Text>
+            <Text color="$textSecondary">
+              <ArrowUpRight size={14} />
+            </Text>
+          </XStack>
         </Button>
       </YStack>
     </YStack>

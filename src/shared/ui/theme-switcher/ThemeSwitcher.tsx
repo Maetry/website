@@ -1,11 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useTheme } from "next-themes";
-
-import { setTheme } from "@/entities/theme";
-import { useAppDispatch } from "@/lib/hooks";
+import { useThemeSetting } from "@tamagui/next-theme";
 
 import type { ThemePreference } from "./theme";
 
@@ -15,30 +12,15 @@ type ThemeSwitcherProps = {
 
 const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ variant = "default" }) => {
   const onDark = variant === "onDark";
-  const dispatch = useAppDispatch();
-  const { theme, setTheme: setNextTheme, resolvedTheme } = useTheme();
+  const themeSetting = useThemeSetting();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const syncRedux = useCallback(
-    (resolved: string | undefined) => {
-      if (!resolved) {
-        return;
-      }
-      dispatch(setTheme(resolved === "dark"));
-    },
-    [dispatch],
-  );
-
-  useEffect(() => {
-    syncRedux(resolvedTheme);
-  }, [resolvedTheme, syncRedux]);
-
   const handleThemeChange = (next: ThemePreference) => {
-    setNextTheme(next);
+    themeSetting?.set(next);
   };
 
   if (!mounted) {
@@ -51,7 +33,7 @@ const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ variant = "default" }) =>
     );
   }
 
-  const currentTheme = (theme ?? "system") as ThemePreference;
+  const currentTheme = (themeSetting?.current ?? "system") as ThemePreference;
 
   const shellClass = onDark
     ? "flex items-center rounded-md border border-white/20 bg-white/10 p-0.5"

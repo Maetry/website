@@ -2,7 +2,7 @@ import "@tamagui/core/reset.css";
 
 import type { Viewport } from "next";
 
-import { BookingUiProvider } from "./BookingUiProvider";
+import { ClientAppUiProvider } from "@/src/shared/tamagui/ClientAppUiProvider";
 
 export const viewport: Viewport = {
   initialScale: 1,
@@ -16,5 +16,5 @@ export default function BookingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <BookingUiProvider>{children}</BookingUiProvider>;
+  return <ClientAppUiProvider>{children}</ClientAppUiProvider>;
 }

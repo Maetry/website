@@ -9,7 +9,7 @@ import { FirebaseTracker } from "@/lib/firebase";
 import { PlatformProvider } from "@/lib/userAgent/PlatformProvider";
 import { GlobalMarketingFooter } from "@/shared/chakra/marketing/GlobalMarketingFooter";
 import { MarketingProviders } from "@/shared/chakra/MarketingProviders";
-import { StoreProvider } from "@/shared/store";
+import { QueryProvider } from "@/shared/query/QueryProvider";
 import {
   AppThemeProvider,
   ThemeBootstrap,
@@ -76,7 +76,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
-      <StoreProvider>
+      <QueryProvider>
         <AppThemeProvider>
           <ThemeBootstrap />
           <PlatformProvider userAgent={userAgent}>
@@ -87,7 +87,7 @@ export default async function LocaleLayout({
             </MarketingProviders>
           </PlatformProvider>
         </AppThemeProvider>
-      </StoreProvider>
+      </QueryProvider>
     </NextIntlClientProvider>
   )
 }

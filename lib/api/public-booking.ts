@@ -2,7 +2,7 @@
 
 import { clientApiRequest } from "./client";
 import { getOrCreateDeviceId } from "./device-id";
-import { ApiError } from "./error-handler";
+import { ApiError, NotFoundError } from "./error-handler";
 import type {
   PublicBookingCreatePayload,
   PublicClickMetadata,
@@ -17,6 +17,7 @@ import type {
   PublicSearchSlotsResponse,
   SharedPublicBookingVisit,
 } from "./maetry-contracts";
+import { isAbortError } from "./utils";
 
 export type {
   PublicAddress,
@@ -88,6 +89,43 @@ type RequestOptions = {
   locale?: string;
   signal?: AbortSignal;
 };
+
+type WaitForPublicBookingOptions = RequestOptions & {
+  retryDelaysMs?: number[];
+};
+
+function isRetryablePublicBookingReadError(error: unknown) {
+  return (
+    error instanceof NotFoundError ||
+    (error instanceof ApiError && error.status === 404)
+  );
+}
+
+function delayWithSignal(ms: number, signal?: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("Fetch is aborted", "AbortError"));
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      cleanup();
+      resolve();
+    }, ms);
+
+    const handleAbort = () => {
+      cleanup();
+      reject(new DOMException("Fetch is aborted", "AbortError"));
+    };
+
+    const cleanup = () => {
+      window.clearTimeout(timeoutId);
+      signal?.removeEventListener("abort", handleAbort);
+    };
+
+    signal?.addEventListener("abort", handleAbort, { once: true });
+  });
+}
 
 function buildDeviceIdHeader(): Record<string, string> | undefined {
   const deviceId = getOrCreateDeviceId();
@@ -358,4 +396,32 @@ export async function getPublicBooking(
   });
 
   return adaptVisitToPublicBookingVisit(response);
+}
+
+export async function waitForPublicBooking(
+  bookingId: string,
+  {
+    retryDelaysMs = [150, 300, 600, 1_000],
+    signal,
+  }: WaitForPublicBookingOptions = {},
+): Promise<PublicBookingVisit> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await getPublicBooking(bookingId, { signal });
+    } catch (error) {
+      if (isAbortError(error) || signal?.aborted) {
+        throw error;
+      }
+
+      const retryDelayMs = retryDelaysMs[attempt];
+      if (
+        retryDelayMs === undefined ||
+        !isRetryablePublicBookingReadError(error)
+      ) {
+        throw error;
+      }
+
+      await delayWithSignal(retryDelayMs, signal);
+    }
+  }
 }

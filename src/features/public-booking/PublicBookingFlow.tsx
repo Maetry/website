@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
 import { ApiError } from "@/lib/api/error-handler";
@@ -16,19 +17,20 @@ import {
   PublicSalonCatalogProcedure,
   PublicSalonMaster,
   PublicSalonProfile,
-  PublicSearchComplexBody,
-  PublicSearchProcedureBody,
   PublicSearchSlotsResponse,
   createPublicBooking,
   getPublicBooking,
-  getPublicSalonCatalog,
-  getPublicSalonMasters,
-  getPublicSalonProfile,
   isAuthorizationGap,
   readPublicBookingContext,
   savePublicBookingContext,
-  searchPublicBookingSlots,
 } from "@/lib/api/public-booking";
+import {
+  publicBookingKeys,
+  publicBookingSlotsQueryOptions,
+  publicSalonCatalogQueryOptions,
+  publicSalonMastersQueryOptions,
+  publicSalonProfileQueryOptions,
+} from "@/lib/api/public-booking.queries";
 
 type PublicBookingFlowProps = {
   campaign: PublicMarketingCampaign | null;
@@ -502,26 +504,6 @@ function buildComplexSelection(
   };
 }
 
-function buildSearchRequestBody(
-  selection: SelectionOption,
-  masterId: string | null,
-): PublicSearchProcedureBody | PublicSearchComplexBody {
-  if (selection.kind === "procedure") {
-    return {
-      ...(masterId ? { executorId: masterId } : {}),
-      id: selection.id,
-    };
-  }
-
-  return {
-    id: selection.id,
-    procedures: selection.procedures.map((procedure) => ({
-      ...(masterId ? { executorId: masterId } : {}),
-      id: procedure.id,
-    })),
-  };
-}
-
 function buildSlotOptions(
   response: PublicSearchSlotsResponse | null,
   locale: string,
@@ -697,6 +679,7 @@ export function PublicBookingFlow({
 }: PublicBookingFlowProps) {
   const t = useTranslations("booking");
   const commonT = useTranslations("common");
+  const queryClient = useQueryClient();
 
   const apiMessageTemplate = useCallback(
     (message: string) => t("errors.apiMessage", { message }),
@@ -704,16 +687,6 @@ export function PublicBookingFlow({
   );
 
   const [currentStep, setCurrentStep] = useState<StepId>("service");
-  const [salonData, setSalonData] = useState<SalonDataState>({
-    catalog: null,
-    catalogError: null,
-    contractGap: false,
-    masters: [],
-    mastersError: null,
-    profile: null,
-    profileError: null,
-    status: "loading",
-  });
   const [selectedSelectionId, setSelectedSelectionId] = useState<string | null>(
     null,
   );
@@ -726,11 +699,6 @@ export function PublicBookingFlow({
   const [trackingId, setTrackingId] = useState<string | null>(
     initialTrackingId ?? null,
   );
-  const [slotsState, setSlotsState] = useState<SlotsState>({
-    data: null,
-    error: null,
-    status: "idle",
-  });
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [formErrors, setFormErrors] = useState<{
@@ -749,9 +717,64 @@ export function PublicBookingFlow({
   });
 
   const submitGuardRef = useRef(false);
-  const salonLoadRequestRef = useRef(0);
-  const slotsLoadRequestRef = useRef(0);
   const confirmationLoadRequestRef = useRef(0);
+
+  const profileQuery = useQuery(publicSalonProfileQueryOptions(salonId, locale));
+  const catalogQuery = useQuery(publicSalonCatalogQueryOptions(salonId, locale));
+  const mastersQuery = useQuery(publicSalonMastersQueryOptions(salonId, locale));
+
+  const salonData = useMemo<SalonDataState>(() => {
+    const profileError = profileQuery.error
+      ? resolveRequestError(
+          profileQuery.error,
+          t("errors.loadSalonData"),
+          apiMessageTemplate,
+        )
+      : null;
+    const catalogError = catalogQuery.error
+      ? resolveRequestError(
+          catalogQuery.error,
+          t("errors.loadSalonData"),
+          apiMessageTemplate,
+        )
+      : null;
+    const mastersError = mastersQuery.error
+      ? resolveRequestError(
+          mastersQuery.error,
+          t("errors.loadSalonData"),
+          apiMessageTemplate,
+        )
+      : null;
+
+    return {
+      catalog: catalogQuery.data ?? null,
+      catalogError,
+      contractGap:
+        isAuthorizationGap(profileQuery.error) ||
+        isAuthorizationGap(catalogQuery.error) ||
+        isAuthorizationGap(mastersQuery.error),
+      masters: mastersQuery.data ?? [],
+      mastersError,
+      profile: profileQuery.data ?? null,
+      profileError,
+      status:
+        catalogQuery.isPending && !catalogQuery.data
+          ? "loading"
+          : catalogQuery.data
+            ? "ready"
+            : "error",
+    };
+  }, [
+    apiMessageTemplate,
+    catalogQuery.data,
+    catalogQuery.error,
+    catalogQuery.isPending,
+    mastersQuery.data,
+    mastersQuery.error,
+    profileQuery.data,
+    profileQuery.error,
+    t,
+  ]);
 
   const fallbackTimeZone =
     salonData.profile?.timeZoneId ||
@@ -779,107 +802,13 @@ export function PublicBookingFlow({
     });
   }, [campaign?.id, initialTrackingId, linkId, salonId]);
 
-  const loadSalonData = useCallback(async (signal?: AbortSignal) => {
-    const requestId = ++salonLoadRequestRef.current;
-
-    setSalonData((current) => ({
-      ...current,
-      catalogError: null,
-      mastersError: null,
-      profileError: null,
-      status: "loading",
-    }));
-
-    try {
-      const [profileResult, catalogResult, mastersResult] = await Promise.allSettled([
-        getPublicSalonProfile(salonId, { signal }),
-        getPublicSalonCatalog(salonId, { signal }),
-        getPublicSalonMasters(salonId, { signal }),
-      ]);
-
-      if (signal?.aborted || requestId !== salonLoadRequestRef.current) {
-        return;
-      }
-
-      const profile =
-        profileResult.status === "fulfilled" ? profileResult.value : null;
-      const catalog =
-        catalogResult.status === "fulfilled" ? catalogResult.value : null;
-      const masters =
-        mastersResult.status === "fulfilled" ? mastersResult.value : [];
-
-      const profileError =
-        profileResult.status === "rejected"
-          ? resolveRequestError(
-              profileResult.reason,
-              t("errors.loadSalonData"),
-              apiMessageTemplate,
-            )
-          : null;
-      const catalogError =
-        catalogResult.status === "rejected"
-          ? resolveRequestError(
-              catalogResult.reason,
-              t("errors.loadSalonData"),
-              apiMessageTemplate,
-            )
-          : null;
-      const mastersError =
-        mastersResult.status === "rejected"
-          ? resolveRequestError(
-              mastersResult.reason,
-              t("errors.loadSalonData"),
-              apiMessageTemplate,
-            )
-          : null;
-
-      setSalonData({
-        catalog,
-        catalogError,
-        contractGap:
-          (profileResult.status === "rejected" &&
-            isAuthorizationGap(profileResult.reason)) ||
-          (catalogResult.status === "rejected" &&
-            isAuthorizationGap(catalogResult.reason)) ||
-          (mastersResult.status === "rejected" &&
-            isAuthorizationGap(mastersResult.reason)),
-        masters,
-        mastersError,
-        profile,
-        profileError,
-        status: catalog ? "ready" : "error",
-      });
-
-      if (profile?.timeZoneId) {
-        setSalonTimeZone(profile.timeZoneId);
-      }
-    } catch {
-      if (signal?.aborted || requestId !== salonLoadRequestRef.current) {
-        return;
-      }
-
-      setSalonData({
-        catalog: null,
-        catalogError: t("errors.loadSalonData"),
-        contractGap: false,
-        masters: [],
-        mastersError: null,
-        profile: null,
-        profileError: null,
-        status: "error",
-      });
-    }
-  }, [apiMessageTemplate, salonId, t]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    void loadSalonData(controller.signal);
-
-    return () => {
-      controller.abort();
-    };
-  }, [loadSalonData]);
+  const loadSalonData = useCallback(async () => {
+    await Promise.allSettled([
+      profileQuery.refetch(),
+      catalogQuery.refetch(),
+      mastersQuery.refetch(),
+    ]);
+  }, [catalogQuery, mastersQuery, profileQuery]);
 
   const selectionOptions = useMemo(
     () => buildSelectionOptions(salonData.catalog, salonData.masters),
@@ -916,11 +845,6 @@ export function PublicBookingFlow({
     if (!selectedSelection) {
       setSelectedMasterId(null);
       setSelectedSlot(null);
-      setSlotsState({
-        data: null,
-        error: null,
-        status: "idle",
-      });
       return;
     }
 
@@ -936,73 +860,123 @@ export function PublicBookingFlow({
     setSelectedSlot(null);
   }, [selectedSelection, selectedMasterId]);
 
-  const loadSlots = useCallback(async () => {
-    if (!selectedSelection || !selectedDateKey) {
-      return;
-    }
-
-    const requestId = ++slotsLoadRequestRef.current;
-
-    setSlotsState({
-      data: null,
-      error: null,
-      status: "loading",
-    });
-
+  useEffect(() => {
     setSelectedSlot(null);
+  }, [selectedDateKey, selectedMasterId]);
 
-    try {
-      const response = await searchPublicBookingSlots({
-        body: buildSearchRequestBody(selectedSelection, selectedMasterId),
-        date: toTimeZoneIsoDate(selectedDateKey, salonTimeZone),
-        salonId,
-      });
-
-      if (requestId !== slotsLoadRequestRef.current) {
-        return;
-      }
-
-      setSlotsState({
-        data: response,
-        error: null,
-        status: "ready",
-      });
-
-      if (response.timeZoneId && response.timeZoneId !== salonTimeZone) {
-        setSalonTimeZone(response.timeZoneId);
-      }
-    } catch (error) {
-      if (requestId !== slotsLoadRequestRef.current) {
-        return;
-      }
-
-      setSlotsState({
-        data: null,
-        error: resolveRequestError(
-          error,
-          t("errors.loadSlots"),
-          apiMessageTemplate,
-        ),
-        status: "error",
-      });
+  const selectedSlotsQueryParams = useMemo(() => {
+    if (!selectedSelection || !selectedDateKey) {
+      return null;
     }
+
+    return {
+      date: toTimeZoneIsoDate(selectedDateKey, salonTimeZone),
+      masterId: selectedMasterId,
+      procedureIds:
+        selectedSelection.kind === "complex"
+          ? selectedSelection.procedures.map((procedure) => procedure.id)
+          : undefined,
+      salonId,
+      selectionId: selectedSelection.id,
+      selectionKind: selectedSelection.kind,
+      timeZone: salonTimeZone,
+    } as const;
   }, [
-    apiMessageTemplate,
     salonId,
     salonTimeZone,
     selectedDateKey,
     selectedMasterId,
     selectedSelection,
-    t,
   ]);
 
+  const selectedSlotsQueryOptions = useMemo(
+    () =>
+      selectedSlotsQueryParams
+        ? publicBookingSlotsQueryOptions(selectedSlotsQueryParams)
+        : null,
+    [selectedSlotsQueryParams],
+  );
+
+  const slotsQuery = useQuery<PublicSearchSlotsResponse>({
+    gcTime: selectedSlotsQueryOptions?.gcTime ?? 30 * 60 * 1000,
+    queryFn: ({ signal }) => {
+      if (!selectedSlotsQueryOptions) {
+        throw new Error("Slots query is not enabled");
+      }
+
+      return selectedSlotsQueryOptions.queryFn({ signal });
+    },
+    queryKey:
+      selectedSlotsQueryOptions?.queryKey ??
+      publicBookingKeys.slots({
+        date: "idle",
+        masterId: null,
+        procedureIds: [],
+        salonId,
+        selectionId: "idle",
+        selectionKind: "procedure",
+        timeZone: salonTimeZone,
+      }),
+    enabled: Boolean(selectedSlotsQueryParams),
+    staleTime: selectedSlotsQueryOptions?.staleTime ?? 60 * 1000,
+  });
+
   useEffect(() => {
-    if (!selectedSelection || !selectedDateKey) {
+    if (slotsQuery.data?.timeZoneId && slotsQuery.data.timeZoneId !== salonTimeZone) {
+      setSalonTimeZone(slotsQuery.data.timeZoneId);
+    }
+  }, [salonTimeZone, slotsQuery.data?.timeZoneId]);
+
+  const loadSlots = useCallback(async () => {
+    if (!selectedSlotsQueryParams) {
       return;
     }
 
-    void loadSlots();
-  }, [loadSlots, selectedDateKey, selectedSelection]);
+    setSelectedSlot(null);
+
+    const queryOptions = publicBookingSlotsQueryOptions(selectedSlotsQueryParams);
+
+    await queryClient.invalidateQueries({
+      exact: true,
+      queryKey: queryOptions.queryKey,
+    });
+    await queryClient.fetchQuery(queryOptions);
+  }, [queryClient, selectedSlotsQueryParams]);
+
+  const slotsState = useMemo<SlotsState>(() => {
+    if (!selectedSelection || !selectedDateKey) {
+      return {
+        data: null,
+        error: null,
+        status: "idle",
+      };
+    }
+
+    return {
+      data: slotsQuery.data ?? null,
+      error: slotsQuery.error
+        ? resolveRequestError(
+            slotsQuery.error,
+            t("errors.loadSlots"),
+            apiMessageTemplate,
+          )
+        : null,
+      status:
+        slotsQuery.isPending && !slotsQuery.data
+          ? "loading"
+          : slotsQuery.error
+            ? "error"
+            : "ready",
+    };
+  }, [
+    apiMessageTemplate,
+    selectedDateKey,
+    selectedSelection,
+    slotsQuery.data,
+    slotsQuery.error,
+    slotsQuery.isPending,
+    t,
+  ]);
 
   const slotOptions = useMemo(
     () => buildSlotOptions(slotsState.data, locale, salonTimeZone),
@@ -1189,11 +1163,6 @@ export function PublicBookingFlow({
     setClientPhone("");
     setFormErrors({});
     setSubmitError(null);
-    setSlotsState({
-      data: null,
-      error: null,
-      status: "idle",
-    });
     setConfirmationState({
       booking: null,
       bookingId: null,
