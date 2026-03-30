@@ -24,16 +24,16 @@
     "baseUrl": ".",
     "paths": {
       "@maetry/shared-dtos": [
-        "../Shared/modules/TypeScriptDTOs/src/index.ts"
+        "./vendor/maetry-shared-dtos/src/index.ts"
       ],
       "@maetry/shared-dtos/*": [
-        "../Shared/modules/TypeScriptDTOs/src/*"
+        "./vendor/maetry-shared-dtos/src/*"
       ],
       "@maetry/shared-sdk": [
-        "../Shared/modules/TypeScriptSDK/src/index.ts"
+        "./vendor/maetry-shared-sdk/src/index.ts"
       ],
       "@maetry/shared-sdk/*": [
-        "../Shared/modules/TypeScriptSDK/src/*"
+        "./vendor/maetry-shared-sdk/src/*"
       ],
       "@/public/*": [
         "./public/*"
