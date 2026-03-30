@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
 import type { ReactNode } from "react";
+
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { generateAlternateLinks } from "@/lib/metadata/alternate-links";
