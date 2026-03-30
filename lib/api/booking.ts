@@ -72,6 +72,7 @@ export type AppointmentResponse = {
   salonId?: string;
   salonName?: string;
   time?: SlotInterval;
+  timeZoneId?: string | null;
   wallet?: {
     apple?: string;
     google?: string;

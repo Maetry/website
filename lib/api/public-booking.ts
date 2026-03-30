@@ -85,6 +85,7 @@ export type StoredPublicBookingContext = {
 };
 
 type RequestOptions = {
+  locale?: string;
   signal?: AbortSignal;
 };
 
@@ -265,10 +266,15 @@ export async function registerLinkClick(
 
 export async function getPublicSalonProfile(
   salonId: string,
-  { signal }: RequestOptions = {},
+  { locale, signal }: RequestOptions = {},
 ): Promise<PublicSalonProfile> {
   return clientApiRequest<PublicSalonProfile>({
     endpoint: `/api/public-booking/salon/${encodeURIComponent(salonId)}/profile`,
+    headers: locale
+      ? {
+          languages: locale,
+        }
+      : undefined,
     method: "GET",
     signal,
   });
@@ -276,10 +282,15 @@ export async function getPublicSalonProfile(
 
 export async function getPublicSalonCatalog(
   salonId: string,
-  { signal }: RequestOptions = {},
+  { locale, signal }: RequestOptions = {},
 ): Promise<PublicSalonCatalog> {
   return clientApiRequest<PublicSalonCatalog>({
     endpoint: `/api/public-booking/salon/${encodeURIComponent(salonId)}/catalog`,
+    headers: locale
+      ? {
+          languages: locale,
+        }
+      : undefined,
     method: "GET",
     signal,
   });
@@ -287,10 +298,15 @@ export async function getPublicSalonCatalog(
 
 export async function getPublicSalonMasters(
   salonId: string,
-  { signal }: RequestOptions = {},
+  { locale, signal }: RequestOptions = {},
 ): Promise<PublicSalonMaster[]> {
   return clientApiRequest<PublicSalonMaster[]>({
     endpoint: `/api/public-booking/salon/${encodeURIComponent(salonId)}/masters`,
+    headers: locale
+      ? {
+          languages: locale,
+        }
+      : undefined,
     method: "GET",
     signal,
   });

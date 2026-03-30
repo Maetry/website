@@ -34,6 +34,7 @@ function isResourceName(resource: string): resource is ResourceName {
 
 export async function GET(request: NextRequest, context: RouteParams) {
   const { resource, salonId: rawSalonId } = await context.params;
+  const locale = request.headers.get("languages") || "en";
 
   if (!isResourceName(resource)) {
     return NextResponse.json(
@@ -52,6 +53,9 @@ export async function GET(request: NextRequest, context: RouteParams) {
     if (resource === "profile") {
       const result = await getPublicBookingSalonProfile({
         client,
+        headers: {
+          languages: locale,
+        },
         path: { salonId },
         ...MAETRY_THROW_ON_ERROR_OPTIONS,
       });
@@ -61,6 +65,9 @@ export async function GET(request: NextRequest, context: RouteParams) {
     if (resource === "catalog") {
       const result = await getPublicBookingSalonCatalog({
         client,
+        headers: {
+          languages: locale,
+        },
         path: { salonId },
         ...MAETRY_THROW_ON_ERROR_OPTIONS,
       });
@@ -69,6 +76,9 @@ export async function GET(request: NextRequest, context: RouteParams) {
 
     const result = await getPublicBookingSalonMasters({
       client,
+      headers: {
+        languages: locale,
+      },
       path: { salonId },
       ...MAETRY_THROW_ON_ERROR_OPTIONS,
     });

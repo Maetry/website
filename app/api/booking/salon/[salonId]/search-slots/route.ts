@@ -1,14 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { postTimetablesSearchSlots } from "@maetry/shared-sdk";
-
+import { resolveApiUrl } from "@/lib/api/config";
 import {
-  MAETRY_THROW_ON_ERROR_OPTIONS,
-  createMaetryServerClient,
-  maetrySdkErrorResponse,
   requireDeviceIdHeader,
-  unwrapMaetrySdkResult,
 } from "@/lib/api/maetry-sdk.server";
 import { handleValidationError } from "@/lib/api/route-handler";
 import { validateId } from "@/lib/api/validation";
@@ -49,30 +44,61 @@ export async function POST(request: NextRequest, context: RouteParams) {
       );
     }
 
-    const client = createMaetryServerClient();
     const deviceId = requireDeviceIdHeader(request);
-    const result = await postTimetablesSearchSlots({
-      body: {
+    const targetUrl =
+      `${resolveApiUrl()}/v1/timetables/search-slots?salonId=${encodeURIComponent(salonId)}` +
+      `&date=${encodeURIComponent(date)}`;
+
+    const proxyResponse = await fetch(targetUrl, {
+      body: JSON.stringify({
         ...(executorId ? { executorId } : {}),
         id: procedureId,
-      },
-      client,
+      }),
+      cache: "no-store",
       headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
         "Device-ID": deviceId,
       },
-      query: {
-        query: {
-          date,
-          salonId,
-        },
-      },
-      ...MAETRY_THROW_ON_ERROR_OPTIONS,
+      method: "POST",
     });
-    const response = unwrapMaetrySdkResult(result);
+
+    const text = await proxyResponse.text();
+
+    if (!proxyResponse.ok) {
+      try {
+        const errorData = JSON.parse(text) as {
+          error?: string;
+          message?: string;
+        };
+
+        return NextResponse.json(
+          {
+            error: errorData.error || "FAILED_TO_SEARCH_SLOTS",
+            message: errorData.message || proxyResponse.statusText,
+          },
+          { status: proxyResponse.status },
+        );
+      } catch {
+        return NextResponse.json(
+          {
+            error: "FAILED_TO_SEARCH_SLOTS",
+            message: text || proxyResponse.statusText,
+          },
+          { status: proxyResponse.status },
+        );
+      }
+    }
+
+    const response = JSON.parse(text) as {
+      intervals?: Array<{ end: string; start: string }>;
+      slots?: Array<{ total: { end: string; start: string } }>;
+      timeZoneId: string;
+    };
     const intervals =
       "intervals" in response
-        ? response.intervals
-        : response.slots.map((slot) => slot.total);
+        ? (response.intervals ?? [])
+        : (response.slots ?? []).map((slot) => slot.total);
 
     return NextResponse.json({
       intervals,
@@ -81,6 +107,12 @@ export async function POST(request: NextRequest, context: RouteParams) {
   } catch (error) {
     const validationError = handleValidationError(error, "INVALID_SALON_ID");
     if (validationError) return validationError;
-    return maetrySdkErrorResponse(error, "FAILED_TO_SEARCH_SLOTS");
+    return NextResponse.json(
+      {
+        error: "FAILED_TO_SEARCH_SLOTS",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
   }
 }

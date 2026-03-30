@@ -1,17 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { postTimetablesSearchSlots } from "@maetry/shared-sdk";
-
 import { ApiError } from "@/lib/api/error-handler";
-import {
-  MAETRY_THROW_ON_ERROR_OPTIONS,
-  createMaetryServerClient,
-  maetrySdkErrorResponse,
-  requireDeviceIdHeader,
-  unwrapMaetrySdkResult,
-} from "@/lib/api/maetry-sdk.server";
-import { handleValidationError } from "@/lib/api/route-handler";
+import { requireDeviceIdHeader } from "@/lib/api/maetry-sdk.server";
+import { handleValidationError, proxyApiRequest } from "@/lib/api/route-handler";
 import { validateId } from "@/lib/api/validation";
 
 export async function POST(request: NextRequest) {
@@ -25,25 +17,17 @@ export async function POST(request: NextRequest) {
       throw new ApiError(400, "Invalid date: must be a non-empty string");
     }
 
+    requireDeviceIdHeader(request);
     const body = await request.json();
-    const client = createMaetryServerClient();
-    const deviceId = requireDeviceIdHeader(request);
-    const result = await postTimetablesSearchSlots({
+    return proxyApiRequest({
       body,
-      client,
-      headers: {
-        "Device-ID": deviceId,
-      },
-      query: {
-        query: {
-          date,
-          salonId: validatedSalonId,
-        },
-      },
-      ...MAETRY_THROW_ON_ERROR_OPTIONS,
+      errorCode: "FAILED_TO_SEARCH_PUBLIC_BOOKING_SLOTS",
+      method: "POST",
+      path:
+        `/v1/timetables/search-slots?salonId=${encodeURIComponent(validatedSalonId)}` +
+        `&date=${encodeURIComponent(date)}`,
+      request,
     });
-
-    return NextResponse.json(unwrapMaetrySdkResult(result));
   } catch (error) {
     const validationError =
       handleValidationError(error, "INVALID_SEARCH_SLOTS_PARAMS") ??
@@ -58,9 +42,15 @@ export async function POST(request: NextRequest) {
         : null);
 
     if (validationError) return validationError;
-    return maetrySdkErrorResponse(
-      error,
-      "FAILED_TO_SEARCH_PUBLIC_BOOKING_SLOTS",
+    return NextResponse.json(
+      {
+        error: "FAILED_TO_SEARCH_PUBLIC_BOOKING_SLOTS",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to search public booking slots",
+      },
+      { status: 500 },
     );
   }
 }

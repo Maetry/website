@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -25,15 +25,15 @@ import {
 } from "tamagui";
 
 import {
-  BookingApiError,
-  getAppointment,
-  getSalonProcedures,
-  type AppointmentResponse,
-  type Procedure,
-} from "@/lib/api/booking";
+  ApiError,
+} from "@/lib/api/error-handler";
+import {
+  getPublicBooking,
+  type PublicBookingVisit,
+} from "@/lib/api/public-booking";
 
 type VisitViewProps = {
-  /** Идентификатор визита в URL; для API совпадает с appointmentId. */
+  /** Идентификатор public visit в URL; используется как booking/visit id. */
   visitId: string;
   locale: string;
 };
@@ -56,23 +56,6 @@ const formatCurrency = (
   } catch {
     return `${amount} ${currency}`;
   }
-};
-
-const getWalletUrl = (response: AppointmentResponse | null) => {
-  if (!response) {
-    return { apple: undefined, google: undefined };
-  }
-
-  const apple =
-    response.appleWalletUrl ??
-    response.wallet?.apple ??
-    response.walletLinks?.apple;
-  const google =
-    response.googleWalletUrl ??
-    response.wallet?.google ??
-    response.walletLinks?.google;
-
-  return { apple, google };
 };
 
 function VisitInfoRow({
@@ -138,13 +121,12 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
   const t = useTranslations("booking");
   const router = useRouter();
 
-  const [appointment, setAppointment] = useState<AppointmentResponse | null>(null);
-  const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [appointment, setAppointment] = useState<PublicBookingVisit | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [salonName, setSalonName] = useState<string | null>(null);
   const [salonId, setSalonId] = useState<string | null>(null);
-  const [timeZoneId] = useState<string>("UTC");
+  const [timeZoneId, setTimeZoneId] = useState<string>("UTC");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -152,10 +134,9 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
         setLoading(true);
         setError(null);
 
-        const appointmentData = await getAppointment({
-          appointmentId: visitId,
-        });
+        const appointmentData = await getPublicBooking(visitId);
         setAppointment(appointmentData);
+        setTimeZoneId(appointmentData.timezoneId || "UTC");
 
         if (appointmentData.salonId) {
           setSalonId(appointmentData.salonId);
@@ -164,23 +145,13 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
         if (appointmentData.salonName) {
           setSalonName(appointmentData.salonName);
         }
-        if (appointmentData.procedureId && appointmentData.salonId) {
-          try {
-            const proceduresData = await getSalonProcedures({
-              salonId: appointmentData.salonId,
-              locale,
-            });
-            setProcedures(
-              Array.isArray(proceduresData?.procedures)
-                ? proceduresData.procedures
-                : [],
-            );
-          } catch {
-            setProcedures([]);
-          }
-        }
       } catch (err) {
-        const message = err instanceof BookingApiError ? err.message : undefined;
+        const message =
+          err instanceof ApiError
+            ? err.message
+            : err instanceof Error
+              ? err.message
+              : undefined;
         setError(
           message
             ? t("errors.apiMessage", { message })
@@ -192,17 +163,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
     };
 
     void fetchData();
-  }, [visitId, locale, t]);
-
-  const procedure = useMemo(() => {
-    if (!appointment?.procedureId) {
-      return null;
-    }
-
-    return procedures.find((item) => item.id === appointment.procedureId) ?? null;
-  }, [appointment?.procedureId, procedures]);
-
-  const { apple: appleWalletUrl, google: googleWalletUrl } = getWalletUrl(appointment);
+  }, [visitId, t]);
 
   const appointmentDate = appointment?.time?.start
     ? new Intl.DateTimeFormat(locale, {
@@ -235,14 +196,6 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
     }
 
     router.push(`/${locale}/booking`);
-  };
-
-  const handleOpenWallet = (url?: string) => {
-    if (!url || typeof window === "undefined") {
-      return;
-    }
-
-    window.location.assign(url);
   };
 
   if (loading) {
@@ -319,7 +272,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
 
           <YStack alignItems="center" gap="$1.5" paddingHorizontal="$3">
             <Text color="$textPrimary" fontSize="$9" fontWeight="800" textAlign="center">
-              {procedure?.serviceTitle ?? procedure?.serviceDescription ?? t("headline")}
+              {appointment.procedureName ?? t("headline")}
             </Text>
             <Paragraph color="#ff5a5f" fontSize="$4" fontWeight="500" textAlign="center">
               {salonName ?? t("salonFallbackName")}
@@ -344,21 +297,17 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
           padding="$4"
         >
           <YStack gap="$4">
-            {procedure ? (
+            {appointment.procedureName ? (
               <YStack gap="$3">
                 <VisitInfoRow
                   icon={<WalletCards size={18} />}
                   label={t("summaryService")}
-                  value={
-                    procedure.serviceTitle ??
-                    procedure.serviceDescription ??
-                    t("headline")
-                  }
+                  value={appointment.procedureName}
                 />
                 <VisitInfoRow
                   icon={<CheckCircle2 size={18} />}
                   label={t("summarySpecialist")}
-                  value={procedure.masterNickname ?? t("masterAny")}
+                  value={appointment.masterNickname ?? t("masterAny")}
                 />
                 {appointmentPrice ? (
                   <VisitInfoRow
@@ -370,7 +319,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
               </YStack>
             ) : null}
 
-            {procedure ? <Separator /> : null}
+            {appointment.procedureName ? <Separator /> : null}
 
             {appointmentDate ? (
               <YStack gap="$3">
@@ -398,48 +347,6 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
             />
           </YStack>
         </YStack>
-
-        {appleWalletUrl || googleWalletUrl ? (
-          <YStack
-            backgroundColor="$cardBackground"
-            borderRadius="$8"
-            gap="$3"
-            padding="$4"
-          >
-            <Text color="$textPrimary" fontSize="$6" fontWeight="700">
-              Wallet
-            </Text>
-            <Paragraph color="$textSecondary" size="$3">
-              {t("successBookingHint")}
-            </Paragraph>
-            {appleWalletUrl ? (
-              <Button
-                backgroundColor="$primary"
-                borderRadius={999}
-                onPress={() => handleOpenWallet(appleWalletUrl)}
-                width="100%"
-              >
-                <Text color="white" fontSize="$4" fontWeight="600">
-                  {t("walletApple")}
-                </Text>
-              </Button>
-            ) : null}
-            {googleWalletUrl ? (
-              <Button
-                backgroundColor="$cardBackground"
-                borderColor="$separator"
-                borderRadius={999}
-                borderWidth={1}
-                onPress={() => handleOpenWallet(googleWalletUrl)}
-                width="100%"
-              >
-                <Text color="$textPrimary" fontSize="$4" fontWeight="600">
-                  {t("walletGoogle")}
-                </Text>
-              </Button>
-            ) : null}
-          </YStack>
-        ) : null}
 
         <Button
           backgroundColor="rgba(255,255,255,0.92)"

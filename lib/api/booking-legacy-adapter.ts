@@ -99,6 +99,7 @@ export function adaptVisitToLegacyAppointment(
             end: visit.endTime,
           }
         : undefined,
+    timeZoneId: visit.timezoneId,
     price: {
       amount: minorToMajor(visit.priceMinor),
       currency: visit.currency,

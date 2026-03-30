@@ -29,20 +29,23 @@ import {
 } from "tamagui";
 
 import {
-  BookingApiError,
-  createSalonAppointment,
-  getSalonProcedures,
-  searchSalonSlots,
-  type CreateAppointmentPayload,
+  ApiError,
+} from "@/lib/api/error-handler";
+import {
+  createPublicBooking,
+  getPublicSalonCatalog,
+  getPublicSalonProfile,
+  getPublicSalonMasters,
+  searchPublicBookingSlots,
+  type PublicSalonProfile,
+} from "@/lib/api/public-booking";
+import {
+  adaptCatalogToProcedures,
   type Procedure,
   type ProcedureGroup,
   type SlotInterval,
   type Step,
-} from "@/lib/api/booking";
-import {
-  getPublicSalonProfile,
-  type PublicSalonProfile,
-} from "@/lib/api/public-booking";
+} from "@/lib/public-booking-screen";
 import { BOOKING_IOS_SHEET_HEADER } from "@/src/features/booking/iosSheetHeader";
 import {
   BOOKING_SURFACE_RADIUS,
@@ -94,7 +97,7 @@ function bookingSectionSeparatorInsetLeading(
 ): number {
   const pad = bookingSectionHeaderPaddingX(platform);
   if (variant === "form") {
-    return platform === "ios" ? 16 : 14;
+    return pad;
   }
   if (variant === "withAvatar") {
     return pad + BOOKING_MASTER_AVATAR_PX + BOOKING_ROW_LEADING_GAP_PX;
@@ -165,6 +168,7 @@ function SalonHeaderSkeleton({
 type BookingSectionProps = {
   children: ReactNode;
   description?: string | null;
+  footer?: ReactNode;
   platform: BookingPlatformVariant;
   title: string;
 };
@@ -304,11 +308,23 @@ const PrimaryAction = styled(Button, {
 function BookingSection({
   children,
   description,
+  footer,
   platform,
   title,
 }: BookingSectionProps) {
+  const sectionGap = platform === "ios" ? "$2.5" : "$2";
+  const cardBlock =
+    footer != null ? (
+      <YStack gap={0} width="100%">
+        <SectionCard platform={platform}>{children}</SectionCard>
+        {footer}
+      </YStack>
+    ) : (
+      <SectionCard platform={platform}>{children}</SectionCard>
+    );
+
   return (
-    <YStack gap={platform === "ios" ? "$2.5" : "$2"}>
+    <YStack gap={sectionGap}>
       <YStack gap="$1" paddingHorizontal={bookingSectionHeaderPaddingX(platform)}>
         <SectionLabel platform={platform}>{title}</SectionLabel>
         {description ? (
@@ -317,7 +333,7 @@ function BookingSection({
           </Paragraph>
         ) : null}
       </YStack>
-      <SectionCard platform={platform}>{children}</SectionCard>
+      {cardBlock}
     </YStack>
   );
 }
@@ -627,9 +643,33 @@ function getProcedureSelectionKey(procedure: Procedure) {
   return `${procedure.id}:${procedure.masterId ?? "any"}`;
 }
 
+function buildSlotsCacheKey(procedure: Procedure, dateKey: string) {
+  return `${getProcedureSelectionKey(procedure)}|${dateKey}`;
+}
+
 function validatePhone(value: string) {
-  const digits = value.replace(/[^\d+]/g, "");
-  return /^\+?\d{10,15}$/.test(digits);
+  return /^\+\d{10,15}$/.test(normalizePhone(value));
+}
+
+function normalizePhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 15);
+  return digits ? `+${digits}` : "";
+}
+
+function resolveApiMessage(
+  error: unknown,
+  fallbackMessage: string,
+  apiMessageTemplate: (message: string) => string,
+) {
+  if (error instanceof ApiError && error.message) {
+    return apiMessageTemplate(error.message);
+  }
+
+  if (error instanceof Error && error.message) {
+    return apiMessageTemplate(error.message);
+  }
+
+  return fallbackMessage;
 }
 
 function getVisitOrigin() {
@@ -703,6 +743,10 @@ const BookingScreen = ({
     trackingIdProp ??
     searchParams.get("nanoid") ??
     searchParams.get("trackingId");
+  const apiMessageTemplate = useCallback(
+    (message: string) => t("errors.apiMessage", { message }),
+    [t],
+  );
 
   const [salonProfile, setSalonProfile] = useState<PublicSalonProfile | null>(null);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
@@ -722,6 +766,7 @@ const BookingScreen = ({
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const slotsRequestIdRef = useRef(0);
+  const slotsCacheRef = useRef<Map<string, SlotInterval[]>>(new Map());
   const stepsRowMeasureRef = useRef<HTMLDivElement | null>(null);
   const [stepsRowNarrow, setStepsRowNarrow] = useState(false);
 
@@ -748,32 +793,32 @@ const BookingScreen = ({
         setProceduresLoading(true);
         setProceduresError(null);
 
-        const [proceduresResult, profileResult] = await Promise.allSettled([
-          getSalonProcedures({
+        const [catalogResult, profileResult, mastersResult] = await Promise.allSettled([
+          getPublicSalonCatalog(salonId, {
             locale,
-            salonId,
             signal: controller.signal,
           }),
           getPublicSalonProfile(salonId, {
+            locale,
+            signal: controller.signal,
+          }),
+          getPublicSalonMasters(salonId, {
+            locale,
             signal: controller.signal,
           }),
         ]);
 
-        if (proceduresResult.status === "fulfilled") {
-          setProcedures(
-            Array.isArray(proceduresResult.value?.procedures)
-              ? proceduresResult.value.procedures
-              : [],
-          );
+        if (catalogResult.status === "fulfilled") {
+          const masters =
+            mastersResult.status === "fulfilled" ? mastersResult.value : [];
+          setProcedures(adaptCatalogToProcedures(catalogResult.value, masters));
         } else {
-          const reason = proceduresResult.reason;
-          const message =
-            reason instanceof BookingApiError ? reason.message : undefined;
-
           setProceduresError(
-            message
-              ? t("errors.apiMessage", { message })
-              : t("errors.loadProcedures"),
+            resolveApiMessage(
+              catalogResult.reason,
+              t("errors.loadProcedures"),
+              apiMessageTemplate,
+            ),
           );
           setProcedures([]);
         }
@@ -787,11 +832,8 @@ const BookingScreen = ({
           return;
         }
 
-        const message = error instanceof BookingApiError ? error.message : undefined;
         setProceduresError(
-          message
-            ? t("errors.apiMessage", { message })
-            : t("errors.loadProcedures"),
+          resolveApiMessage(error, t("errors.loadProcedures"), apiMessageTemplate),
         );
         setProcedures([]);
       } finally {
@@ -804,7 +846,7 @@ const BookingScreen = ({
     return () => {
       controller.abort();
     };
-  }, [locale, salonId, t]);
+  }, [apiMessageTemplate, locale, salonId, t]);
 
   const procedureGroups: ProcedureGroup[] = useMemo(() => {
     if (!procedures.length) {
@@ -929,6 +971,7 @@ const BookingScreen = ({
 
   const resetTimingState = () => {
     slotsRequestIdRef.current += 1;
+    slotsCacheRef.current.clear();
     setSelectedSlot(null);
     setSelectedDateKey(null);
     setSlots([]);
@@ -936,18 +979,34 @@ const BookingScreen = ({
     setSlotsError(null);
   };
 
-  const fetchSlotsForProcedure = useCallback(async (procedure: Procedure, dateKey: string) => {
+  const fetchSlotsForProcedure = useCallback(
+    async (procedure: Procedure, dateKey: string, options?: { force?: boolean }) => {
+    const cacheKey = buildSlotsCacheKey(procedure, dateKey);
+    if (options?.force) {
+      slotsCacheRef.current.delete(cacheKey);
+    }
+
     const requestId = ++slotsRequestIdRef.current;
 
     try {
       setSlotsLoading(true);
       setSlotsError(null);
-      setSelectedSlot(null);
 
-      const data = await searchSalonSlots({
+      const data = await searchPublicBookingSlots({
+        body:
+          procedure.kind === "complex"
+            ? {
+                id: procedure.id,
+                procedures: (procedure.complexProcedureIds ?? []).map((id) => ({
+                  ...(procedure.masterId ? { executorId: procedure.masterId } : {}),
+                  id,
+                })),
+              }
+            : {
+                ...(procedure.masterId ? { executorId: procedure.masterId } : {}),
+                id: procedure.id,
+              },
         date: toTimeZoneIsoDate(dateKey, timeZoneId),
-        executorId: procedure.masterId,
-        procedureId: procedure.id,
         salonId,
       });
 
@@ -955,17 +1014,20 @@ const BookingScreen = ({
         return;
       }
 
-      setSlots(Array.isArray(data?.intervals) ? data.intervals : []);
+      const intervals =
+        "intervals" in data
+          ? data.intervals
+          : data.slots.map((slot) => slot.total);
+      slotsCacheRef.current.set(cacheKey, intervals);
+      setSlots(intervals);
       setTimeZoneId(data?.timeZoneId || timeZoneId);
     } catch (error) {
       if (requestId !== slotsRequestIdRef.current) {
         return;
       }
 
-      const message = error instanceof BookingApiError ? error.message : undefined;
-
       setSlotsError(
-        message ? t("errors.apiMessage", { message }) : t("errors.loadSlots"),
+        resolveApiMessage(error, t("errors.loadSlots"), apiMessageTemplate),
       );
       setSlots([]);
     } finally {
@@ -973,7 +1035,9 @@ const BookingScreen = ({
         setSlotsLoading(false);
       }
     }
-  }, [salonId, t, timeZoneId]);
+  },
+  [apiMessageTemplate, salonId, t, timeZoneId],
+);
 
   const handleSelectGroup = (group: ProcedureGroup) => {
     setSelectedGroupId(group.id);
@@ -1017,7 +1081,20 @@ const BookingScreen = ({
   }, [dateOptions, selectedDateKey]);
 
   useEffect(() => {
+    setSelectedSlot(null);
+  }, [selectedDateKey]);
+
+  useEffect(() => {
     if (!selectedProcedure || !selectedDateKey) {
+      return;
+    }
+
+    const cacheKey = buildSlotsCacheKey(selectedProcedure, selectedDateKey);
+    const cached = slotsCacheRef.current.get(cacheKey);
+    if (cached) {
+      setSlots(cached);
+      setSlotsError(null);
+      setSlotsLoading(false);
       return;
     }
 
@@ -1101,20 +1178,21 @@ const BookingScreen = ({
     setFormErrors({});
   };
 
-  const isFormValid = clientName.trim().length > 0 && validatePhone(clientPhone.trim());
+  const isFormValid =
+    clientName.trim().length > 0 && validatePhone(normalizePhone(clientPhone));
 
   const handleSubmitAppointment = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const trimmedName = clientName.trim();
-    const trimmedPhone = clientPhone.trim();
+    const normalizedPhone = normalizePhone(clientPhone);
     const nextErrors: { name?: string; phone?: string } = {};
 
     if (!trimmedName) {
       nextErrors.name = t("errors.validationName");
     }
 
-    if (!trimmedPhone || !validatePhone(trimmedPhone)) {
+    if (!validatePhone(normalizedPhone)) {
       nextErrors.phone = t("errors.validationPhone");
     }
 
@@ -1132,28 +1210,22 @@ const BookingScreen = ({
     setGlobalError(null);
     setIsSubmitting(true);
 
-    const payload: CreateAppointmentPayload = {
-      clientName: trimmedName,
-      clientPhone: trimmedPhone,
-      executorId: selectedProcedure.masterId,
-      procedureId: selectedProcedure.id,
-      time: {
-        end: new Date(selectedSlot.end).toISOString(),
-        start: new Date(selectedSlot.start).toISOString(),
-      },
-      trackingId: trackingId || null,
-    };
-
     try {
-      const data = await createSalonAppointment({
-        payload,
-        salonId,
+      const data = await createPublicBooking(salonId, {
+        clientName: trimmedName,
+        clientPhone: normalizedPhone,
+        ...(selectedProcedure.masterId ? { executorId: selectedProcedure.masterId } : {}),
+        ...(selectedProcedure.kind === "complex"
+          ? { complexId: selectedProcedure.id }
+          : { procedureId: selectedProcedure.id }),
+        time: {
+          end: new Date(selectedSlot.end).toISOString(),
+          start: new Date(selectedSlot.start).toISOString(),
+        },
+        ...(trackingId ? { trackingId } : {}),
       });
 
-      const appointmentId =
-        data.appointmentId ||
-        (data as { id?: string }).id ||
-        (data as { appointment?: { id?: string } }).appointment?.id;
+      const appointmentId = data.appointmentId;
 
       if (!appointmentId) {
         setGlobalError(t("errors.createAppointment"));
@@ -1170,11 +1242,8 @@ const BookingScreen = ({
       setIsSubmitting(false);
       router.push(`/${locale}/visits/${appointmentId}`);
     } catch (error) {
-      const message = error instanceof BookingApiError ? error.message : undefined;
       setGlobalError(
-        message
-          ? t("errors.apiMessage", { message })
-          : t("errors.createAppointment"),
+        resolveApiMessage(error, t("errors.createAppointment"), apiMessageTemplate),
       );
       setIsSubmitting(false);
     }
@@ -1191,27 +1260,29 @@ const BookingScreen = ({
     locale,
   );
 
-  const selectedProcedureDuration = formatDuration(
-    selectedProcedure?.duration ?? selectedGroup?.duration ?? null,
-    locale,
-  );
-
-  const selectedDateText = selectedSlot
+  /** День недели, дата и время в одной строке для свёрнутой секции времени. */
+  const selectedSlotSummaryTitle = selectedSlot
     ? new Intl.DateTimeFormat(locale, {
         day: "numeric",
-        month: "short",
-        timeZone: timeZoneId,
-      }).format(new Date(selectedSlot.start))
-    : null;
-
-  const selectedTimeText = selectedSlot
-    ? new Intl.DateTimeFormat(locale, {
         hour: "2-digit",
         hour12: false,
         minute: "2-digit",
+        month: "short",
         timeZone: timeZoneId,
+        weekday: "short",
       }).format(new Date(selectedSlot.start))
     : null;
+
+  const selectedSlotDurationSubtitle =
+    selectedSlot && selectedProcedure
+      ? t("summaryDurationLine", {
+          value:
+            formatDuration(
+              selectedProcedure.duration ?? selectedGroup?.duration ?? null,
+              locale,
+            ) ?? "—",
+        })
+      : null;
 
   const currentVisualStep: Step = selectedSlot
     ? "details"
@@ -1255,6 +1326,8 @@ const BookingScreen = ({
     slotCalendarDays[0]?.monthLabel ??
     "";
 
+  const slotCalendarWeekChipWidth = platform === "ios" ? 42 : 40;
+
   const renderServiceStep = () => {
     if (proceduresLoading) {
       return (
@@ -1296,10 +1369,19 @@ const BookingScreen = ({
       index: number,
       arrayLength: number,
     ) => {
+      const firstProcedure = group.procedures[0];
       const groupPrice = formatCurrency(group.minPrice, group.currency, locale);
       const groupDuration = formatDuration(group.duration, locale);
       const indicator =
         [groupPrice, groupDuration].filter(Boolean).join(" · ") || undefined;
+      const overline =
+        firstProcedure?.kind === "complex"
+          ? `${t("complexLabel")} · ${t("complexIncludes", {
+              count: firstProcedure.bundleSize ?? 0,
+            })}`
+          : group.procedures.length > 1
+            ? `${group.procedures.length} ${t("steps.master").toLowerCase()}`
+            : t("masterAuto");
 
       return (
         <YStack key={group.id}>
@@ -1318,11 +1400,7 @@ const BookingScreen = ({
               ) : null
             }
             onPress={() => handleSelectGroup(group)}
-            overline={
-              group.procedures.length > 1
-                ? `${group.procedures.length} ${t("steps.master").toLowerCase()}`
-                : t("masterAuto")
-            }
+            overline={overline}
             platform={platform}
             subtitle={group.description ?? undefined}
             title={group.title}
@@ -1334,19 +1412,28 @@ const BookingScreen = ({
       );
     };
 
+    const selectedGroupCategoryTag = selectedGroup
+      ? procedureCategories.find((category) =>
+          category.groups.some((group) => group.id === selectedGroup.id),
+        )?.title
+      : null;
+
     if (selectedGroup && currentVisualStep !== "service") {
       return (
         <BookingSection platform={platform} title={t("serviceTitle")}>
           <BookingRow
-            ctaLabel={t("changeSelection")}
+            ctaLabel={t("changeSelectionShort")}
             onPress={() => {
               setSelectedGroupId(null);
               setSelectedProcedureKey(null);
               setSelectedSlot(null);
             }}
-            overline={t("summaryService")}
             platform={platform}
-            subtitle={selectedGroup.description ?? undefined}
+            subtitle={
+              selectedGroupCategoryTag
+                ? `#${selectedGroupCategoryTag}`
+                : (selectedGroup.description ?? undefined)
+            }
             title={selectedProcedure?.serviceTitle ?? selectedGroup.title}
           />
         </BookingSection>
@@ -1418,14 +1505,17 @@ const BookingScreen = ({
       return (
         <BookingSection platform={platform} title={t("masterTitle")}>
           <BookingRow
-            ctaLabel={t("changeSelection")}
+            ctaLabel={t("changeSelectionShort")}
             onPress={() => {
               setSelectedProcedureKey(null);
               setSelectedSlot(null);
             }}
-            overline={t("summarySpecialist")}
             platform={platform}
-            subtitle={selectedProcedure.alias ?? undefined}
+            subtitle={
+              selectedProcedure.masterPosition?.trim()
+                ? selectedProcedure.masterPosition.trim()
+                : undefined
+            }
             title={selectedProcedure.masterNickname ?? selectedProcedure.alias ?? t("masterAny")}
           />
         </BookingSection>
@@ -1498,22 +1588,36 @@ const BookingScreen = ({
 
     if (selectedSlot && currentVisualStep !== "time") {
       return (
-        <BookingSection platform={platform} title={t("timeTitle")}>
-          <BookingRow
-            ctaLabel={t("changeSelection")}
-            onPress={() => {
-              setSelectedSlot(null);
-            }}
-            overline={t("summaryTime")}
-            platform={platform}
-            subtitle={selectedDateText ?? undefined}
-            title={selectedTimeText ?? "—"}
-          />
-        </BookingSection>
+        <YStack gap={0}>
+          <BookingSection platform={platform} title={t("timeTitle")}>
+            <BookingRow
+              ctaLabel={t("changeSelectionShort")}
+              onPress={() => {
+                setSelectedSlot(null);
+              }}
+              platform={platform}
+              subtitle={selectedSlotDurationSubtitle ?? undefined}
+              title={selectedSlotSummaryTitle ?? "—"}
+            />
+          </BookingSection>
+          <Paragraph
+            color="$textSecondary"
+            fontSize={13}
+            lineHeight={18}
+            paddingHorizontal={bookingSectionHeaderPaddingX(platform)}
+            paddingTop={0}
+            size="$3"
+          >
+            {t("timeHint")}
+          </Paragraph>
+        </YStack>
       );
     }
 
     const sectionTitlePadding = bookingSectionHeaderPaddingX(platform);
+    const isIosTime = platform === "ios";
+    /** Совпадает с `padding="$4"` на теле карточки времени (Tamagui space). */
+    const timeCardInnerPadX = 16;
 
     return (
       <YStack gap={platform === "ios" ? "$2.5" : "$2"}>
@@ -1539,7 +1643,9 @@ const BookingScreen = ({
                 onPress={() =>
                   selectedProcedure &&
                   selectedDateKey &&
-                  fetchSlotsForProcedure(selectedProcedure, selectedDateKey)
+                  fetchSlotsForProcedure(selectedProcedure, selectedDateKey, {
+                    force: true,
+                  })
                 }
                 platform={platform}
               >
@@ -1561,7 +1667,9 @@ const BookingScreen = ({
                 onPress={() =>
                   selectedProcedure &&
                   selectedDateKey &&
-                  fetchSlotsForProcedure(selectedProcedure, selectedDateKey)
+                  fetchSlotsForProcedure(selectedProcedure, selectedDateKey, {
+                    force: true,
+                  })
                 }
                 platform={platform}
               >
@@ -1573,208 +1681,180 @@ const BookingScreen = ({
           />
         ) : null}
 
-        {!slotsLoading && !slotsError && slotOptions.length ? (
-          <SectionCard platform={platform}>
-            <YStack gap="$4" padding="$4">
-              <XStack alignItems="center" justifyContent="space-between">
-                <Text color="$textPrimary" fontSize="$8" fontWeight="800">
-                  {slotMonthTitle}
-                </Text>
-                <Button
-                  chromeless
-                  onPress={() => {
-                    const today = slotCalendarDays.find((day) => day.isToday);
-                    if (today) {
-                      setSelectedDateKey(today.key);
-                    }
-                  }}
-                  padding={0}
-                >
-                  <Text color="$primary" fontSize="$6" fontWeight="500">
-                    Today
-                  </Text>
-                </Button>
-              </XStack>
-
-              <div
-                style={{
-                  marginLeft: -4,
-                  marginRight: -4,
-                  overflowX: "auto",
-                  paddingBottom: 4,
-                }}
-              >
-                <XStack gap="$3" paddingHorizontal="$1" width="max-content">
-                  {slotCalendarDays.map((day) => {
-                    const isSelected = selectedDateKey === day.key;
-                    return (
-                      <YStack key={day.key} alignItems="center" gap="$2" minWidth={56}>
-                        <Text
-                          color={
-                            day.weekdayLabel.toLowerCase().startsWith("s")
-                              ? "#ff5a5f"
-                              : "$textSecondary"
-                          }
-                          fontSize="$3"
-                          fontWeight="500"
-                        >
-                          {day.weekdayLabel.replace(".", "")}
-                        </Text>
-                        <Button
-                          alignItems="center"
-                          backgroundColor={isSelected ? "#2b2d36" : "transparent"}
-                          borderRadius={999}
-                          chromeless
-                          height={48}
-                          justifyContent="center"
-                          onPress={() => setSelectedDateKey(day.key)}
-                          width={48}
-                        >
-                          <Text
-                            color={isSelected ? "$primary" : "$textPrimary"}
-                            fontSize="$8"
-                            fontWeight="500"
-                          >
-                            {day.dayLabel}
-                          </Text>
-                        </Button>
-                      </YStack>
-                    );
-                  })}
-                </XStack>
-              </div>
-
-              {slotPeriods.map((period) => (
-                <YStack key={period.key} gap="$3">
-                  <Text
-                    color="$textSecondary"
-                    fontSize="$6"
-                    fontWeight="500"
-                    letterSpacing={0.4}
-                    textTransform="uppercase"
-                  >
-                    {period.label}
-                  </Text>
-                  <XStack flexWrap="wrap" gap="$3">
-                    {period.slots.map((slot) => {
-                      const isSelected =
-                        selectedSlot?.start === slot.start &&
-                        selectedSlot?.end === slot.end;
-
-                      return (
-                        <Button
-                          key={slot.start}
-                          backgroundColor={isSelected ? "$primary" : "#f1f5fc"}
-                          borderRadius={bookingSurfaceRadius(platform)}
-                          chromeless
-                          minWidth={92}
-                          onPress={() => handleSelectSlot(slot)}
-                          paddingHorizontal="$4"
-                          paddingVertical="$3"
-                        >
-                          <Text
-                            color={isSelected ? "white" : "$textPrimary"}
-                            fontSize="$6"
-                            fontWeight="500"
-                          >
-                            {slot.label}
-                          </Text>
-                        </Button>
-                      );
-                    })}
+        <YStack gap={0}>
+          {!slotsLoading ? (
+            <SectionCard platform={platform}>
+              <YStack gap="$3" paddingHorizontal="$4">
+                <YStack gap={0}>
+                  <XStack alignItems="center" justifyContent="space-between" style={{ fontSize: 0 }}>
+                    <Text
+                      color="$textPrimary"
+                      fontSize={isIosTime ? 17 : 16}
+                      fontWeight="600"
+                      lineHeight={isIosTime ? 22 : 20}
+                    >
+                      {slotMonthTitle}
+                    </Text>
+                    <Button
+                      chromeless
+                      onPress={() => {
+                        const today = slotCalendarDays.find((day) => day.isToday);
+                        if (today) {
+                          setSelectedDateKey(today.key);
+                        }
+                      }}
+                      padding={0}
+                    >
+                      <Text color="$primary" fontSize={13} fontWeight="600">
+                        {t("timeToday")}
+                      </Text>
+                    </Button>
                   </XStack>
-                </YStack>
-              ))}
-            </YStack>
-          </SectionCard>
-        ) : null}
 
-        <Paragraph
-          color="$textSecondary"
-          fontSize={13}
-          lineHeight={18}
-          paddingHorizontal={sectionTitlePadding}
-          size="$3"
-        >
-          {t("timeHint")}
-        </Paragraph>
+                  <div
+                    className="booking-calendar-scroll"
+                    style={{
+                      marginLeft: -timeCardInnerPadX,
+                      marginRight: -timeCardInnerPadX,
+                      msOverflowStyle: "none",
+                      overflowX: "auto",
+                      paddingBottom: 0,
+                      scrollSnapType: "x proximity",
+                      scrollbarWidth: "none",
+                    }}
+                  >
+                    <XStack gap="$1" paddingHorizontal={8} width="max-content">
+                      {slotCalendarDays.map((day) => {
+                        const isSelected = selectedDateKey === day.key;
+                        return (
+                          <YStack
+                            key={day.key}
+                            alignItems="center"
+                            gap="$1"
+                            minWidth={slotCalendarWeekChipWidth}
+                            style={{ scrollSnapAlign: "start" }}
+                          >
+                            <Text
+                              color={
+                                day.weekdayLabel.toLowerCase().startsWith("s")
+                                  ? "#ff5a5f"
+                                  : "$textSecondary"
+                              }
+                              fontSize={11}
+                              fontWeight="500"
+                            >
+                              {day.weekdayLabel.replace(".", "")}
+                            </Text>
+                            <Button
+                              alignItems="center"
+                              backgroundColor={isSelected ? "#2b2d36" : "transparent"}
+                              borderRadius={999}
+                              chromeless
+                              height={40}
+                              justifyContent="center"
+                              onPress={() => setSelectedDateKey(day.key)}
+                              width={40}
+                            >
+                              <Text
+                                color={isSelected ? "$primary" : "$textPrimary"}
+                                fontSize={16}
+                                fontWeight="500"
+                              >
+                                {day.dayLabel}
+                              </Text>
+                            </Button>
+                          </YStack>
+                        );
+                      })}
+                    </XStack>
+                  </div>
+                </YStack>
+
+                {slotPeriods.map((period) => (
+                  <YStack key={period.key} gap="$3">
+                    <Text
+                      color="$textSecondary"
+                      fontSize="$6"
+                      fontWeight="500"
+                      letterSpacing={0.4}
+                      textTransform="uppercase"
+                    >
+                      {period.label}
+                    </Text>
+                    <XStack flexWrap="wrap" gap="$3" paddingBottom="$2">
+                      {period.slots.map((slot) => {
+                        const isSelected =
+                          selectedSlot?.start === slot.start &&
+                          selectedSlot?.end === slot.end;
+
+                        return (
+                          <Button
+                            key={slot.start}
+                            backgroundColor={isSelected ? "$primary" : "#f1f5fc"}
+                            borderRadius={bookingSurfaceRadius(platform)}
+                            chromeless
+                            minWidth={92}
+                            onPress={() => handleSelectSlot(slot)}
+                            paddingHorizontal="$4"
+                            paddingVertical="$3"
+                          >
+                            <Text
+                              color={isSelected ? "white" : "$textPrimary"}
+                              fontSize="$6"
+                              fontWeight="500"
+                            >
+                              {slot.label}
+                            </Text>
+                          </Button>
+                        );
+                      })}
+                    </XStack>
+                  </YStack>
+                ))}
+              </YStack>
+            </SectionCard>
+          ) : null}
+
+          <Paragraph
+            color="$textSecondary"
+            fontSize={13}
+            lineHeight={18}
+            paddingHorizontal={sectionTitlePadding}
+            paddingTop={0}
+            size="$3"
+          >
+            {t("timeHint")}
+          </Paragraph>
+        </YStack>
       </YStack>
     );
   };
 
-  const renderSummarySection = () => {
-    if (!selectedGroup) {
-      return null;
-    }
+  const renderDetailsStep = () => {
+    const formPadX = 0;
+    const detailsHeaderPadX = bookingSectionHeaderPaddingX(platform);
 
     return (
-      <BookingSection platform={platform} title={t("summaryTitle")}>
-        <YStack>
-          <BookingRow
-            indicator={
-              selectedProcedurePrice ? (
-                <Text
-                  color="$primary"
-                  fontSize={platform === "ios" ? 15 : 14}
-                  fontWeight="600"
-                  lineHeight={platform === "ios" ? 18 : 16}
-                >
-                  {selectedProcedurePrice}
-                </Text>
-              ) : null
-            }
-            overline={t("summaryService")}
-            platform={platform}
-            subtitle={selectedProcedure?.masterNickname ?? t("masterAny")}
-            title={selectedGroup.title}
-          />
-          <SectionSeparator platform={platform} />
-        </YStack>
-
-        {selectedSlot ? (
-          <YStack>
-            <BookingRow
-              indicator={
-                selectedProcedureDuration ? (
-                  <Text
-                    color="$textSecondary"
-                    fontSize={platform === "ios" ? 13 : 12}
-                    lineHeight={platform === "ios" ? 18 : 16}
-                  >
-                    {selectedProcedureDuration}
-                  </Text>
-                ) : null
-              }
-              overline={t("summaryDate")}
-              platform={platform}
-              subtitle={selectedTimeText ?? undefined}
-              title={selectedDateText ?? "—"}
-            />
-            <SectionSeparator platform={platform} />
-          </YStack>
-        ) : null}
-
-        <BookingRow
-          overline={t("summarySalon")}
-          platform={platform}
-          subtitle={salonAddress}
-          title={salonName}
-        />
-      </BookingSection>
-    );
-  };
-
-  const renderDetailsStep = () => (
     <form onSubmit={handleSubmitAppointment}>
       <YStack gap="$4">
         <BookingSection
+          footer={
+            <YStack paddingHorizontal={detailsHeaderPadX} paddingTop={0} width="100%">
+              <Text
+                color="$textSecondary"
+                fontSize={platform === "ios" ? 13 : 12}
+                lineHeight={platform === "ios" ? 18 : 16}
+                selectable
+              >
+                {t("fieldPhoneHelper")}
+              </Text>
+            </YStack>
+          }
           title={t("detailsTitle")}
-          description={t("fieldPhoneHelper")}
           platform={platform}
         >
-          <YStack gap={0}>
-            <YStack gap="$2" paddingHorizontal={platform === "ios" ? 16 : 14} paddingTop={12}>
-              <SectionLabel platform={platform}>{t("fieldNameLabel")}</SectionLabel>
+          <YStack gap={0} width="100%">
+            <YStack paddingHorizontal={formPadX} paddingVertical={0} width="100%">
               <Input
                 autoComplete="name"
                 aria-label={t("fieldNameLabel")}
@@ -1793,18 +1873,13 @@ const BookingScreen = ({
                 placeholder={t("fieldNamePlaceholder")}
                 placeholderTextColor="$textSecondary"
                 value={clientName}
+                width="100%"
               />
             </YStack>
 
-            <SectionSeparator marginTop="$3" platform={platform} variant="form" />
+            <SectionSeparator marginTop={0} platform={platform} variant="form" />
 
-            <YStack
-              gap="$2"
-              paddingBottom={12}
-              paddingHorizontal={platform === "ios" ? 16 : 14}
-              paddingTop={12}
-            >
-              <SectionLabel platform={platform}>{t("fieldPhoneLabel")}</SectionLabel>
+            <YStack paddingHorizontal={formPadX} paddingVertical={0} width="100%">
               <Input
                 autoComplete="tel"
                 aria-label={t("fieldPhoneLabel")}
@@ -1824,6 +1899,7 @@ const BookingScreen = ({
                 placeholder={t("fieldPhonePlaceholder")}
                 placeholderTextColor="$textSecondary"
                 value={clientPhone}
+                width="100%"
               />
             </YStack>
           </YStack>
@@ -1837,8 +1913,6 @@ const BookingScreen = ({
             />
           </BookingSection>
         ) : null}
-
-        {renderSummarySection()}
 
         <YStack gap="$2">
           <PrimaryAction
@@ -1854,13 +1928,11 @@ const BookingScreen = ({
               </Text>
             </XStack>
           </PrimaryAction>
-          <Paragraph color="$textSecondary" fontSize={13} lineHeight={18}>
-            {t("detailsHint")}
-          </Paragraph>
         </YStack>
       </YStack>
     </form>
-  );
+    );
+  };
 
   const steps: Array<{ id: Step; label: string }> = [
     { id: "service", label: t("steps.service") },
@@ -2011,7 +2083,56 @@ const BookingScreen = ({
         {renderServiceStep()}
         {selectedGroup ? renderMastersStep() : null}
         {selectedProcedure ? renderTimeStep() : null}
+        {selectedSlot && selectedProcedurePrice ? (
+          <BookingSection
+            footer={(
+              <Paragraph
+                color="$textSecondary"
+                fontSize={platform === "ios" ? 13 : 12}
+                lineHeight={platform === "ios" ? 18 : 16}
+                paddingHorizontal={bookingSectionHeaderPaddingX(platform)}
+                paddingTop={0}
+                size="$3"
+              >
+                {t("summaryTotalFooter")}
+              </Paragraph>
+            )}
+            platform={platform}
+            title={t("summaryTotalTitle")}
+          >
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              paddingHorizontal={bookingSectionHeaderPaddingX(platform)}
+              paddingVertical={platform === "ios" ? 16 : 14}
+            >
+              <Text
+                color="$textPrimary"
+                fontSize={platform === "ios" ? 17 : 16}
+                fontWeight="600"
+                lineHeight={platform === "ios" ? 22 : 20}
+              >
+                {t("summaryTotalLabel")}
+              </Text>
+              <Text
+                color="$primary"
+                fontSize={platform === "ios" ? 17 : 16}
+                fontWeight="500"
+                lineHeight={platform === "ios" ? 22 : 20}
+              >
+                {selectedProcedurePrice}
+              </Text>
+            </XStack>
+          </BookingSection>
+        ) : null}
         {selectedSlot ? renderDetailsStep() : null}
+        <style jsx global>{`
+          .booking-calendar-scroll::-webkit-scrollbar {
+            display: none;
+            height: 0;
+            width: 0;
+          }
+        `}</style>
       </YStack>
     </SheetRoot>
   );
