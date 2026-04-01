@@ -7,6 +7,7 @@ import type { BookingPlatformVariant } from "@/src/features/booking/utils/platfo
 
 const androidSurface = getBookingSurfaceStyle("android");
 const iosSurface = getBookingSurfaceStyle("ios");
+const BOOKING_LAYOUT_HORIZONTAL_PADDING = 16;
 
 export const BOOKING_MASTER_AVATAR_PX = iosSurface.master.avatarSize;
 export const BOOKING_ROW_LEADING_GAP_PX = iosSurface.master.rowLeadingGap;
@@ -14,7 +15,8 @@ export const BOOKING_ROW_LEADING_GAP_PX = iosSurface.master.rowLeadingGap;
 export function bookingSectionHeaderPaddingX(
   platform: BookingPlatformVariant,
 ): number {
-  return getBookingSurfaceStyle(platform).section.headerPaddingX;
+  void platform;
+  return BOOKING_LAYOUT_HORIZONTAL_PADDING;
 }
 
 export const SheetRoot = styled(YStack, {
@@ -26,11 +28,12 @@ export const SheetRoot = styled(YStack, {
       android: {
         gap: androidSurface.layout.rootGap,
         padding: androidSurface.layout.rootPaddingUniform,
+        paddingHorizontal: BOOKING_LAYOUT_HORIZONTAL_PADDING,
       },
       ios: {
         gap: iosSurface.layout.rootGap,
         paddingBottom: iosSurface.layout.rootPaddingBottom,
-        paddingHorizontal: iosSurface.layout.rootPaddingHorizontal,
+        paddingHorizontal: BOOKING_LAYOUT_HORIZONTAL_PADDING,
         paddingTop: iosSurface.layout.rootPaddingTop,
       },
     },

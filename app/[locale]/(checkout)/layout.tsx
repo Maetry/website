@@ -1,13 +1,20 @@
-import type { ReactNode } from 'react';
+import "@tamagui/core/reset.css";
+
+import type { Viewport } from "next";
+
+import { ClientAppUiProvider } from "@/src/shared/tamagui/ClientAppUiProvider";
+
+export const viewport: Viewport = {
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
 
 export default function CheckoutLayout({
   children,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen bg-white dark:bg-dark-bg">
-      {children}
-    </div>
-  );
+  return <ClientAppUiProvider>{children}</ClientAppUiProvider>;
 }

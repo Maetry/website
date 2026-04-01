@@ -3,23 +3,23 @@ import "server-only";
 import type { NextRequest } from "next/server";
 
 import {
+  getPublicBookingSalonProfile,
+  postBillingSessionResolve,
   getWorkspaceBillingCatalog,
   getWorkspaceBillingSummary,
   postWorkspaceBillingPortalSession,
-  postWorkspaceBillingSubscriptionInstructions,
 } from "@maetry/shared-sdk";
 
 import type {
   BillingCatalog,
+  BillingSessionContextResponse,
   BillingPortalSessionResponse,
-  BillingSubscriptionInstructionsPayload,
-  BillingSubscriptionInstructionsResult,
   BillingSummary,
+  PublicSalonProfile,
 } from "./maetry-contracts";
 import {
   MAETRY_THROW_ON_ERROR_OPTIONS,
   createMaetryServerClient,
-  getIdempotencyKeyHeader,
   requireAuthorizationHeader,
   requireDeviceIdHeader,
   unwrapMaetrySdkResult,
@@ -37,6 +37,22 @@ export function requireBillingAuthContext(
     authorization: requireAuthorizationHeader(request),
     deviceId: requireDeviceIdHeader(request),
   };
+}
+
+export async function resolveBillingSessionContext(
+  session: string,
+): Promise<BillingSessionContextResponse> {
+  const client = createMaetryServerClient();
+
+  const response = await postBillingSessionResolve({
+    body: {
+      session,
+    },
+    client,
+    ...MAETRY_THROW_ON_ERROR_OPTIONS,
+  });
+
+  return unwrapMaetrySdkResult(response);
 }
 
 export async function loadBillingHubData(
@@ -71,39 +87,26 @@ export async function loadBillingHubData(
   };
 }
 
-export async function requestBillingSubscriptionInstructions(
-  auth: BillingAuthContext,
-  payload: BillingSubscriptionInstructionsPayload,
-  idempotencyKey?: string,
-): Promise<BillingSubscriptionInstructionsResult> {
-  const client = createMaetryServerClient({
-    authorization: auth.authorization,
-  });
+export async function loadBillingSalonProfile(
+  salonId: string,
+  locale?: string,
+): Promise<PublicSalonProfile> {
+  const client = createMaetryServerClient();
 
-  const response = await postWorkspaceBillingSubscriptionInstructions({
-    body: payload,
+  const response = await getPublicBookingSalonProfile({
     client,
-    headers: {
-      "Device-ID": auth.deviceId,
-      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+    headers: locale
+      ? {
+          languages: locale,
+        }
+      : undefined,
+    path: {
+      salonId,
     },
     ...MAETRY_THROW_ON_ERROR_OPTIONS,
   });
 
   return unwrapMaetrySdkResult(response);
-}
-
-export async function requestBillingSubscriptionInstructionsFromRequest(
-  request: NextRequest,
-  payload: BillingSubscriptionInstructionsPayload,
-): Promise<BillingSubscriptionInstructionsResult> {
-  const auth = requireBillingAuthContext(request);
-
-  return requestBillingSubscriptionInstructions(
-    auth,
-    payload,
-    getIdempotencyKeyHeader(request),
-  );
 }
 
 export async function createBillingPortalSession(

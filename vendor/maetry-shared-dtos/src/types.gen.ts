@@ -1642,10 +1642,27 @@ export type MarketingCampaignParametersUpdate = {
     description?: string;
 };
 
+export type BillingSessionResolveRequest = {
+    /**
+     * Short-lived signed billing session token.
+     */
+    session: string;
+};
+
+export type BillingSessionContext = {
+    /**
+     * Device identifier bound to the billing session.
+     */
+    deviceId: string;
+    /**
+     * Salon bound to the billing session.
+     */
+    salonId: string;
+};
+
 /**
  * Параметры создания public booking.
- * Сервер принимает канонические поля `clientName` / `clientPhone`,
- * а также legacy-алиасы `name` / `phone`.
+ * Используются только канонические поля `clientName` / `clientPhone`.
  */
 export type PublicBookingParametersCreate = unknown & unknown & {
     /**
@@ -1656,18 +1673,6 @@ export type PublicBookingParametersCreate = unknown & unknown & {
      * Телефон клиента.
      */
     clientPhone?: string;
-    /**
-     * Legacy-алиас для `clientName`.
-     *
-     * @deprecated
-     */
-    name?: string;
-    /**
-     * Legacy-алиас для `clientPhone`.
-     *
-     * @deprecated
-     */
-    phone?: string;
     /**
      * Идентификатор процедуры для одиночной записи.
      */
@@ -1694,6 +1699,17 @@ export type SalonResponsesMaster = {
     nickname: string;
     logo: string;
     position: string;
+};
+
+export type BillingSession = {
+    /**
+     * Short-lived signed billing session token.
+     */
+    session: string;
+    /**
+     * Expiration timestamp for the billing session token.
+     */
+    expiresAt: string;
 };
 
 export type SchedulePatternWeekly = {
@@ -4711,6 +4727,55 @@ export type GetBillingRedirectResponses = {
 
 export type GetBillingRedirectResponse = GetBillingRedirectResponses[keyof GetBillingRedirectResponses];
 
+export type PostBillingSessionResolveData = {
+    body: BillingSessionResolveRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/billing/session/resolve';
+};
+
+export type PostBillingSessionResolveErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PostBillingSessionResolveError = PostBillingSessionResolveErrors[keyof PostBillingSessionResolveErrors];
+
+export type PostBillingSessionResolveResponses = {
+    /**
+     * Billing session resolved to a billing context.
+     */
+    200: BillingSessionContext;
+};
+
+export type PostBillingSessionResolveResponse = PostBillingSessionResolveResponses[keyof PostBillingSessionResolveResponses];
+
 export type GetPublicVisitByBookingIdData = {
     body?: never;
     path: {
@@ -5312,6 +5377,61 @@ export type GetWorkspaceBillingCatalogResponses = {
 };
 
 export type GetWorkspaceBillingCatalogResponse = GetWorkspaceBillingCatalogResponses[keyof GetWorkspaceBillingCatalogResponses];
+
+export type PostWorkspaceBillingSessionData = {
+    body?: never;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/workspace/billing/session';
+};
+
+export type PostWorkspaceBillingSessionErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PostWorkspaceBillingSessionError = PostWorkspaceBillingSessionErrors[keyof PostWorkspaceBillingSessionErrors];
+
+export type PostWorkspaceBillingSessionResponses = {
+    /**
+     * Billing session created for the active workplace.
+     */
+    200: BillingSession;
+};
+
+export type PostWorkspaceBillingSessionResponse = PostWorkspaceBillingSessionResponses[keyof PostWorkspaceBillingSessionResponses];
 
 export type PostWorkspaceBillingRecomputeSeatsData = {
     body?: never;

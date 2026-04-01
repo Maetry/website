@@ -8,9 +8,9 @@ import type {
   BillingPlanCode,
   BillingPlanInterval,
   BillingPortalSession,
+  BillingSession,
+  BillingSessionContext,
   BillingSeatTier,
-  BillingSubscriptionInstructionsRequest,
-  BillingSubscriptionInstructionsResponse,
   BillingSummary as SharedBillingSummary,
   ClickParametersMagicLink,
   ClickResponsesMagicLink,
@@ -70,10 +70,8 @@ export type BillingPlanCodeValue = BillingPlanCode;
 export type BillingPlanAvailabilityValue = BillingPlanAvailability;
 export type BillingPlanIntervalValue = BillingPlanInterval;
 export type BillingPortalSessionResponse = BillingPortalSession;
-export type BillingSubscriptionInstructionsPayload =
-  BillingSubscriptionInstructionsRequest;
-export type BillingSubscriptionInstructionsResult =
-  BillingSubscriptionInstructionsResponse;
+export type BillingSessionResponse = BillingSession;
+export type BillingSessionContextResponse = BillingSessionContext;
 export type BillingSummary = SharedBillingSummary;
 export type BillingTier = BillingSeatTier;
 export type BillingPrice = Price;

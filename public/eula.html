@@ -286,7 +286,7 @@
 </head>
 <body>
     <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-    <a href="/" class="back-button">←</a>
+    <a href="/" class="back-button" onclick="return handleBackNavigation(event)">←</a>
     
     <div class="container">
         <div class="header">
@@ -349,6 +349,18 @@
     </div>
 
     <script>
+        function handleBackNavigation(event) {
+            event.preventDefault();
+
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '/';
+            }
+
+            return false;
+        }
+
         function toggleTheme() {
             const body = document.body;
             const button = document.querySelector('.theme-toggle');

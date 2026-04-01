@@ -1,8 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { getPublicBookingSalonCatalog } from "@maetry/shared-sdk";
-
 import { adaptCatalogToLegacyProcedures } from "@/lib/api/booking-legacy-adapter";
 import {
   MAETRY_THROW_ON_ERROR_OPTIONS,
@@ -12,6 +10,8 @@ import {
 } from "@/lib/api/maetry-sdk.server";
 import { handleValidationError } from "@/lib/api/route-handler";
 import { validateId } from "@/lib/api/validation";
+
+import { getPublicBookingSalonCatalog } from "@maetry/shared-sdk";
 
 type RouteParams = {
   params: Promise<{ salonId: string }>;

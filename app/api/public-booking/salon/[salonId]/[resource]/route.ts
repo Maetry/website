@@ -2,12 +2,6 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import {
-  getPublicBookingSalonCatalog,
-  getPublicBookingSalonMasters,
-  getPublicBookingSalonProfile,
-} from "@maetry/shared-sdk";
-
-import {
   MAETRY_THROW_ON_ERROR_OPTIONS,
   createMaetryServerClient,
   maetrySdkErrorResponse,
@@ -15,6 +9,12 @@ import {
 } from "@/lib/api/maetry-sdk.server";
 import { handleValidationError } from "@/lib/api/route-handler";
 import { validateId } from "@/lib/api/validation";
+
+import {
+  getPublicBookingSalonCatalog,
+  getPublicBookingSalonMasters,
+  getPublicBookingSalonProfile,
+} from "@maetry/shared-sdk";
 
 const RESOURCE_PATHS = {
   profile: "profile",

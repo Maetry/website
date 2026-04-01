@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maetry Privacy Policy</title>
+    <title>Maetry Billing Addendum</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
@@ -20,12 +20,12 @@
             padding: 20px;
             transition: all 0.3s ease;
         }
-        
+
         body.dark {
             color: #fdfdfd;
             background: #13131A;
         }
-        
+
         .container {
             max-width: 900px;
             margin: 0 auto;
@@ -35,12 +35,12 @@
             overflow: hidden;
             transition: all 0.3s ease;
         }
-        
+
         body.dark .container {
             background: #13131A;
             box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
         }
-        
+
         .header {
             background: white;
             color: #13131A;
@@ -49,30 +49,30 @@
             border-bottom: 1px solid #f0f0f0;
             transition: all 0.3s ease;
         }
-        
+
         body.dark .header {
             background: #13131A;
             color: #fdfdfd;
             border-bottom: 1px solid #333;
         }
-        
+
         .header h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
             font-weight: 300;
             font-family: 'Manrope', sans-serif;
         }
-        
+
         .header .effective-date {
             font-size: 1.1rem;
             opacity: 0.7;
             font-weight: 300;
         }
-        
+
         .content {
             padding: 40px;
         }
-        
+
         h2 {
             color: #13131A;
             font-size: 1.5rem;
@@ -83,43 +83,43 @@
             font-family: 'Manrope', sans-serif;
             transition: all 0.3s ease;
         }
-        
+
         body.dark h2 {
             color: #fdfdfd;
             border-bottom: 1px solid #333;
         }
-        
+
         h2:first-of-type {
             margin-top: 0;
         }
-        
+
         p {
             margin-bottom: 15px;
             font-size: 1rem;
             font-weight: 300;
         }
-        
+
         ul {
             margin: 15px 0;
             padding-left: 25px;
         }
-        
+
         li {
             margin-bottom: 8px;
             line-height: 1.6;
             font-weight: 300;
         }
-        
+
         strong {
             color: #13131A;
             font-weight: 500;
             transition: all 0.3s ease;
         }
-        
+
         body.dark strong {
             color: #fdfdfd;
         }
-        
+
         a {
             color: #13131A;
             text-decoration: none;
@@ -127,40 +127,16 @@
             transition: all 0.3s ease;
             font-weight: 400;
         }
-        
+
         body.dark a {
             color: #fdfdfd;
             border-bottom: 1px solid #fdfdfd;
         }
-        
+
         a:hover {
             opacity: 0.7;
         }
-        
-        .contact-info {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            border-left: 4px solid #13131A;
-            margin: 20px 0;
-            transition: all 0.3s ease;
-        }
-        
-        body.dark .contact-info {
-            background: #1a1a1a;
-            border-left: 4px solid #fdfdfd;
-        }
-        
-        .contact-info p {
-            margin-bottom: 8px;
-        }
-        
-        .contact-info strong {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-        
+
         .section {
             background: #f8f9fa;
             padding: 20px;
@@ -169,19 +145,40 @@
             border-left: 4px solid #13131A;
             transition: all 0.3s ease;
         }
-        
+
         body.dark .section {
             background: #1a1a1a;
             border-left: 4px solid #fdfdfd;
         }
-        
-        .theme-toggle {
+
+        .contact-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 4px solid #13131A;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        body.dark .contact-info {
+            background: #1a1a1a;
+            border-left: 4px solid #fdfdfd;
+        }
+
+        .contact-info p {
+            margin-bottom: 8px;
+        }
+
+        .contact-info strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .theme-toggle,
+        .back-button {
             position: fixed;
             top: 20px;
-            right: 20px;
-            background: white;
-            border: 1px solid #f0f0f0;
-            border-radius: 50%;
             width: 50px;
             height: 50px;
             display: flex;
@@ -192,78 +189,75 @@
             font-size: 20px;
             z-index: 1000;
         }
-        
+
+        .theme-toggle {
+            right: 20px;
+            background: white;
+            border: 1px solid #f0f0f0;
+            border-radius: 50%;
+        }
+
         body.dark .theme-toggle {
             background: #13131A;
             border: 1px solid #333;
             color: #fdfdfd;
         }
-        
+
         .back-button {
-            position: fixed;
-            top: 20px;
             left: 20px;
             background: white;
             border: 1px solid #f0f0f0;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 20px;
-            z-index: 1000;
             text-decoration: none;
             color: #13131A;
         }
-        
+
         body.dark .back-button {
             background: #13131A;
             border: 1px solid #333;
             color: #fdfdfd;
         }
-        
-        .back-button:hover {
+
+        .back-button:hover,
+        .theme-toggle:hover {
             transform: scale(1.1);
         }
-        
+
         @media (max-width: 768px) {
             body {
                 padding: 10px;
             }
-            
+
             .header {
                 padding: 30px 20px;
             }
-            
+
             .header h1 {
                 font-size: 2rem;
             }
-            
+
             .content {
                 padding: 30px 20px;
             }
-            
+
             h2 {
                 font-size: 1.3rem;
             }
-            
-            .theme-toggle {
+
+            .theme-toggle,
+            .back-button {
                 top: 10px;
-                right: 10px;
                 width: 40px;
                 height: 40px;
                 font-size: 16px;
             }
-            
+
+            .theme-toggle {
+                right: 10px;
+            }
+
             .back-button {
-                top: 10px;
                 left: 10px;
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
             }
         }
     </style>
@@ -271,84 +265,55 @@
 <body>
     <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
     <a href="/" class="back-button" onclick="return handleBackNavigation(event)">←</a>
-    
+
     <div class="container">
         <div class="header">
-            <h1>Privacy Policy for Maetry</h1>
-            <div class="effective-date">Effective Date: August 13, 2025</div>
+            <h1>Billing Addendum</h1>
+            <div class="effective-date"><strong>Effective Date:</strong> April 1, 2026</div>
         </div>
-        
+
         <div class="content">
-            <h2>1. Introduction</h2>
-            <p>Welcome to Maetry! We are committed to protecting the privacy and security of our business clients and their customers. This Privacy Policy explains how we collect, use, disclose, and safeguard information when you use the Maetry mobile application ("Application") and related services ("Service").</p>
-            <p>By using the Service, you agree to the practices described in this Privacy Policy.</p>
+            <p>This Billing Addendum supplements the <a href="/terms.html">Terms and Conditions</a> and <a href="/privacy.html">Privacy Policy</a>. If there is a conflict for billing topics, this Addendum controls.</p>
+            <p>By checking the billing consent box on the Maetry billing page, you confirm that you have authority to bind the business and agree to these billing terms.</p>
 
-            <h2>2. Data We Collect</h2>
+            <h2>1. Billing Authorization</h2>
+            <p>You authorize Maetry LLC and its payment processors, including Stripe where applicable, to charge your selected payment method for subscription fees, taxes, and other amounts described at checkout or in the billing portal.</p>
+            <p>You also authorize Maetry to charge recurring fees automatically until the subscription is canceled according to these terms.</p>
+
+            <h2>2. Plans, Renewal, and Changes</h2>
+            <ul>
+                <li>Subscription plans may be started, upgraded, downgraded, or otherwise changed through the billing page or billing portal.</li>
+                <li>Current plan pricing and renewal timing are shown before confirmation of the purchase or change.</li>
+                <li>Unless stated otherwise, subscriptions renew automatically at the end of each billing period.</li>
+                <li>Maetry may modify plans, features, pricing, or plan availability with prior notice where required by law or product policy.</li>
+            </ul>
+
+            <h2>3. Cancellation and Refunds</h2>
+            <ul>
+                <li>You may cancel through the billing portal or the other management flow we provide for your account.</li>
+                <li>Downgrades may take effect immediately or at the next renewal depending on the billing cycle and the change requested.</li>
+                <li>Charges already incurred are generally non-refundable unless Maetry determines there was a duplicate charge, billing error, or other verified mistake.</li>
+                <li>No prorated refund is owed for unused time unless required by applicable law.</li>
+            </ul>
+
+            <h2>4. Taxes and Fees</h2>
+            <p>You are responsible for applicable taxes, duties, or similar government charges that arise from your subscription, except where Maetry is required by law to collect or remit those amounts.</p>
+
+            <h2>5. Service Disclaimer and Liability</h2>
+            <p>The billing service is provided on an <strong>as is</strong> and <strong>as available</strong> basis. Maetry does not guarantee uninterrupted access, error-free billing operations, or availability of any specific plan at all times.</p>
+            <p>To the maximum extent permitted by law, Maetry is not liable for indirect, incidental, special, or consequential damages arising from billing or subscription use.</p>
+
+            <h2>6. Billing Portal and Self-Serve Management</h2>
             <div class="section">
-                <p><strong>Personal Information:</strong> We collect your nickname and avatar (photo) for profile creation. These serve as pseudonyms and may not correspond to your legal identity.</p>
-                <p><strong>Contact Information:</strong> For clients: phone or email to facilitate booking and communication. For service providers: business contact details to enable client discovery and management.</p>
-                <p><strong>Usage Data:</strong> Interactions within the Application (e.g., appointments created, features used) to improve performance and tailor the experience.</p>
-                <p><strong>Geolocation Data:</strong> We may access your device's location to help you discover nearby salons. Geolocation data is processed locally on your device and not permanently stored on our servers.</p>
-                <p><strong>Payment Information:</strong> We do not collect or store payment details. All subscription payments are processed securely through third-party providers such as Stripe.</p>
+                <p>When your account supports a customer portal, you can manage payment methods, renewal preferences, and other subscription settings through the hosted billing portal.</p>
+                <p>The billing page may also start a new checkout session or submit a plan change request on your behalf, based on the plan you select and the state of your current subscription.</p>
             </div>
 
-            <h2>3. How We Use Data</h2>
-            <ul>
-                <li>To connect service providers and clients.</li>
-                <li>To provide and maintain app functionality (e.g., managing appointments, analytics, communication).</li>
-                <li>To conduct performance analysis and improve the Service.</li>
-                <li>To ensure compliance with applicable laws and regulations.</li>
-            </ul>
+            <h2>7. Changes to This Addendum</h2>
+            <p>Maetry may update this Addendum from time to time. Continued use of the billing page or any recurring subscription after an update becomes effective means you accept the updated version.</p>
 
-            <h2>4. Data Sharing</h2>
-            <ul>
-                <li>Contact details may be shared with other users of the Service when necessary to facilitate bookings.</li>
-                <li>We do not sell, trade, or rent personal information to outside parties.</li>
-                <li>Data may be shared with trusted third-party vendors (e.g., hosting, payment processing) strictly for operating the Service.</li>
-            </ul>
-
-            <h2>5. Data Storage and Security</h2>
-            <div class="section">
-                <ul>
-                    <li>All data is stored on Google Cloud Platform (GCP) servers located in the United States.</li>
-                    <li>Data is protected using industry-standard encryption and security measures provided by GCP.</li>
-                </ul>
-            </div>
-
-            <h2>6. Data Retention and Deletion</h2>
-            <ul>
-                <li>You may delete your account at any time through the Application. Upon deletion, personal data will be removed or anonymized.</li>
-                <li>Business records (e.g., salon appointments, financial transactions) may be retained as required for the continuity of service or legal compliance.</li>
-                <li>Backup copies may be stored for a limited period to ensure system reliability.</li>
-            </ul>
-
-            <h2>7. Users' Responsibility</h2>
-            <ul>
-                <li>Service providers are solely responsible for the quality of services they provide.</li>
-                <li>Clients are responsible for ensuring the accuracy of their information.</li>
-                <li>Maetry acts solely as a platform and does not control the services provided.</li>
-            </ul>
-
-            <h2>8. Policy Regarding Children</h2>
-            <p>The Service is not directed to individuals under the age of 13. Parents may use the Service to book appointments on behalf of children, but children may not directly create accounts.</p>
-
-            <h2>9. External Links</h2>
-            <p>The Application may contain links to third-party sites or services. Maetry LLC is not responsible for the privacy practices or content of those external websites.</p>
-
-            <h2>10. Your Rights (GDPR/CCPA)</h2>
-            <p>Depending on your jurisdiction, you may have the right to:</p>
-            <ul>
-                <li>Access and receive a copy of your data.</li>
-                <li>Request correction or deletion of your data.</li>
-                <li>Object to processing or request portability of your data.</li>
-            </ul>
-            <p>Requests can be submitted to <a href="mailto:support@maetry.com">support@maetry.com</a>.</p>
-
-            <h2>11. Changes to This Policy</h2>
-            <p>We reserve the right to modify this Privacy Policy at any time. Updates will be posted on our website and within the Application. Continued use of the Service after changes constitutes acceptance.</p>
-
-            <h2>12. Contact Information</h2>
-            <p>For questions, requests, or complaints regarding this Privacy Policy, please contact us:</p>
+            <h2>8. Contact Information</h2>
+            <p>For billing questions, please contact:</p>
             <div class="contact-info">
                 <strong>Maetry LLC</strong>
                 <p>2145 NE 164th St, Apt 102</p>
@@ -375,7 +340,7 @@
         function toggleTheme() {
             const body = document.body;
             const button = document.querySelector('.theme-toggle');
-            
+
             if (body.classList.contains('dark')) {
                 body.classList.remove('dark');
                 button.textContent = '🌙';
@@ -384,15 +349,13 @@
                 button.textContent = '☀️';
             }
         }
-        
-        // Check for saved theme preference or default to light mode
-        if (localStorage.getItem('theme') === 'dark' || 
+
+        if (localStorage.getItem('theme') === 'dark' ||
             (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.body.classList.add('dark');
             document.querySelector('.theme-toggle').textContent = '☀️';
         }
-        
-        // Save theme preference
+
         document.querySelector('.theme-toggle').addEventListener('click', function() {
             const isDark = document.body.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'light' : 'dark');

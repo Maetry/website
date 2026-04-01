@@ -13,6 +13,8 @@ export type AnalyticsEvent =
   | 'billing_page_viewed'
   | 'billing_plan_selected'
   | 'billing_checkout_started'
+  | 'billing_plan_change_requested'
+  | 'billing_plan_change_completed'
   | 'wallet_pass_added'
   | 'invite_page_viewed';
 

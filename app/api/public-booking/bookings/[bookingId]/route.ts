@@ -1,8 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { getPublicVisitByBookingId } from "@maetry/shared-sdk";
-
 import {
   MAETRY_THROW_ON_ERROR_OPTIONS,
   createMaetryServerClient,
@@ -11,6 +9,8 @@ import {
 } from "@/lib/api/maetry-sdk.server";
 import { handleValidationError } from "@/lib/api/route-handler";
 import { validateId } from "@/lib/api/validation";
+
+import { getPublicVisitByBookingId } from "@maetry/shared-sdk";
 
 type RouteParams = {
   params: Promise<{ bookingId: string }>;
