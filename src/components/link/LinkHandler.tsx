@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Button, Paragraph, Spinner, Text, Theme, XStack, YStack } from "tamagui";
 
 import { InviteScreen } from "@/components/invite";
 import { ApiError } from "@/lib/api/error-handler";
 import { resolveShortLink, type PublicClickResponse } from "@/lib/api/public-booking";
 import type { LinkKind } from "@/lib/api/shortLink";
+import { usePlatform } from "@/lib/userAgent/PlatformProvider";
+import {
+  getClientAppSurfaceStyle,
+  getClientAppThemeSubName,
+} from "@/src/shared/tamagui/clientAppTheme";
 
 type LinkHandlerProps = {
   nanoId: string;
@@ -135,9 +142,81 @@ function openAppWithFallback(
   window.location.assign(response.appUrl);
 }
 
+function LinkStatusScreen({
+  action,
+  description,
+  icon,
+  title,
+}: {
+  action?: React.ReactNode;
+  description: string;
+  icon: React.ReactNode;
+  title: string;
+}) {
+  const platformInfo = usePlatform();
+  const platform = platformInfo.isAndroid ? "android" : "ios";
+  const surface = getClientAppSurfaceStyle(platform);
+
+  return (
+    <Theme name={getClientAppThemeSubName(platform)}>
+      <YStack
+        alignItems="center"
+        backgroundColor="$appBackground"
+        flex={1}
+        justifyContent="center"
+        minHeight="100dvh"
+        padding="$6"
+        width="100%"
+      >
+        <YStack
+          alignItems="center"
+          backgroundColor="$cardBackground"
+          borderColor="$separator"
+          borderRadius={surface.visit.cardRadius}
+          borderWidth={1}
+          gap="$3"
+          maxWidth={420}
+          paddingHorizontal="$5"
+          paddingVertical="$6"
+          width="100%"
+        >
+          {icon}
+          <YStack alignItems="center" gap="$2">
+            <Text
+              color="$textPrimary"
+              fontSize={surface.state.titleFontSize}
+              fontWeight="700"
+              lineHeight={surface.state.titleLineHeight}
+              textAlign="center"
+            >
+              {title}
+            </Text>
+            <Paragraph
+              color="$textSecondary"
+              fontSize={surface.state.descriptionFontSize}
+              lineHeight={surface.state.descriptionLineHeight}
+              maxWidth={320}
+              textAlign="center"
+            >
+              {description}
+            </Paragraph>
+          </YStack>
+          {action}
+        </YStack>
+      </YStack>
+    </Theme>
+  );
+}
+
 export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
   const t = useTranslations("linkHandler");
+  const bookingT = useTranslations("booking");
   const [state, setState] = useState<LinkState>({ status: "loading" });
+
+  const loadingDescription = useMemo(
+    () => bookingT("successBookingHint"),
+    [bookingT],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -179,42 +258,47 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
 
   if (state.status === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.82),_transparent_36%),linear-gradient(135deg,_#f7c8a8_0%,_#ffdff4_35%,_#dce7ff_100%)] px-4">
-        <div className="w-full max-w-md rounded-[28px] border border-white/50 bg-white/75 p-6 text-center shadow-[0_30px_90px_rgba(85,71,117,0.18)] backdrop-blur-2xl">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
-          <div className="mt-5 space-y-2">
-            <h1 className="text-xl font-semibold text-slate-950">
-              {t("processing")}
-            </h1>
-            <p className="text-sm leading-6 text-slate-600">{t("pleaseWait")}</p>
-          </div>
-        </div>
-      </div>
+      <LinkStatusScreen
+        description={loadingDescription}
+        icon={<Spinner size="large" color="$primary" />}
+        title={bookingT("loading.confirmation")}
+      />
     );
   }
 
   if (state.status === "error") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.82),_transparent_36%),linear-gradient(135deg,_#f7c8a8_0%,_#ffdff4_35%,_#dce7ff_100%)] px-4">
-        <div className="w-full max-w-md rounded-[28px] border border-white/50 bg-white/75 p-6 text-center shadow-[0_30px_90px_rgba(85,71,117,0.18)] backdrop-blur-2xl">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-xl text-red-600">
-            ×
-          </div>
-          <div className="mt-5 space-y-2">
-            <h1 className="text-xl font-semibold text-slate-950">
-              {t("errorTitle")}
-            </h1>
-            <p className="text-sm leading-6 text-red-600">{state.message}</p>
-          </div>
-          <button
-            className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
-            onClick={() => window.location.reload()}
-            type="button"
+      <LinkStatusScreen
+        action={
+          <Button
+            backgroundColor="$primary"
+            borderRadius={999}
+            minHeight={50}
+            onPress={() => window.location.reload()}
+            paddingHorizontal="$5"
           >
-            {t("retry")}
-          </button>
-        </div>
-      </div>
+            <Text color="white" fontSize="$5" fontWeight="700">
+              {t("retry")}
+            </Text>
+          </Button>
+        }
+        description={state.message}
+        icon={
+          <XStack
+            alignItems="center"
+            backgroundColor="$primarySoft"
+            borderRadius={999}
+            height={48}
+            justifyContent="center"
+            width={48}
+          >
+            <Text color="$danger">
+              <AlertCircle size={22} />
+            </Text>
+          </XStack>
+        }
+        title={t("errorTitle")}
+      />
     );
   }
 
