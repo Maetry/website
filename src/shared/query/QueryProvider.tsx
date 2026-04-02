@@ -3,7 +3,12 @@
 import { useMemo, type ReactNode } from "react";
 
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
-import { isServer, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  defaultShouldDehydrateQuery,
+  isServer,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 
 const PUBLIC_BOOKING_QUERY_KEY = "public-booking";
@@ -57,7 +62,9 @@ export function QueryProvider({ children }: { children: ReactNode }) {
           buster: QUERY_CACHE_BUSTER,
           dehydrateOptions: {
             shouldDehydrateQuery: (query) =>
-              query.queryKey[0] === PUBLIC_BOOKING_QUERY_KEY,
+              query.queryKey[0] === PUBLIC_BOOKING_QUERY_KEY &&
+              defaultShouldDehydrateQuery(query) &&
+              query.state.status === "success",
           },
           persister,
         }}

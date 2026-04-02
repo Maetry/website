@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type Dispatch,
   type FormEvent,
@@ -200,6 +201,7 @@ export function useBookingFlow({
     searchParams.get("trackingId");
   const queryClient = useQueryClient();
   const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
+  const isLeavingBookingFlowRef = useRef(false);
   const apiMessageTemplate = useCallback(
     (message: string) => t("errors.apiMessage", { message }),
     [t],
@@ -822,25 +824,23 @@ export function useBookingFlow({
         return;
       }
 
+      isLeavingBookingFlowRef.current = true;
       clearBookingDraftSnapshot({ locale, salonId });
-      writeBookingDraftUrlState({
-        selectedDateKey: null,
-        selectedGroupId: null,
-        selectedProcedureKey: null,
-        selectedSlotStart: null,
-      });
 
       await waitForPublicBooking(appointmentId).catch(() => null);
 
       const visitUrl = buildVisitUrl(locale, appointmentId);
       if (typeof window !== "undefined") {
-        window.location.assign(visitUrl);
+        // Replace the current history entry so a reload cannot drop the user
+        // back into a half-cleared booking flow while the visit page is loading.
+        window.location.replace(visitUrl);
         return;
       }
 
       send({ type: "SUBMIT_SUCCESS" });
       router.push(`/${locale}/visits/${appointmentId}`);
     } catch (error) {
+      isLeavingBookingFlowRef.current = false;
       send({
         type: "SUBMIT_FAILURE",
         error: resolveApiMessage(
@@ -930,7 +930,7 @@ export function useBookingFlow({
         : "service";
 
   useEffect(() => {
-    if (!hasHydratedDraft) {
+    if (!hasHydratedDraft || isLeavingBookingFlowRef.current) {
       return;
     }
 
