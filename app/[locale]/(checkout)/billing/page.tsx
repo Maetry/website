@@ -7,6 +7,7 @@ import {
   resolveBillingSessionContext,
 } from "@/lib/api/billing-server";
 import { normalizeMaetrySdkError } from "@/lib/api/maetry-sdk.server";
+import { loadBillingPlanFeatureTitles } from "@/lib/billing-plan-features";
 
 import BillingPage from "./BillingPage";
 
@@ -122,11 +123,13 @@ export default async function BillingRoute({
       authorization: sessionAuthorization,
       deviceId: resolvedDeviceId,
     });
+    const planFeatureTitlesPromise = loadBillingPlanFeatureTitles();
     const salonProfilePromise = resolvedSalonId
       ? loadBillingSalonProfile(resolvedSalonId, locale).catch(() => null)
       : Promise.resolve(null);
-    const [{ catalog, summary }, salonProfile] = await Promise.all([
+    const [{ catalog, summary }, planFeatureTitlesByCode, salonProfile] = await Promise.all([
       billingDataPromise,
+      planFeatureTitlesPromise,
       salonProfilePromise,
     ]);
 
@@ -136,6 +139,7 @@ export default async function BillingRoute({
         catalog={catalog}
         deviceId={resolvedDeviceId}
         locale={locale}
+        planFeatureTitlesByCode={planFeatureTitlesByCode}
         salonId={resolvedSalonId}
         salonProfile={salonProfile}
         summary={summary}

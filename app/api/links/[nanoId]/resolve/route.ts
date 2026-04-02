@@ -16,7 +16,7 @@ export async function POST(request: NextRequest, context: RouteParams) {
 
     return proxyApiRequest({
       method: "POST",
-      path: `/clicks/${encodeURIComponent(nanoId)}`,
+      path: `/v1/clicks/${encodeURIComponent(nanoId)}`,
       request,
       body,
       errorCode: "FAILED_TO_RESOLVE_LINK",

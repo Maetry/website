@@ -15,7 +15,7 @@ export async function POST(request: NextRequest, context: RouteParams) {
   try {
     const rawLinkId = segments.join("/");
     const linkId = validateId(rawLinkId, "linkId");
-    const path = `/clicks/${encodeURIComponent(linkId)}`;
+    const path = `/v1/clicks/${encodeURIComponent(linkId)}`;
 
     devLog("[clicks] Registering click for link:", linkId);
 

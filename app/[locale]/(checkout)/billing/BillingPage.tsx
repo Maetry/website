@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { ArrowUpRight, ChevronDown } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Anchor, Button, Paragraph, Text, XStack, YStack, ZStack } from "tamagui";
 
@@ -33,6 +33,7 @@ type BillingPageProps = {
   catalog: BillingCatalog;
   deviceId: string;
   locale: string;
+  planFeatureTitlesByCode: Record<string, string[]>;
   salonId?: string | null;
   salonProfile?: PublicSalonProfile | null;
   summary: BillingSummary;
@@ -381,6 +382,7 @@ export default function BillingPage({
   catalog,
   deviceId,
   locale,
+  planFeatureTitlesByCode,
   salonId,
   salonProfile,
   summary,
@@ -405,6 +407,7 @@ export default function BillingPage({
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [seatPricingExpanded, setSeatPricingExpanded] = useState(false);
+  const [featuresExpanded, setFeaturesExpanded] = useState(false);
 
   const activeSeats = Math.max(billingSummary.activeSeats, 1);
   const orderedPlans = useMemo(
@@ -497,10 +500,21 @@ export default function BillingPage({
     : selectedPlan?.availability === "free"
       ? t("freePlanPrice")
       : t("customPricingLabel");
+  const selectedPlanFeatures = selectedPlan
+    ? planFeatureTitlesByCode[selectedPlan.code] ?? []
+    : [];
+  const visiblePlanFeatures = featuresExpanded
+    ? selectedPlanFeatures
+    : selectedPlanFeatures.slice(0, 5);
+  const hasHiddenPlanFeatures = selectedPlanFeatures.length > 5;
 
   useEffect(() => {
     setBillingSummary(summary);
   }, [summary]);
+
+  useEffect(() => {
+    setFeaturesExpanded(false);
+  }, [selectedPlanCode]);
 
   useEffect(() => {
     track("billing_page_viewed", {
@@ -908,6 +922,63 @@ export default function BillingPage({
                         : t("customBillingTerms")}
                     </Text>
                   )}
+
+                  {selectedPlanFeatures.length > 0 ? (
+                    <YStack gap="$2.5">
+                      <Text
+                        color="$textSecondary"
+                        fontSize={surface.row.overlineFontSize}
+                        fontWeight="700"
+                        lineHeight={surface.row.overlineLineHeight}
+                        textTransform="uppercase"
+                      >
+                        {t("includedFeaturesTitle")}
+                      </Text>
+                      <YStack gap="$2">
+                        {visiblePlanFeatures.map((feature) => (
+                          <XStack
+                            key={feature}
+                            alignItems="flex-start"
+                            gap="$2"
+                          >
+                            <Text color="$primary" paddingTop="$0.5">
+                              <Check size={14} />
+                            </Text>
+                            <Text
+                              color="$textPrimary"
+                              flex={1}
+                              fontSize="$3"
+                              lineHeight={surface.row.subtitleLineHeight}
+                            >
+                              {feature}
+                            </Text>
+                          </XStack>
+                        ))}
+                      </YStack>
+                      {hasHiddenPlanFeatures ? (
+                        <Button
+                          alignSelf="flex-start"
+                          backgroundColor="transparent"
+                          borderColor="transparent"
+                          borderRadius={999}
+                          borderWidth={0}
+                          chromeless
+                          minHeight={32}
+                          onPress={() => setFeaturesExpanded((prev) => !prev)}
+                          paddingHorizontal="$0"
+                          pressStyle={{ opacity: 0.72 }}
+                        >
+                          <Text color="$primary" fontSize="$3" fontWeight="700">
+                            {featuresExpanded
+                              ? t("showLessFeatures")
+                              : t("showMoreFeatures", {
+                                  count: selectedPlanFeatures.length - visiblePlanFeatures.length,
+                                })}
+                          </Text>
+                        </Button>
+                      ) : null}
+                    </YStack>
+                  ) : null}
 
                   {shouldShowPrimaryAction || selectedPlan.availability === "selfServe" ? (
                     <YStack gap="$2">

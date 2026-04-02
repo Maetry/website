@@ -13,7 +13,7 @@ export async function GET(request: NextRequest, context: RouteParams) {
   try {
     const rawLinkId = segments.join("/");
     const linkId = validateId(rawLinkId, "linkId");
-    const path = `/marketing/campaigns/by-link/${encodeURIComponent(linkId)}`;
+    const path = `/v1/marketing/campaigns/by-link/${encodeURIComponent(linkId)}`;
 
     return proxyApiRequest({
       method: "GET",

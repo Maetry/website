@@ -1,5 +1,3 @@
-import Script from "next/script";
-
 import { HomeExperience } from "@/features/home-experience";
 import { buildExperienceSchemas } from "@/lib/home-experience";
 
@@ -14,7 +12,7 @@ export async function BusinessMarketingView({
 
   return (
     <>
-      <Script
+      <script
         id="maetry-business-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
