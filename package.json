@@ -25,7 +25,6 @@
     "@tanstack/query-sync-storage-persister": "^5.95.2",
     "@tanstack/react-query": "^5.95.2",
     "@tanstack/react-query-persist-client": "^5.95.2",
-    "@telegram-apps/telegram-ui": "^2.1.13",
     "@xstate/react": "^6.1.0",
     "firebase": "^12.6.0",
     "flag-icons": "^7.5.0",
