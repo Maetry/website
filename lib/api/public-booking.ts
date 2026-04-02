@@ -302,6 +302,18 @@ export async function registerLinkClick(
   });
 }
 
+export async function resolveShortLink(
+  nanoId: string,
+  { signal }: RequestOptions = {},
+): Promise<PublicClickResponse> {
+  return clientApiRequest<PublicClickResponse>({
+    endpoint: `/api/links/${encodeURIComponent(nanoId)}/resolve`,
+    method: "POST",
+    body: buildClickMetadata(),
+    signal,
+  });
+}
+
 export async function getPublicSalonProfile(
   salonId: string,
   { locale, signal }: RequestOptions = {},

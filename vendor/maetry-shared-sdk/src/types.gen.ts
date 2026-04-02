@@ -783,7 +783,22 @@ export type BillingCatalogResponse = {
     plans: Array<BillingCatalogPlan>;
 };
 
+export type BillingCheckoutSession = {
+    url: string;
+    quotedTotalPrice?: Price | null;
+};
+
+export type BillingCheckoutSessionRequest = {
+    plan: BillingPlanCode;
+    interval: BillingPlanInterval;
+};
+
 export type BillingPlanInterval = 'monthly' | 'yearly';
+
+export type BillingPlanChangeRequest = {
+    plan: BillingPlanCode;
+    interval: BillingPlanInterval;
+};
 
 export type BillingPlanAvailability = 'free' | 'selfServe' | 'contactSales';
 
@@ -817,6 +832,35 @@ export type BillingSeatTier = {
     seatPrice: Price;
 };
 
+export type BillingSession = {
+    /**
+     * Short-lived signed billing session token.
+     */
+    session: string;
+    /**
+     * Expiration timestamp for the billing session token.
+     */
+    expiresAt: string;
+};
+
+export type BillingSessionContext = {
+    /**
+     * Device identifier bound to the billing session.
+     */
+    deviceId: string;
+    /**
+     * Salon bound to the billing session.
+     */
+    salonId: string;
+};
+
+export type BillingSessionResolveRequest = {
+    /**
+     * Short-lived signed billing session token.
+     */
+    session: string;
+};
+
 export type BillingSmsCreditPack = {
     id: string;
     title: string;
@@ -825,21 +869,12 @@ export type BillingSmsCreditPack = {
     expiresAtPeriodEnd: boolean;
 };
 
-export type BillingSubscriptionInstructionsRequest = {
-    plan: BillingPlanCode;
-    interval: BillingPlanInterval;
-    recipientEmail: string;
+export type BillingSubscriptionCancelRequest = {
+    /**
+     * Если `true`, backend может попытаться выполнить immediate cancellation. Если поле отсутствует, применяется default policy cancel at period end.
+     */
+    immediate?: boolean | null;
 };
-
-export type BillingSubscriptionInstructionsResponse = {
-    recipientEmail: string;
-    plan: BillingPlanCode;
-    interval: BillingPlanInterval;
-    status: BillingSubscriptionInstructionsStatus;
-    quotedTotalPrice?: Price | null;
-};
-
-export type BillingSubscriptionInstructionsStatus = 'queued' | 'sent';
 
 export type BillingSubscriptionSnapshot = {
     title: string;
@@ -888,6 +923,10 @@ export type ClickResponsesMagicLink = {
     nanoId: string;
     kind: MagicLinkKind;
     payload?: MagicLinkPayload;
+    appTarget?: LinkAppTarget;
+    appUrl?: string;
+    fallbackTarget?: LinkFallbackTarget;
+    fallbackUrl?: string;
     isOneTime: boolean;
     expiresAt?: string;
     usedAt?: string;
@@ -1507,6 +1546,10 @@ export type MagicLinkPayload = {
     salonId?: string;
 };
 
+export type LinkAppTarget = 'consumer' | 'console' | 'booking';
+
+export type LinkFallbackTarget = 'webBooking' | 'appStore' | 'playStore' | 'unsupported';
+
 export type ModelProfileStatus = 'active' | 'suspended';
 
 export type Gender = 'male' | 'female';
@@ -1642,39 +1685,23 @@ export type MarketingCampaignParametersUpdate = {
     description?: string;
 };
 
-export type BillingSessionResolveRequest = {
-    /**
-     * Short-lived signed billing session token.
-     */
-    session: string;
-};
-
-export type BillingSessionContext = {
-    /**
-     * Device identifier bound to the billing session.
-     */
-    deviceId: string;
-    /**
-     * Salon bound to the billing session.
-     */
-    salonId: string;
-};
-
 /**
  * Параметры создания public booking.
  * Используются только канонические поля `clientName` / `clientPhone`.
+ * Ровно одно из `procedureId` или `complexId` должно быть передано.
+ * `executorId` допустим только вместе с `procedureId`.
  */
-export type PublicBookingParametersCreate = unknown & unknown & {
+export type PublicBookingParametersCreate = {
     /**
      * Имя клиента.
      */
-    clientName?: string;
+    clientName: string;
     /**
      * Телефон клиента.
      */
-    clientPhone?: string;
+    clientPhone: string;
     /**
-     * Идентификатор процедуры для одиночной записи.
+     * Идентификатор процедуры для одиночной записи. Должен быть передан, если не передан `complexId`.
      */
     procedureId?: string;
     /**
@@ -1682,7 +1709,7 @@ export type PublicBookingParametersCreate = unknown & unknown & {
      */
     executorId?: string;
     /**
-     * Идентификатор комплекса.
+     * Идентификатор комплекса. Должен быть передан, если не передан `procedureId`.
      */
     complexId?: string;
     time: SafeDateInterval;
@@ -1699,17 +1726,6 @@ export type SalonResponsesMaster = {
     nickname: string;
     logo: string;
     position: string;
-};
-
-export type BillingSession = {
-    /**
-     * Short-lived signed billing session token.
-     */
-    session: string;
-    /**
-     * Expiration timestamp for the billing session token.
-     */
-    expiresAt: string;
 };
 
 export type SchedulePatternWeekly = {
@@ -5433,63 +5449,8 @@ export type PostWorkspaceBillingSessionResponses = {
 
 export type PostWorkspaceBillingSessionResponse = PostWorkspaceBillingSessionResponses[keyof PostWorkspaceBillingSessionResponses];
 
-export type PostWorkspaceBillingRecomputeSeatsData = {
-    body?: never;
-    headers: {
-        /**
-         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
-         */
-        'Device-ID': string;
-    };
-    path?: never;
-    query?: never;
-    url: '/v1/workspace/billing/recompute-seats';
-};
-
-export type PostWorkspaceBillingRecomputeSeatsErrors = {
-    /**
-     * Bad request
-     */
-    400: ApiError;
-    /**
-     * Unauthorized
-     */
-    401: ApiError;
-    /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
-     * Not found
-     */
-    404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
-    /**
-     * Internal server error
-     */
-    default: ApiError;
-};
-
-export type PostWorkspaceBillingRecomputeSeatsError = PostWorkspaceBillingRecomputeSeatsErrors[keyof PostWorkspaceBillingRecomputeSeatsErrors];
-
-export type PostWorkspaceBillingRecomputeSeatsResponses = {
-    /**
-     * Updated billing summary after recomputing billable seats.
-     */
-    200: BillingSummary;
-};
-
-export type PostWorkspaceBillingRecomputeSeatsResponse = PostWorkspaceBillingRecomputeSeatsResponses[keyof PostWorkspaceBillingRecomputeSeatsResponses];
-
-export type PostWorkspaceBillingSubscriptionInstructionsData = {
-    body: BillingSubscriptionInstructionsRequest;
+export type PostWorkspaceBillingCheckoutSessionData = {
+    body: BillingCheckoutSessionRequest;
     headers: {
         /**
          * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
@@ -5510,10 +5471,10 @@ export type PostWorkspaceBillingSubscriptionInstructionsData = {
     };
     path?: never;
     query?: never;
-    url: '/v1/workspace/billing/subscription-instructions';
+    url: '/v1/workspace/billing/checkout-session';
 };
 
-export type PostWorkspaceBillingSubscriptionInstructionsErrors = {
+export type PostWorkspaceBillingCheckoutSessionErrors = {
     /**
      * Bad request
      */
@@ -5544,16 +5505,150 @@ export type PostWorkspaceBillingSubscriptionInstructionsErrors = {
     default: ApiError;
 };
 
-export type PostWorkspaceBillingSubscriptionInstructionsError = PostWorkspaceBillingSubscriptionInstructionsErrors[keyof PostWorkspaceBillingSubscriptionInstructionsErrors];
+export type PostWorkspaceBillingCheckoutSessionError = PostWorkspaceBillingCheckoutSessionErrors[keyof PostWorkspaceBillingCheckoutSessionErrors];
 
-export type PostWorkspaceBillingSubscriptionInstructionsResponses = {
+export type PostWorkspaceBillingCheckoutSessionResponses = {
     /**
-     * Subscription instructions queued or sent.
+     * Hosted checkout session created for the active workplace.
      */
-    202: BillingSubscriptionInstructionsResponse;
+    200: BillingCheckoutSession;
 };
 
-export type PostWorkspaceBillingSubscriptionInstructionsResponse = PostWorkspaceBillingSubscriptionInstructionsResponses[keyof PostWorkspaceBillingSubscriptionInstructionsResponses];
+export type PostWorkspaceBillingCheckoutSessionResponse = PostWorkspaceBillingCheckoutSessionResponses[keyof PostWorkspaceBillingCheckoutSessionResponses];
+
+export type PostWorkspaceBillingChangePlanData = {
+    body: BillingPlanChangeRequest;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+        /**
+         * Ключ идемпотентности для безопасного повтора неидемпотентных запросов.
+         * Клиент передаёт один и тот же ключ при повторе — сервер должен вернуть тот же результат, не выполняя операцию повторно.
+         *
+         * Реализация на сервере:
+         * - При первом запросе с ключом сохранить ключ в хранилище (например Redis/БД) вместе с ответом (status + body) и временем создания.
+         * - Хранить запись не менее 24 часов (рекомендуется).
+         * - При повторном запросе с тем же ключом в течение срока хранения вернуть сохранённый ответ (тот же status code и body), не выполняя операцию снова.
+         * - Ключ привязать к паре (user/device + ключ) или к ключу глобально — в зависимости от требований.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/workspace/billing/change-plan';
+};
+
+export type PostWorkspaceBillingChangePlanErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PostWorkspaceBillingChangePlanError = PostWorkspaceBillingChangePlanErrors[keyof PostWorkspaceBillingChangePlanErrors];
+
+export type PostWorkspaceBillingChangePlanResponses = {
+    /**
+     * Billing summary after changing the current subscription plan.
+     */
+    200: BillingSummary;
+};
+
+export type PostWorkspaceBillingChangePlanResponse = PostWorkspaceBillingChangePlanResponses[keyof PostWorkspaceBillingChangePlanResponses];
+
+export type PostWorkspaceBillingCancelData = {
+    body: BillingSubscriptionCancelRequest;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+        /**
+         * Ключ идемпотентности для безопасного повтора неидемпотентных запросов.
+         * Клиент передаёт один и тот же ключ при повторе — сервер должен вернуть тот же результат, не выполняя операцию повторно.
+         *
+         * Реализация на сервере:
+         * - При первом запросе с ключом сохранить ключ в хранилище (например Redis/БД) вместе с ответом (status + body) и временем создания.
+         * - Хранить запись не менее 24 часов (рекомендуется).
+         * - При повторном запросе с тем же ключом в течение срока хранения вернуть сохранённый ответ (тот же status code и body), не выполняя операцию снова.
+         * - Ключ привязать к паре (user/device + ключ) или к ключу глобально — в зависимости от требований.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/workspace/billing/cancel';
+};
+
+export type PostWorkspaceBillingCancelErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PostWorkspaceBillingCancelError = PostWorkspaceBillingCancelErrors[keyof PostWorkspaceBillingCancelErrors];
+
+export type PostWorkspaceBillingCancelResponses = {
+    /**
+     * Billing summary after scheduling or performing subscription cancellation.
+     */
+    200: BillingSummary;
+};
+
+export type PostWorkspaceBillingCancelResponse = PostWorkspaceBillingCancelResponses[keyof PostWorkspaceBillingCancelResponses];
 
 export type GetWorkspaceBillingSummaryData = {
     body?: never;

@@ -201,35 +201,20 @@ export function middleware(req: NextRequest) {
   const encodedTracking = processTrackingParams(req, pathname);
 
   // 1. Обработка shortlink хоста (link.maetry.com)
-  // Публичные шаблоны: /b/{nano} booking, /ci/{nano} client invite, /si/{nano} staff invite (Console),
-  // либо легаси /{nano} → rewrite на /{locale}/link/{nano}
+  // Канонический публичный формат: /{nanoId}
   if (isShortlinkHost(host)) {
-    // Если путь уже начинается с /{locale}/link/, просто пропускаем дальше
-    if (LOCALE_PREFIX_PATTERN.test(pathname) && pathname.includes('/link/')) {
-      const response = NextResponse.next();
-      if (encodedTracking) {
-        setTrackingCookie(response, encodedTracking);
-      }
-      return response;
+    const segments = pathname.split('/').filter(Boolean);
+    const linkSegments = segments[0] === 'link' ? segments.slice(1) : segments;
+
+    if (linkSegments.length !== 1) {
+      return NextResponse.next();
     }
 
-    // Определяем локаль и делаем rewrite на /{locale}/link/… (см. [[...slug]])
     const locale = getLocaleFromRequest(req);
-    const cleanPathname = pathname === '/' ? pathname : pathname.replace(/\/$/, '');
     const rewriteUrl = req.nextUrl.clone();
-    
-    // Если путь уже начинается с /link/, убираем префикс
-    if (pathname.startsWith('/link/')) {
-      const linkPath = pathname.replace('/link/', '');
-      rewriteUrl.pathname = `/${locale}/link/${linkPath}`;
-    } else {
-      // Иначе добавляем /link/
-      rewriteUrl.pathname = `/${locale}/link${cleanPathname}`;
-    }
-    
+    rewriteUrl.pathname = `/${locale}/link/${linkSegments[0]}`;
+
     const response = NextResponse.rewrite(rewriteUrl);
-    
-    // Устанавливаем cookies
     setLocaleCookie(response, locale);
     if (encodedTracking) {
       setTrackingCookie(response, encodedTracking);

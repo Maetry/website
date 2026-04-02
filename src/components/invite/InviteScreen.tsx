@@ -13,6 +13,7 @@ import phones from "@/public/images/phones_customer.png";
 
 type InviteScreenProps = {
   kind: LinkKind;
+  storeUrl?: string | null;
 };
 
 const APP_STORE_BASE_URL = "https://apps.apple.com/app/id6746678571";
@@ -40,7 +41,7 @@ function buildAppStoreUrl(utm?: {
   return url.toString();
 }
 
-const InviteScreen = ({ kind }: InviteScreenProps) => {
+const InviteScreen = ({ kind, storeUrl }: InviteScreenProps) => {
   const t = useTranslations("invite");
   const tracking = useTracking();
 
@@ -68,7 +69,7 @@ const InviteScreen = ({ kind }: InviteScreenProps) => {
     }
 
     // Переходим в App Store с UTM параметрами
-    const appStoreUrl = buildAppStoreUrl(utm);
+    const appStoreUrl = storeUrl ?? buildAppStoreUrl(utm);
     window.location.href = appStoreUrl;
   };
 

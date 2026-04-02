@@ -5,90 +5,25 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { InviteScreen } from "@/components/invite";
-import { ApiError, NotFoundError } from "@/lib/api/error-handler";
-import {
-  PublicMarketingCampaign,
-  getCampaignByLink,
-  registerLinkClick,
-} from "@/lib/api/public-booking";
+import { ApiError } from "@/lib/api/error-handler";
+import { resolveShortLink, type PublicClickResponse } from "@/lib/api/public-booking";
 import type { LinkKind } from "@/lib/api/shortLink";
 
 type LinkHandlerProps = {
-  /** Полный путь ссылки: `nanoId`, `b/nanoId`, `ci/nanoId`, `si/nanoId`. */
-  linkPath: string;
-  locale: string;
+  nanoId: string;
+};
+
+type InviteState = {
+  kind: Exclude<LinkKind, "marketing">;
+  storeUrl: string | null;
 };
 
 type LinkState =
   | { status: "loading" }
-  | {
-      status: "invite";
-      kind: Exclude<LinkKind, "marketing">;
-    }
-  | {
-      status: "error";
-      message: string;
-    };
+  | { status: "invite"; invite: InviteState }
+  | { status: "error"; message: string };
 
-function readTrackingIdFromLocation() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return new URLSearchParams(window.location.search).get("trackingId");
-}
-
-function readNanoIdFromLinkPath(linkPath: string) {
-  const segments = linkPath.split("/").filter(Boolean);
-  return segments.at(-1) ?? linkPath;
-}
-
-function getBookingOrigin() {
-  if (typeof window === "undefined") {
-    return "";
-  }
-
-  const configuredShortlinkHost =
-    process.env.NEXT_PUBLIC_SHORTLINK_HOST || "link.maetry.com";
-  const shortlinkHost = configuredShortlinkHost
-    .replace(/^https?:\/\//, "")
-    .split("/")[0];
-
-  if (
-    window.location.hostname === shortlinkHost ||
-    window.location.hostname.includes(shortlinkHost)
-  ) {
-    const mainHost = window.location.hostname.replace(/^link\./, "");
-    return `${window.location.protocol}//${mainHost}`;
-  }
-
-  return window.location.origin;
-}
-
-function buildBookingRedirectUrl(
-  locale: string,
-  salonId: string,
-  nanoId: string,
-  trackingId: string | null,
-) {
-  const url = new URL(
-    `/${locale}/booking/${encodeURIComponent(salonId)}`,
-    getBookingOrigin(),
-  );
-
-  url.searchParams.set("nanoid", nanoId);
-
-  if (trackingId) {
-    url.searchParams.set("trackingId", trackingId);
-  }
-
-  return url.toString();
-}
-
-function resolveLinkError(
-  error: unknown,
-  fallbackMessage: string,
-) {
+function resolveLinkError(error: unknown, fallbackMessage: string) {
   if (error instanceof ApiError && error.message) {
     return error.message;
   }
@@ -100,42 +35,116 @@ function resolveLinkError(
   return fallbackMessage;
 }
 
-/**
- * Обработка link.maetry.com (и /{locale}/link/…):
- * 1) Сразу регистрируем клик с fingerprint в теле запроса — бэкенд может сопоставить установку приложения.
- * 2) Затем подгружаем кампанию (маркетинг) или ветвимся по kind из ответа клика (инвайты).
- */
-export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
+function isInviteKind(kind: LinkKind): kind is Exclude<LinkKind, "marketing"> {
+  return kind === "clientInvite" || kind === "employeeInvite";
+}
+
+function resolveInviteStoreUrl(response: PublicClickResponse): string | null {
+  if (
+    (response.fallbackTarget === "appStore" || response.fallbackTarget === "playStore")
+    && response.fallbackUrl
+  ) {
+    return response.fallbackUrl;
+  }
+
+  return null;
+}
+
+function openAppWithFallback(
+  response: PublicClickResponse,
+  onInviteFallback: (invite: InviteState) => void,
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (!response.appUrl) {
+    if (isInviteKind(response.kind)) {
+      onInviteFallback({
+        kind: response.kind,
+        storeUrl: resolveInviteStoreUrl(response),
+      });
+      return;
+    }
+
+    if (response.fallbackUrl) {
+      window.location.replace(response.fallbackUrl);
+    }
+    return;
+  }
+
+  let finished = false;
+  let didHide = false;
+
+  const cleanup = () => {
+    finished = true;
+    window.clearTimeout(timeoutId);
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+    window.removeEventListener("pagehide", handlePageHide);
+    window.removeEventListener("blur", handleBlur);
+  };
+
+  const fallback = () => {
+    if (finished || didHide) {
+      cleanup();
+      return;
+    }
+
+    cleanup();
+
+    if (response.fallbackTarget === "webBooking" && response.fallbackUrl) {
+      window.location.replace(response.fallbackUrl);
+      return;
+    }
+
+    if (isInviteKind(response.kind)) {
+      onInviteFallback({
+        kind: response.kind,
+        storeUrl: resolveInviteStoreUrl(response),
+      });
+      return;
+    }
+
+    if (response.fallbackUrl) {
+      window.location.replace(response.fallbackUrl);
+    }
+  };
+
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      didHide = true;
+      cleanup();
+    }
+  };
+
+  const handlePageHide = () => {
+    didHide = true;
+    cleanup();
+  };
+
+  const handleBlur = () => {
+    didHide = true;
+  };
+
+  const timeoutId = window.setTimeout(fallback, 1400);
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  window.addEventListener("pagehide", handlePageHide);
+  window.addEventListener("blur", handleBlur);
+
+  window.location.assign(response.appUrl);
+}
+
+export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
   const t = useTranslations("linkHandler");
   const [state, setState] = useState<LinkState>({ status: "loading" });
 
   useEffect(() => {
     const controller = new AbortController();
 
-    const redirectToBooking = (
-      campaign: PublicMarketingCampaign | null,
-      salonIdFromClick?: string | null,
-    ) => {
-      const trackingId = readTrackingIdFromLocation();
-      const salonId = campaign?.salonId ?? salonIdFromClick;
-      const nanoId = readNanoIdFromLinkPath(linkPath);
-
-      if (!salonId) {
-        setState({
-          message: t("errorCampaign"),
-          status: "error",
-        });
-        return;
-      }
-
-      window.location.replace(
-        buildBookingRedirectUrl(locale, salonId, nanoId, trackingId),
-      );
-    };
-
     const run = async () => {
       try {
-        const click = await registerLinkClick(linkPath, {
+        const response = await resolveShortLink(nanoId, {
           signal: controller.signal,
         });
 
@@ -143,42 +152,12 @@ export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
           return;
         }
 
-        if (click.kind === "employeeInvite" || click.kind === "clientInvite") {
+        openAppWithFallback(response, (invite) => {
           setState({
-            kind: click.kind,
+            invite,
             status: "invite",
           });
-          return;
-        }
-
-        try {
-          const campaign = await getCampaignByLink(linkPath, {
-            signal: controller.signal,
-          });
-
-          if (controller.signal.aborted) {
-            return;
-          }
-
-          redirectToBooking(campaign, click.payload?.salonId);
-        } catch (error) {
-          if (controller.signal.aborted) {
-            return;
-          }
-
-          if (
-            error instanceof NotFoundError ||
-            (error instanceof ApiError && error.status === 404)
-          ) {
-            redirectToBooking(null, click.payload?.salonId);
-            return;
-          }
-
-          setState({
-            message: resolveLinkError(error, t("errorProcessing")),
-            status: "error",
-          });
-        }
+        });
       } catch (error) {
         if (controller.signal.aborted) {
           return;
@@ -196,7 +175,7 @@ export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
     return () => {
       controller.abort();
     };
-  }, [linkPath, locale, t]);
+  }, [nanoId, t]);
 
   if (state.status === "loading") {
     return (
@@ -239,9 +218,10 @@ export const LinkHandler = ({ linkPath, locale }: LinkHandlerProps) => {
     );
   }
 
-  if (state.status === "invite") {
-    return <InviteScreen kind={state.kind} />;
-  }
-
-  return null;
+  return (
+    <InviteScreen
+      kind={state.invite.kind}
+      storeUrl={state.invite.storeUrl}
+    />
+  );
 };
