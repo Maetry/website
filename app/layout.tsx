@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { Manrope } from "next/font/google";
 import Script from "next/script";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "@/styles/globals.css";
 import { getThemeInitializationScript } from "@/shared/ui/theme-switcher/theme";
@@ -25,8 +26,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" sizes="16x16" href="/images/favicon.png" />
         <link rel="icon" sizes="32x32" href="/images/favicon.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <Script
           id="theme-init"
           strategy="beforeInteractive"
@@ -37,6 +40,7 @@ export default function RootLayout({
       </head>
       <body className="dark:bg-dark-bg dark:text-dark-text flex flex-col relative">
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );

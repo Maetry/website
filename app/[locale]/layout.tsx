@@ -48,7 +48,13 @@ export async function generateMetadata({
     title: "Maetry",
     description: metadata.description,
     icons: {
-      icon: "/images/favicon.png",
+      icon: [
+        { url: "/favicon.ico" },
+        { url: "/images/favicon.png", type: "image/png" },
+      ],
+      apple: [
+        { url: "/apple-touch-icon.png" },
+      ],
     },
   };
 }

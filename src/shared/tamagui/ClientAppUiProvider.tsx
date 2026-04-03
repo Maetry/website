@@ -2,7 +2,6 @@
 
 import {
   useEffect,
-  useMemo,
   useState,
   type ReactNode,
   type SyntheticEvent,
@@ -107,14 +106,15 @@ export function ClientAppUiProvider({ children }: ClientAppUiProviderProps) {
   const ssrPlatform: ClientPlatformVariant = platformInfo.isAndroid
     ? "android"
     : "ios";
+  const [platform, setPlatform] = useState<ClientPlatformVariant>(ssrPlatform);
 
-  const platform = useMemo(
-    () =>
-      typeof window === "undefined"
-        ? ssrPlatform
-        : getClientPlatformVariant(detectClientAdaptivePlatform()),
-    [ssrPlatform],
-  );
+  useEffect(() => {
+    const clientPlatform = getClientPlatformVariant(detectClientAdaptivePlatform());
+
+    setPlatform((currentPlatform) =>
+      currentPlatform === clientPlatform ? currentPlatform : clientPlatform,
+    );
+  }, []);
 
   return (
     <Theme name={getClientAppThemeSubName(platform)}>

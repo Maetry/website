@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/generate-billing-plan-features.mjs && next dev",
+    "dev": "API_TARGET=local node scripts/generate-billing-plan-features.mjs && API_TARGET=local next dev --turbopack",
+    "dev:stage": "API_TARGET=stage node scripts/generate-billing-plan-features.mjs && API_TARGET=stage next dev --turbopack",
     "build": "node scripts/generate-billing-plan-features.mjs && next build",
     "start": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --report-unused-disable-directives --max-warnings=0",
