@@ -17,6 +17,12 @@ import {
 
 import { locales, isSupportedLocale, type Locale } from '../../i18n';
 
+const SHORTLINK_HOST = process.env.NEXT_PUBLIC_SHORTLINK_HOST ?? "link.maetry.com";
+
+function normalizeHost(host: string): string {
+  return host.replace(/^https?:\/\//, "");
+}
+
 const localeMetadata: Record<Locale, { description: string }> = {
   en: {
     description: "Salon management software and beauty booking marketplace",
@@ -66,6 +72,8 @@ export default async function LocaleLayout({
   const { locale } = await params;
   const headersList = await headers();
   const userAgent = headersList.get("user-agent") ?? "";
+  const host = headersList.get("host") ?? "";
+  const isShortlinkSurface = normalizeHost(host) === normalizeHost(SHORTLINK_HOST);
 
   // Проверяем, что локаль поддерживается
   if (!isSupportedLocale(locale)) {
@@ -81,10 +89,14 @@ export default async function LocaleLayout({
           <ThemeBootstrap />
           <PlatformProvider userAgent={userAgent}>
             <FirebaseTracker />
-            <MarketingProviders>
-              {children}
-              <GlobalMarketingFooter locale={locale} />
-            </MarketingProviders>
+            {isShortlinkSurface ? (
+              children
+            ) : (
+              <MarketingProviders>
+                {children}
+                <GlobalMarketingFooter locale={locale} />
+              </MarketingProviders>
+            )}
           </PlatformProvider>
         </AppThemeProvider>
       </QueryProvider>

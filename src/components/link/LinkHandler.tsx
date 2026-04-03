@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -146,11 +146,13 @@ function LinkStatusScreen({
   action,
   description,
   icon,
+  plain,
   title,
 }: {
   action?: React.ReactNode;
   description: string;
   icon: React.ReactNode;
+  plain?: boolean;
   title: string;
 }) {
   const platformInfo = usePlatform();
@@ -170,10 +172,6 @@ function LinkStatusScreen({
       >
         <YStack
           alignItems="center"
-          backgroundColor="$cardBackground"
-          borderColor="$separator"
-          borderRadius={surface.visit.cardRadius}
-          borderWidth={1}
           gap="$3"
           maxWidth={420}
           paddingHorizontal="$5"
@@ -181,26 +179,28 @@ function LinkStatusScreen({
           width="100%"
         >
           {icon}
-          <YStack alignItems="center" gap="$2">
-            <Text
-              color="$textPrimary"
-              fontSize={surface.state.titleFontSize}
-              fontWeight="700"
-              lineHeight={surface.state.titleLineHeight}
-              textAlign="center"
-            >
-              {title}
-            </Text>
-            <Paragraph
-              color="$textSecondary"
-              fontSize={surface.state.descriptionFontSize}
-              lineHeight={surface.state.descriptionLineHeight}
-              maxWidth={320}
-              textAlign="center"
-            >
-              {description}
-            </Paragraph>
-          </YStack>
+          {plain ? null : (
+            <YStack alignItems="center" gap="$2">
+              <Text
+                color="$textPrimary"
+                fontSize={surface.state.titleFontSize}
+                fontWeight="700"
+                lineHeight={surface.state.titleLineHeight}
+                textAlign="center"
+              >
+                {title}
+              </Text>
+              <Paragraph
+                color="$textSecondary"
+                fontSize={surface.state.descriptionFontSize}
+                lineHeight={surface.state.descriptionLineHeight}
+                maxWidth={320}
+                textAlign="center"
+              >
+                {description}
+              </Paragraph>
+            </YStack>
+          )}
           {action}
         </YStack>
       </YStack>
@@ -210,13 +210,7 @@ function LinkStatusScreen({
 
 export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
   const t = useTranslations("linkHandler");
-  const bookingT = useTranslations("booking");
   const [state, setState] = useState<LinkState>({ status: "loading" });
-
-  const loadingDescription = useMemo(
-    () => bookingT("successBookingHint"),
-    [bookingT],
-  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -259,9 +253,10 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
   if (state.status === "loading") {
     return (
       <LinkStatusScreen
-        description={loadingDescription}
         icon={<Spinner size="large" color="$primary" />}
-        title={bookingT("loading.confirmation")}
+        plain
+        title=""
+        description=""
       />
     );
   }
