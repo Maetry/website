@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -77,6 +77,22 @@ function parseFeatureTitles(source) {
 }
 
 async function main() {
+  try {
+    await access(sourcePath);
+  } catch {
+    try {
+      await access(outputPath);
+      console.warn(
+        `Billing plans source not found at ${sourcePath}. Using committed generated file.`,
+      );
+      return;
+    } catch {
+      throw new Error(
+        `Billing plans source not found at ${sourcePath}, and generated fallback is missing at ${outputPath}.`,
+      );
+    }
+  }
+
   const source = await readFile(sourcePath, "utf8");
   const featuresByPlan = parseFeatureTitles(source);
 
