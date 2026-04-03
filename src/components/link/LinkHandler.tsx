@@ -163,7 +163,6 @@ function LinkStatusScreen({
     <Theme name={getClientAppThemeSubName(platform)}>
       <YStack
         alignItems="center"
-        backgroundColor="$appBackground"
         flex={1}
         justifyContent="center"
         minHeight="100dvh"
