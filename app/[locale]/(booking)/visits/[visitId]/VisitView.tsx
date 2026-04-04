@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   Clock3,
   MapPin,
-  Smartphone,
   WalletCards,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -62,12 +61,13 @@ function VisitInfoRow({
   const surface = getBookingSurfaceStyle(platform);
 
   return (
-    <XStack alignItems="flex-start" gap="$3">
+    <XStack alignItems="center" gap="$2">
       {icon ? (
         <XStack
           alignItems="center"
           backgroundColor="$primarySoft"
           borderRadius={surface.visit.iconBadgeRadius}
+          flexShrink={0}
           height={surface.visit.iconBadgeSize}
           justifyContent="center"
           width={surface.visit.iconBadgeSize}
@@ -75,13 +75,13 @@ function VisitInfoRow({
           <Text color="$primary">{icon}</Text>
         </XStack>
       ) : null}
-      <YStack flex={1} gap="$1">
-        <Text color="$textSecondary" fontSize="$2" fontWeight="600" textTransform="uppercase">
+      <YStack flex={1} gap={0}>
+        <Paragraph color="$textSecondary" marginBottom={0} marginTop={0}>
           {label}
-        </Text>
-        <Text color="$textPrimary" fontSize="$5" fontWeight="600" lineHeight={22}>
+        </Paragraph>
+        <Paragraph color="$textPrimary" flex={1} marginBottom={0} marginTop={0}>
           {value || "—"}
-        </Text>
+        </Paragraph>
       </YStack>
     </XStack>
   );
@@ -246,10 +246,6 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const handleOpenInApp = () => {
-    window.location.href = APP_STORE_URL;
-  };
-
   const handleDownloadApp = () => {
     openExternal(APP_STORE_URL);
   };
@@ -395,47 +391,49 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
             </XStack>
           </YStack>
 
-          <YStack gap="$2.5">
-            <Button
-              alignItems="center"
-              backgroundColor="$primary"
-              borderRadius={16}
-              justifyContent="center"
-              onPress={handleOpenInApp}
-              paddingVertical="$3.5"
-              pressStyle={{ opacity: 0.9 }}
+          <a
+            href={APP_STORE_URL}
+            rel="noopener noreferrer"
+            target="_blank"
+            aria-label={t("successDownloadApp")}
+            onClick={(event) => {
+              event.preventDefault();
+              handleDownloadApp();
+            }}
+            style={{
+              backgroundColor: "#13131A",
+              borderRadius: 16,
+              display: "block",
+              overflow: "hidden",
+              width: "100%",
+            }}
+          >
+            <div
+              style={{
+                alignItems: "center",
+                display: "flex",
+                height: 52,
+                justifyContent: "center",
+                width: "100%",
+              }}
             >
-              <XStack alignItems="center" gap="$2.5">
-                <Text color="white">
-                  <Smartphone size={18} />
-                </Text>
-                <Text color="white" fontSize="$5" fontWeight="700">
-                  {t("successOpenApp")}
-                </Text>
-              </XStack>
-            </Button>
-
-            <XStack justifyContent="center">
-              <a
-                href={APP_STORE_URL}
-                rel="noopener noreferrer"
-                target="_blank"
-                aria-label={t("successDownloadApp")}
-                onClick={(event) => {
-                  event.preventDefault();
-                  handleDownloadApp();
+              <Image
+                alt={t("successDownloadApp")}
+                height={41}
+                priority={false}
+                src={appStoreBadge}
+                style={{
+                  display: "block",
+                  height: "auto",
+                  maxHeight: 52,
+                  maxWidth: "100%",
+                  objectFit: "contain",
+                  width: "auto",
                 }}
-                style={{ display: "inline-flex" }}
-              >
-                <Image
-                  alt={t("successDownloadApp")}
-                  priority={false}
-                  src={appStoreBadge}
-                  style={{ height: 50, width: "auto" }}
-                />
-              </a>
-            </XStack>
-          </YStack>
+                width={140}
+              />
+            </div>
+          </a>
         </YStack>
 
         <YStack

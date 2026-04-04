@@ -71,8 +71,10 @@ import {
   formatSlotSummaryTitle,
   getDateKeyForTimeZone,
   getNightPeriodLabel,
+  BOOKING_UNCATEGORIZED_SERVICE_CATEGORY_ID,
   getProcedureSelectionKey,
   getTimeZoneParts,
+  inferProcedureCategoryFromTags,
   inferProcedureCategoryLabel,
   toTimeZoneIsoDate,
 } from "./date-utils";
@@ -102,6 +104,7 @@ export type ProcedureCategoryGroup = {
   groups: ProcedureGroup[];
   id: string;
   title: string;
+  grouping: "tag" | "inferred" | "uncategorized";
 };
 
 type TimePeriodKey = "morning" | "day" | "evening" | "night";
@@ -127,7 +130,7 @@ export type BookingFlow = {
   procedureCategories: ProcedureCategoryGroup[];
   selectedGroup: ProcedureGroup | null;
   selectedProcedure: Procedure | null;
-  expandedCategoryId: string | null;
+  expandedCategoryIds: string[];
 
   selectedSlot: SlotInterval | null;
   selectedDateKey: string | null;
@@ -157,7 +160,7 @@ export type BookingFlow = {
   setSelectedProcedureKey: Dispatch<SetStateAction<string | null>>;
   setSelectedSlot: Dispatch<SetStateAction<SlotInterval | null>>;
   setSelectedDateKey: Dispatch<SetStateAction<string | null>>;
-  setExpandedCategoryId: Dispatch<SetStateAction<string | null>>;
+  setExpandedCategoryIds: Dispatch<SetStateAction<string[]>>;
   setClientName: Dispatch<SetStateAction<string>>;
   setClientPhone: Dispatch<SetStateAction<string>>;
   setFormErrors: Dispatch<SetStateAction<{ name?: string; phone?: string }>>;
@@ -212,7 +215,7 @@ export function useBookingFlow({
   const {
     clientName,
     clientPhone,
-    expandedCategoryId,
+    expandedCategoryIds,
     formErrors,
     globalError,
     selectedDateKey,
@@ -318,29 +321,49 @@ export function useBookingFlow({
     return Array.from(groupsMap.values());
   }, [procedures]);
 
-  // Категории процедур
+  // Категории процедур: теги API → префикс в названии → общий список
   const procedureCategories = useMemo<ProcedureCategoryGroup[]>(() => {
     const grouped = new Map<string, ProcedureCategoryGroup>();
 
     procedureGroups.forEach((group) => {
-      const label = inferProcedureCategoryLabel(group) ?? "Services";
-      const key = label.toLowerCase();
-      const existing = grouped.get(key);
+      const fromTags = inferProcedureCategoryFromTags(group);
+      const inferredTitle = inferProcedureCategoryLabel(group);
+
+      let categoryId: string;
+      let title: string;
+      let grouping: ProcedureCategoryGroup["grouping"];
+
+      if (fromTags) {
+        categoryId = fromTags.categoryId;
+        title = fromTags.title;
+        grouping = "tag";
+      } else if (inferredTitle) {
+        categoryId = inferredTitle.toLowerCase();
+        title = inferredTitle;
+        grouping = "inferred";
+      } else {
+        categoryId = BOOKING_UNCATEGORIZED_SERVICE_CATEGORY_ID;
+        title = t("serviceCategoryFallback");
+        grouping = "uncategorized";
+      }
+
+      const existing = grouped.get(categoryId);
 
       if (existing) {
         existing.groups.push(group);
         return;
       }
 
-      grouped.set(key, {
+      grouped.set(categoryId, {
         groups: [group],
-        id: key,
-        title: label,
+        id: categoryId,
+        title,
+        grouping,
       });
     });
 
     return Array.from(grouped.values());
-  }, [procedureGroups]);
+  }, [procedureGroups, t]);
 
   const selectedGroup = useMemo(
     () =>
@@ -377,22 +400,18 @@ export function useBookingFlow({
     }
 
     if (!procedureCategories.length) {
-      send({ type: "SET_EXPANDED_CATEGORY", value: null });
+      if (expandedCategoryIds.length > 0) {
+        send({ type: "SET_EXPANDED_CATEGORY", value: [] });
+      }
       return;
     }
 
-    if (
-      !expandedCategoryId ||
-      !procedureCategories.some(
-        (category) => category.id === expandedCategoryId,
-      )
-    ) {
-      send({
-        type: "SET_EXPANDED_CATEGORY",
-        value: procedureCategories[0]?.id ?? null,
-      });
+    const validIds = new Set(procedureCategories.map((category) => category.id));
+    const next = expandedCategoryIds.filter((id) => validIds.has(id));
+    if (next.length !== expandedCategoryIds.length) {
+      send({ type: "SET_EXPANDED_CATEGORY", value: next });
     }
-  }, [expandedCategoryId, hasHydratedDraft, procedureCategories, send]);
+  }, [expandedCategoryIds, hasHydratedDraft, procedureCategories, send]);
 
   // Хэндлеры выбора
   const handleSelectGroup = (group: ProcedureGroup) => {
@@ -652,7 +671,7 @@ export function useBookingFlow({
         value: {
           clientName: draftSnapshot?.clientName ?? "",
           clientPhone: draftSnapshot?.clientPhone ?? "",
-          expandedCategoryId: draftSnapshot?.expandedCategoryId ?? null,
+          expandedCategoryIds: draftSnapshot?.expandedCategoryIds ?? [],
           formErrors: {},
           globalError: null,
           selectedDateKey: nextDateKey,
@@ -801,7 +820,8 @@ export function useBookingFlow({
       const data = await createPublicBooking(salonId, {
         clientName: trimmedName,
         clientPhone: normalizedPhone,
-        ...(selectedProcedure.masterId
+        // executorId только для одиночной процедуры (см. PublicBookingParametersCreate в SDK).
+        ...(selectedProcedure.kind === "procedure" && selectedProcedure.masterId
           ? { executorId: selectedProcedure.masterId }
           : {}),
         ...(selectedProcedure.kind === "complex"
@@ -939,7 +959,7 @@ export function useBookingFlow({
       clientName,
       clientPhone,
       currentStep: currentVisualStep,
-      expandedCategoryId,
+      expandedCategoryIds,
       locale,
       salonId,
       selectedDateKey,
@@ -966,7 +986,7 @@ export function useBookingFlow({
     clientName,
     clientPhone,
     currentVisualStep,
-    expandedCategoryId,
+    expandedCategoryIds,
     hasHydratedDraft,
     locale,
     salonId,
@@ -1004,10 +1024,10 @@ export function useBookingFlow({
     });
   };
 
-  const setExpandedCategoryId: Dispatch<SetStateAction<string | null>> = (value) => {
+  const setExpandedCategoryIds: Dispatch<SetStateAction<string[]>> = (value) => {
     send({
       type: "SET_EXPANDED_CATEGORY",
-      value: resolveSetterValue(value, expandedCategoryId),
+      value: resolveSetterValue(value, expandedCategoryIds),
     });
   };
 
@@ -1049,7 +1069,7 @@ export function useBookingFlow({
     procedureCategories,
     selectedGroup,
     selectedProcedure,
-    expandedCategoryId,
+    expandedCategoryIds,
 
     selectedSlot,
     selectedDateKey,
@@ -1079,7 +1099,7 @@ export function useBookingFlow({
     setSelectedProcedureKey,
     setSelectedSlot,
     setSelectedDateKey,
-    setExpandedCategoryId,
+    setExpandedCategoryIds,
     setClientName,
     setClientPhone,
     setFormErrors,

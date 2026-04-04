@@ -1115,7 +1115,9 @@ export function PublicBookingFlow({
         ...(selectedSelection.kind === "procedure"
           ? { procedureId: selectedSelection.id }
           : { complexId: selectedSelection.id }),
-        ...(selectedMasterId ? { executorId: selectedMasterId } : {}),
+        ...(selectedSelection.kind === "procedure" && selectedMasterId
+          ? { executorId: selectedMasterId }
+          : {}),
         ...(trackingId ? { trackingId } : {}),
         clientName: clientName.trim(),
         clientPhone: normalizedPhone,

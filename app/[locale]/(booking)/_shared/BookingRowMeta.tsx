@@ -1,6 +1,6 @@
 "use client";
 
-import { Text, YStack } from "tamagui";
+import { Text, YStack, useThemeName } from "tamagui";
 
 import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
 import type { BookingPlatformVariant } from "@/src/features/booking/utils/platform";
@@ -17,26 +17,37 @@ export function BookingRowMeta({
   price,
 }: BookingRowMetaProps) {
   const surface = getBookingSurfaceStyle(platform);
-  const values = [price, duration].filter(Boolean);
+  const themeName = useThemeName();
+  const priceAccentColor = themeName.includes("dark") ? "#32D74B" : "#34C759";
 
-  if (!values.length) {
+  if (!price && !duration) {
     return null;
   }
 
   return (
     <YStack alignItems="flex-end" gap="$1">
-      {values.map((value) => (
+      {price ? (
         <Text
-          key={value}
-          color="$textPrimary"
+          color={priceAccentColor}
+          fontSize={surface.row.indicatorFontSize}
+          fontWeight="600"
+          lineHeight={surface.row.indicatorLineHeight}
+          textAlign="right"
+        >
+          {price}
+        </Text>
+      ) : null}
+      {duration ? (
+        <Text
+          color="$textSecondary"
           fontSize={surface.row.indicatorFontSize}
           fontWeight="400"
           lineHeight={surface.row.indicatorLineHeight}
           textAlign="right"
         >
-          {value}
+          {duration}
         </Text>
-      ))}
+      ) : null}
     </YStack>
   );
 }

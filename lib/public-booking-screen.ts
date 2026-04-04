@@ -6,6 +6,12 @@ import type {
 
 export type Step = "service" | "master" | "time" | "details";
 
+/** Теги услуги из каталога (локализованная подпись + код). */
+export type ServiceTagUi = {
+  tag: string;
+  translate: string;
+};
+
 export type Procedure = {
   alias?: string;
   bundleSize?: number;
@@ -35,6 +41,8 @@ export type Procedure = {
     currency: string;
   };
   serviceDescription?: string;
+  /** Теги сервиса (SPA, массаж и т.д.) — для группировки в шаге выбора услуги. */
+  serviceTags?: ServiceTagUi[];
   serviceTitle?: string;
 };
 
@@ -79,6 +87,21 @@ function buildMasterMap(masters: PublicSalonMaster[]) {
   );
 }
 
+function dedupeServiceTags(
+  tags: Array<{ tag: string; translate: string }>,
+): ServiceTagUi[] {
+  const seen = new Set<string>();
+  const out: ServiceTagUi[] = [];
+  for (const item of tags) {
+    if (seen.has(item.tag)) {
+      continue;
+    }
+    seen.add(item.tag);
+    out.push({ tag: item.tag, translate: item.translate });
+  }
+  return out;
+}
+
 export function adaptCatalogToProcedures(
   catalog: PublicSalonCatalog | null,
   masters: PublicSalonMaster[],
@@ -94,6 +117,7 @@ export function adaptCatalogToProcedures(
     .filter((procedure) => procedure.onlineBookingEnabled !== false)
     .flatMap((procedure) => {
       const executions = procedure.executions ?? [];
+      const procedureTagList = dedupeServiceTags(procedure.serviceTags ?? []);
 
       if (!executions.length) {
         return [{
@@ -111,6 +135,7 @@ export function adaptCatalogToProcedures(
           masterAvatar: null,
           masterPosition: null,
           parameters: [],
+          serviceTags: procedureTagList,
         } satisfies Procedure];
       }
 
@@ -147,6 +172,7 @@ export function adaptCatalogToProcedures(
             masterAvatar: toNullableString(master?.logo ?? execution.masterAvatar),
             masterPosition: toNullableString(masterWithPosition?.position),
             parameters: [],
+            serviceTags: procedureTagList,
           };
         });
     })
@@ -160,6 +186,9 @@ export function adaptCatalogToProcedures(
             0,
           );
           const procedureIds = procedures.map((procedure) => procedure.id);
+          const mergedComplexTags = dedupeServiceTags(
+            procedures.flatMap((p) => p.serviceTags ?? []),
+          );
           const sharedMasterIds = procedures.reduce<string[]>((acc, procedure, index) => {
             const ids = (procedure.executions ?? [])
               .map((execution) => execution.masterId)
@@ -200,6 +229,7 @@ export function adaptCatalogToProcedures(
                 price: undefined,
                 serviceDescription: complex.description,
                 serviceTitle: complex.title,
+                serviceTags: mergedComplexTags,
               };
             })
             .filter((item) => item.masterNickname || item.masterId);
@@ -223,6 +253,7 @@ export function adaptCatalogToProcedures(
             price: undefined,
             serviceDescription: complex.description,
             serviceTitle: complex.title,
+            serviceTags: mergedComplexTags,
           } satisfies Procedure];
         }),
     );

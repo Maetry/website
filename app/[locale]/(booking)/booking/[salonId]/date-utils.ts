@@ -186,6 +186,27 @@ export function inferProcedureCategoryLabel(group: { title: string }) {
   return null;
 }
 
+/** id «прочих» услуг без тега и без префикса в названии. */
+export const BOOKING_UNCATEGORIZED_SERVICE_CATEGORY_ID =
+  "__booking_uncategorized__";
+
+/**
+ * Категория из первого тега сервиса API (например spa → «SPA» в текущей локали).
+ */
+export function inferProcedureCategoryFromTags(group: {
+  procedures: Array<{ serviceTags?: Array<{ tag: string; translate: string }> }>;
+}): { categoryId: string; title: string } | null {
+  const primary = group.procedures[0]?.serviceTags?.[0];
+  if (!primary) {
+    return null;
+  }
+
+  return {
+    categoryId: primary.tag,
+    title: primary.translate?.trim() || primary.tag,
+  };
+}
+
 export function getProcedureSelectionKey(procedure: {
   id: string;
   masterId?: string | null;

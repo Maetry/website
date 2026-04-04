@@ -29,6 +29,7 @@
       "success": "Готово"
     },
     "serviceTitle": "Выберите услугу",
+    "serviceCategoryFallback": "Услуги",
     "serviceHint": "Каталог услуг салона доступен без авторизации.",
     "serviceDuration": "длительность",
     "servicePriceFrom": "от {value}",
@@ -93,7 +94,6 @@
     "successManageBulletReminders": "Напоминания, чтобы не пропустить визит",
     "successManageBulletReschedule": "Перенос записи за несколько секунд",
     "successManageBulletBookings": "Все ваши записи в одном месте",
-    "successOpenApp": "Открыть в приложении",
     "successDownloadApp": "Скачать приложение",
     "successDetailsTitle": "Детали записи",
     "successAddToCalendar": "Добавить в календарь",

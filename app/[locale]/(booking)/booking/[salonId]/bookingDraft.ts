@@ -16,7 +16,7 @@ export type BookingDraftSnapshot = {
   clientName: string;
   clientPhone: string;
   currentStep: Step;
-  expandedCategoryId: string | null;
+  expandedCategoryIds: string[];
   locale: string;
   salonId: string;
   selectedDateKey: string | null;
@@ -83,7 +83,9 @@ export function readBookingDraftSnapshot(
       return null;
     }
 
-    const parsed = JSON.parse(raw) as Partial<BookingDraftSnapshot>;
+    const parsed = JSON.parse(raw) as Partial<BookingDraftSnapshot> & {
+      expandedCategoryId?: string | null;
+    };
 
     if (
       parsed.version !== BOOKING_DRAFT_VERSION ||
@@ -93,11 +95,26 @@ export function readBookingDraftSnapshot(
       return null;
     }
 
+    const expandedCategoryIds = (() => {
+      if (Array.isArray(parsed.expandedCategoryIds)) {
+        return parsed.expandedCategoryIds.filter(
+          (id): id is string => typeof id === "string" && id.length > 0,
+        );
+      }
+      if (
+        typeof parsed.expandedCategoryId === "string" &&
+        parsed.expandedCategoryId.length > 0
+      ) {
+        return [parsed.expandedCategoryId];
+      }
+      return [];
+    })();
+
     return {
       clientName: parsed.clientName ?? "",
       clientPhone: parsed.clientPhone ?? "",
       currentStep: normalizeBookingDraftStep(parsed.currentStep),
-      expandedCategoryId: parsed.expandedCategoryId ?? null,
+      expandedCategoryIds,
       locale: scope.locale,
       salonId: scope.salonId,
       selectedDateKey: parsed.selectedDateKey ?? null,

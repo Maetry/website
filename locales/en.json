@@ -29,6 +29,7 @@
       "success": "Done"
     },
     "serviceTitle": "Choose a service",
+    "serviceCategoryFallback": "Services",
     "serviceHint": "Browse the salon service menu without signing in.",
     "serviceDuration": "duration",
     "servicePriceFrom": "from {value}",
@@ -93,7 +94,6 @@
     "successManageBulletReminders": "Reminders so you don't miss it",
     "successManageBulletReschedule": "Reschedule in seconds",
     "successManageBulletBookings": "All your bookings in one place",
-    "successOpenApp": "Open in App",
     "successDownloadApp": "Download App",
     "successDetailsTitle": "Booking details",
     "successAddToCalendar": "Add to Calendar",

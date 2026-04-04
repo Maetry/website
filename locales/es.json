@@ -29,6 +29,7 @@
       "success": "Listo"
     },
     "serviceTitle": "Elige un servicio",
+    "serviceCategoryFallback": "Servicios",
     "serviceHint": "Consulta el menú de servicios del salón sin iniciar sesión.",
     "serviceDuration": "duración",
     "servicePriceFrom": "desde {value}",
@@ -93,7 +94,6 @@
     "successManageBulletReminders": "Recordatorios para que no se te pase",
     "successManageBulletReschedule": "Reprograma en segundos",
     "successManageBulletBookings": "Todas tus reservas en un solo lugar",
-    "successOpenApp": "Abrir en la app",
     "successDownloadApp": "Descargar app",
     "successDetailsTitle": "Detalles de la reserva",
     "successAddToCalendar": "Añadir al calendario",

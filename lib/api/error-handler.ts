@@ -23,10 +23,25 @@ function readStringField(value: unknown): string | undefined {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
+const GENERIC_HTTP_MESSAGES = new Set([
+  "Bad Request",
+  "Unauthorized",
+  "Forbidden",
+  "Not Found",
+  "Internal Server Error",
+]);
+
 export async function extractErrorMessage(response: Response): Promise<string | undefined> {
   try {
     const data = (await response.json()) as { message?: unknown; error?: unknown };
-    return readStringField(data?.message) ?? readStringField(data?.error);
+    const message = readStringField(data?.message);
+    const code = readStringField(data?.error);
+
+    if (code && message && code !== message && GENERIC_HTTP_MESSAGES.has(message)) {
+      return code;
+    }
+
+    return message ?? code;
   } catch {
     return undefined;
   }

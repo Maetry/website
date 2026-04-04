@@ -5,7 +5,7 @@ import type { SlotInterval, Step } from "@/lib/public-booking-screen";
 type BookingFlowContext = {
   clientName: string;
   clientPhone: string;
-  expandedCategoryId: string | null;
+  expandedCategoryIds: string[];
   formErrors: {
     name?: string;
     phone?: string;
@@ -54,7 +54,7 @@ type BookingFlowEvent =
     }
   | {
       type: "SET_EXPANDED_CATEGORY";
-      value: string | null;
+      value: string[];
     }
   | {
       type: "SET_CLIENT_NAME";
@@ -95,7 +95,7 @@ export const bookingFlowMachine = setup({
   context: {
     clientName: "",
     clientPhone: "",
-    expandedCategoryId: null,
+    expandedCategoryIds: [],
     formErrors: {},
     globalError: null,
     selectedDateKey: null,
@@ -145,7 +145,7 @@ export const bookingFlowMachine = setup({
     },
     SET_EXPANDED_CATEGORY: {
       actions: assign({
-        expandedCategoryId: ({ event }) => event.value,
+        expandedCategoryIds: ({ event }) => event.value,
       }),
     },
     SET_FORM_ERRORS: {

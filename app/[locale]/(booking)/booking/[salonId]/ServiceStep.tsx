@@ -2,8 +2,9 @@
 
 import type { ReactNode } from "react";
 
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button, Spinner, Text, XStack, YStack } from "tamagui";
+import { Spinner, Text, XStack, YStack } from "tamagui";
 
 import type { Procedure, ProcedureGroup, Step } from "@/lib/public-booking-screen";
 import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
@@ -14,20 +15,24 @@ import { BookingRowMeta } from "../../_shared/BookingRowMeta";
 import { BookingSection } from "../../_shared/BookingSection";
 import { BookingState } from "../../_shared/BookingState";
 import { formatCurrency, formatDuration } from "../../_shared/formatting";
+import { RowButton } from "../../_shared/primitives";
 import { SectionSeparator } from "../../_shared/SectionSeparator";
 
+
+import { BOOKING_UNCATEGORIZED_SERVICE_CATEGORY_ID } from "./date-utils";
+import { resolveServiceCategoryLucideIcon } from "./serviceCategoryLucideIcon";
 import type { ProcedureCategoryGroup } from "./useBookingFlow";
 
 function ProcedureCategoryBlock({
   category,
-  expandedCategoryId,
-  onExpandCategory,
+  expandedCategoryIds,
+  onToggleCategory,
   platform,
   renderGroupRow,
 }: {
   category: ProcedureCategoryGroup;
-  expandedCategoryId: string | null;
-  onExpandCategory: (id: string | null) => void;
+  expandedCategoryIds: string[];
+  onToggleCategory: (categoryId: string) => void;
   platform: BookingPlatformVariant;
   renderGroupRow: (
     group: ProcedureGroup,
@@ -36,38 +41,55 @@ function ProcedureCategoryBlock({
   ) => ReactNode;
 }) {
   const surface = getBookingSurfaceStyle(platform);
+  const isExpanded = expandedCategoryIds.includes(category.id);
+  const iconBadgeSize = surface.visit.iconBadgeSize;
+  const CategoryIcon = resolveServiceCategoryLucideIcon(category.id);
 
   return (
-    <YStack
-      backgroundColor="$bookingCategoryShell"
-      borderRadius={surface.section.cardRadius}
-      overflow="hidden"
-    >
-      <Button
-        backgroundColor="$bookingCategoryShell"
-        borderRadius={surface.section.cardRadius}
-        chromeless
-        onPress={() =>
-          onExpandCategory(expandedCategoryId === category.id ? null : category.id)
-        }
-        paddingHorizontal="$4"
-        paddingVertical="$3"
+    <YStack overflow="hidden" width="100%">
+      <RowButton
+        backgroundColor="transparent"
+        borderRadius={0}
+        onPress={() => onToggleCategory(category.id)}
+        platform={platform}
+        pressStyle={{ backgroundColor: "$bookingRowPressBackground" }}
+        width="100%"
       >
-        <XStack
-          alignItems="center"
-          justifyContent="space-between"
-          width="100%"
-        >
-          <Text color="$textPrimary" fontSize="$5" fontWeight="600">
-            {category.title}
-          </Text>
-          <Text color="$textSecondary" fontSize="$4">
-            {expandedCategoryId === category.id ? "−" : "+"}
+        <XStack alignItems="center" gap="$3" justifyContent="space-between" width="100%">
+          <XStack alignItems="center" flex={1} gap="$3">
+            <XStack
+              alignItems="center"
+              backgroundColor="$primarySoft"
+              borderRadius={iconBadgeSize / 2}
+              height={iconBadgeSize}
+              justifyContent="center"
+              width={iconBadgeSize}
+            >
+              <Text color="$primary">
+                <CategoryIcon size={20} strokeWidth={2.25} />
+              </Text>
+            </XStack>
+            <Text
+              color="$textPrimary"
+              flex={1}
+              fontSize="$5"
+              fontWeight="600"
+              lineHeight={22}
+            >
+              {category.title}
+            </Text>
+          </XStack>
+          <Text color="$primary">
+            {isExpanded ? (
+              <ChevronDown size={22} strokeWidth={2.25} />
+            ) : (
+              <ChevronRight size={22} strokeWidth={2.25} />
+            )}
           </Text>
         </XStack>
-      </Button>
+      </RowButton>
 
-      {expandedCategoryId === category.id ? (
+      {isExpanded ? (
         <YStack backgroundColor="$bookingCategoryExpanded" overflow="hidden">
           {category.groups.map((group, index) =>
             renderGroupRow(group, index, category.groups.length),
@@ -80,10 +102,10 @@ function ProcedureCategoryBlock({
 
 type ServiceStepProps = {
   currentVisualStep: Step;
-  expandedCategoryId: string | null;
+  expandedCategoryIds: string[];
   locale: string;
   onDeselectGroup: () => void;
-  onExpandCategory: (id: string | null) => void;
+  onToggleCategory: (categoryId: string) => void;
   onSelectGroup: (group: ProcedureGroup) => void;
   platform: BookingPlatformVariant;
   procedureCategories: ProcedureCategoryGroup[];
@@ -96,10 +118,10 @@ type ServiceStepProps = {
 
 export function ServiceStep({
   currentVisualStep,
-  expandedCategoryId,
+  expandedCategoryIds,
   locale,
   onDeselectGroup,
-  onExpandCategory,
+  onToggleCategory,
   onSelectGroup,
   platform,
   procedureCategories,
@@ -143,8 +165,11 @@ export function ServiceStep({
   }
 
   const shouldUseCategories =
-    procedureCategories.length > 1 &&
-    procedureCategories.some((category) => category.title !== "Services");
+    procedureCategories.some((category) => category.grouping === "tag") ||
+    (procedureCategories.length > 1 &&
+      procedureCategories.some(
+        (category) => category.id !== BOOKING_UNCATEGORIZED_SERVICE_CATEGORY_ID,
+      ));
 
   const renderServiceGroupRow = (
     group: ProcedureGroup,
@@ -231,16 +256,18 @@ export function ServiceStep({
 
   return (
     <BookingSection platform={platform} title={t("serviceTitle")}>
-      <YStack gap="$3" width="100%">
-        {procedureCategories.map((category) => (
-          <ProcedureCategoryBlock
-            key={category.id}
-            category={category}
-            expandedCategoryId={expandedCategoryId}
-            onExpandCategory={onExpandCategory}
-            platform={platform}
-            renderGroupRow={renderServiceGroupRow}
-          />
+      <YStack gap={0} width="100%">
+        {procedureCategories.map((category, categoryIndex) => (
+          <YStack key={category.id} width="100%">
+            {categoryIndex > 0 ? <SectionSeparator platform={platform} /> : null}
+            <ProcedureCategoryBlock
+              category={category}
+              expandedCategoryIds={expandedCategoryIds}
+              onToggleCategory={onToggleCategory}
+              platform={platform}
+              renderGroupRow={renderServiceGroupRow}
+            />
+          </YStack>
         ))}
       </YStack>
     </BookingSection>
