@@ -6,6 +6,7 @@ import {
   loadBillingSalonProfile,
   resolveBillingSessionContext,
 } from "@/lib/api/billing-server";
+import type { ApiError } from "@/lib/api/error-handler";
 import { normalizeMaetrySdkError } from "@/lib/api/maetry-sdk.server";
 import { loadBillingPlanFeatureTitles } from "@/lib/billing-plan-features";
 
@@ -35,6 +36,29 @@ function normalizeAuthorization(token: string): string {
 function normalizeQueryValue(value?: string): string | undefined {
   const normalized = value?.trim();
   return normalized ? normalized : undefined;
+}
+
+/** 401 / явные признаки expired в теле ошибки SDK — не общий «сбой API». */
+function shouldTreatAsExpiredBillingSession(
+  error: unknown,
+  normalized: ApiError,
+): boolean {
+  if (normalized.status === 401) {
+    return true;
+  }
+  if (error && typeof error === "object") {
+    const o = error as Record<string, unknown>;
+    const code = typeof o.code === "string" ? o.code.toUpperCase() : "";
+    if (code.includes("EXPIRED")) {
+      return true;
+    }
+    const apiMessage = typeof o.message === "string" ? o.message : "";
+    if (/\bexpired\b|истек|expiró|caducad/i.test(apiMessage)) {
+      return true;
+    }
+  }
+  const msg = normalized.message ?? "";
+  return /\bexpired\b|истек|expiró|caducad/i.test(msg);
 }
 
 function renderStateCard(title: string, message: string) {
@@ -147,6 +171,10 @@ export default async function BillingRoute({
     );
   } catch (error) {
     const normalized = normalizeMaetrySdkError(error);
+
+    if (shouldTreatAsExpiredBillingSession(error, normalized)) {
+      return renderStateCard(t("sessionExpiredTitle"), t("sessionExpiredMessage"));
+    }
 
     return renderStateCard(
       t("unavailableTitle"),

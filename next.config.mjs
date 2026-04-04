@@ -1,3 +1,6 @@
+import { withSentryConfig } from "@sentry/nextjs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./i18n.ts');
@@ -9,6 +12,9 @@ const nextConfig = {
     externalDir: true,
     // Прямые импорты иконок, стабильные server/client chunks (избегает ENOENT vendor-chunks)
     optimizePackageImports: ["@chakra-ui/react", "lucide-react"],
+  },
+  turbopack: {
+    root: path.dirname(fileURLToPath(import.meta.url)),
   },
   async redirects() {
     return [
@@ -41,4 +47,12 @@ const nextConfig = {
   },
 }
 
-export default withNextIntl(nextConfig)
+export default withSentryConfig(withNextIntl(nextConfig), {
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: true,
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+})

@@ -1,5 +1,7 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
+
 import { getOrCreateDeviceId } from "./device-id";
 import { handleApiResponse } from "./error-handler";
 import { devError, isAbortError } from "./utils";
@@ -50,6 +52,11 @@ export async function clientApiRequest<T>({
     return handleApiResponse<T>(response);
   } catch (error) {
     if (!isAbortError(error)) {
+      Sentry.setContext("client_api_request", {
+        endpoint,
+        method,
+      });
+      Sentry.captureException(error);
       devError(`Failed to fetch ${endpoint}`, error);
     }
     throw error;

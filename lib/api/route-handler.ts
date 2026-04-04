@@ -1,6 +1,15 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import * as Sentry from "@sentry/nextjs";
+
+import {
+  setMonitoringContext,
+  setMonitoringUser,
+  trackEvent,
+} from "@/lib/monitoring";
+import { getOrCreateRequestId } from "@/lib/monitoring/server";
+
 import { resolveApiUrl } from "./config";
 import { ApiError } from "./error-handler";
 import { devError } from "./utils";
@@ -13,6 +22,15 @@ interface ProxyRequestOptions {
   headers?: Record<string, string>;
   errorCode: string;
   cache?: RequestCache;
+  operation?: string;
+}
+
+function deriveOperationName(method: string, path: string): string {
+  return `${path}_${method}`
+    .replace(/^\/+/, "")
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase();
 }
 
 export async function proxyApiRequest({
@@ -23,7 +41,11 @@ export async function proxyApiRequest({
   headers = {},
   errorCode,
   cache = "no-store",
+  operation,
 }: ProxyRequestOptions): Promise<NextResponse> {
+  const requestId = getOrCreateRequestId(request);
+  const operationName = operation ?? deriveOperationName(method, path);
+
   try {
     const apiUrl = resolveApiUrl();
     const targetUrl = `${apiUrl}${path}`;
@@ -35,8 +57,24 @@ export async function proxyApiRequest({
     const defaultHeaders: Record<string, string> = {
       "Accept": "application/json",
       "User-Agent": request.headers.get("user-agent") ?? "",
+      "X-Request-ID": requestId,
       ...headers,
     };
+
+    if (deviceId) {
+      setMonitoringUser({ id: deviceId });
+    }
+
+    setMonitoringContext("api_proxy", {
+      error_code: errorCode,
+      method,
+      path,
+      request_id: requestId,
+      target_url: targetUrl,
+    });
+    trackEvent(`${operationName}_started`, {
+      request_id: requestId,
+    });
 
     if (authorization) {
       defaultHeaders.Authorization = authorization;
@@ -68,9 +106,13 @@ export async function proxyApiRequest({
 
     // Обработка ошибок от прокси
     if (!proxyResponse.ok) {
+      trackEvent(`${operationName}_failed`, {
+        request_id: requestId,
+        status: proxyResponse.status,
+      });
       try {
         const errorData = JSON.parse(text);
-        return NextResponse.json(
+        const response = NextResponse.json(
           {
             error: errorData.error || errorCode,
             message: errorData.message || proxyResponse.statusText,
@@ -79,8 +121,10 @@ export async function proxyApiRequest({
             status: proxyResponse.status,
           },
         );
+        response.headers.set("X-Request-ID", requestId);
+        return response;
       } catch {
-        return NextResponse.json(
+        const response = NextResponse.json(
           {
             error: errorCode,
             message: text || proxyResponse.statusText,
@@ -89,20 +133,38 @@ export async function proxyApiRequest({
             status: proxyResponse.status,
           },
         );
+        response.headers.set("X-Request-ID", requestId);
+        return response;
       }
     }
 
     // Успешный ответ
-    return new NextResponse(text, {
+    trackEvent(`${operationName}_success`, {
+      request_id: requestId,
+      status: proxyResponse.status,
+    });
+    const response = new NextResponse(text, {
       status: proxyResponse.status,
       headers: {
         "Content-Type": proxyResponse.headers.get("content-type") ?? "application/json",
+        "X-Request-ID": requestId,
       },
     });
+    return response;
   } catch (error) {
+    Sentry.setContext("api_proxy_error", {
+      error_code: errorCode,
+      method,
+      path,
+      request_id: requestId,
+    });
+    trackEvent(`${operationName}_failed`, {
+      request_id: requestId,
+    });
+    Sentry.captureException(error);
     devError(`[api-proxy] ${errorCode} failed:`, error);
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         error: errorCode,
         message: error instanceof Error ? error.message : "Unknown error",
@@ -111,6 +173,8 @@ export async function proxyApiRequest({
         status: 500,
       },
     );
+    response.headers.set("X-Request-ID", requestId);
+    return response;
   }
 }
 

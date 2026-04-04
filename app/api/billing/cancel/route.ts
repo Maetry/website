@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
     },
     errorCode: "FAILED_TO_CANCEL_BILLING_SUBSCRIPTION",
     method: "POST",
+    operation: "billing_subscription_cancel",
     path: "/v1/workspace/billing/cancel",
     request,
   });

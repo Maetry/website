@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 
 import { trackEvent } from '@/lib/firebase/analytics';
+import { trackEvent as trackMonitoringEvent } from '@/lib/monitoring';
 
 export type AnalyticsEvent =
   | 'booking_started'
@@ -21,6 +22,7 @@ export type AnalyticsEvent =
 export function useAnalytics() {
   const track = useCallback(
     (event: AnalyticsEvent, params?: Record<string, string | number>) => {
+      trackMonitoringEvent(event, params);
       trackEvent(event, params);
     },
     [],

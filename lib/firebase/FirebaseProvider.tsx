@@ -6,6 +6,12 @@ import { usePathname } from 'next/navigation';
 
 import { logEvent } from 'firebase/analytics';
 
+import { getOrCreateDeviceId } from '@/lib/api/device-id';
+import {
+  setMonitoringContext,
+  setMonitoringUser,
+  trackEvent as trackMonitoringEvent,
+} from '@/lib/monitoring';
 import { useTracking } from '@/lib/tracking/useTracking';
 
 import { getFirebaseAnalytics } from './config';
@@ -19,6 +25,23 @@ export function FirebaseTracker() {
   const tracking = useTracking();
 
   useEffect(() => {
+    const deviceId = getOrCreateDeviceId();
+
+    if (deviceId) {
+      setMonitoringUser({ id: deviceId });
+    }
+
+    setMonitoringContext('navigation', {
+      page_path: pathname,
+      page_title: document.title,
+      page_location: window.location.href,
+      device_id: deviceId,
+    });
+    trackMonitoringEvent('navigation_page_viewed', {
+      device_id: deviceId,
+      page_path: pathname,
+    });
+
     const analytics = getFirebaseAnalytics();
 
     if (!analytics) {
@@ -64,9 +87,9 @@ export function FirebaseTracker() {
       }
 
       logEvent(analytics, 'custom_tracking', customParams);
+      setMonitoringContext('tracking', customParams);
     }
   }, [pathname, tracking]);
 
   return null;
 }
-

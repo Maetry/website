@@ -7,10 +7,14 @@ import {
   type SyntheticEvent,
 } from "react";
 
-import { Theme, useTheme } from "tamagui";
+import { TamaguiProvider, Theme, useTheme } from "tamagui";
 
+import tamaguiConfig from "@/lib/tamagui.config";
 import { usePlatform } from "@/lib/userAgent/PlatformProvider";
-import { getClientAppThemeSubName } from "@/src/shared/tamagui/clientAppTheme";
+import {
+  getClientAppThemeSubName,
+  type ClientAppAppearance,
+} from "@/src/shared/tamagui/clientAppTheme";
 import {
   detectClientAdaptivePlatform,
   getClientPlatformVariant,
@@ -44,6 +48,16 @@ function shouldAllowNativeSelection(target: EventTarget | null) {
       'input, textarea, [contenteditable="true"], [contenteditable="plaintext-only"]',
     ),
   );
+}
+
+function getResolvedAppearanceFromDocument(): ClientAppAppearance | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const resolved = document.documentElement.dataset.themeResolved;
+
+  return resolved === "dark" || resolved === "light" ? resolved : null;
 }
 
 function ClientAppSurfaceChrome({ children }: ClientAppUiProviderProps) {
@@ -107,6 +121,7 @@ export function ClientAppUiProvider({ children }: ClientAppUiProviderProps) {
     ? "android"
     : "ios";
   const [platform, setPlatform] = useState<ClientPlatformVariant>(ssrPlatform);
+  const [appearance, setAppearance] = useState<ClientAppAppearance>("light");
 
   useEffect(() => {
     const clientPlatform = getClientPlatformVariant(detectClientAdaptivePlatform());
@@ -116,9 +131,56 @@ export function ClientAppUiProvider({ children }: ClientAppUiProviderProps) {
     );
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const syncAppearance = () => {
+      const documentAppearance = getResolvedAppearanceFromDocument();
+
+      setAppearance(
+        documentAppearance ?? (mediaQuery.matches ? "dark" : "light"),
+      );
+    };
+
+    syncAppearance();
+
+    const observer = new MutationObserver(syncAppearance);
+    observer.observe(document.documentElement, {
+      attributeFilter: ["data-theme-resolved"],
+      attributes: true,
+    });
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", syncAppearance);
+
+      return () => {
+        observer.disconnect();
+        mediaQuery.removeEventListener("change", syncAppearance);
+      };
+    }
+
+    mediaQuery.addListener(syncAppearance);
+
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeListener(syncAppearance);
+    };
+  }, []);
+
+  const themeSubName = getClientAppThemeSubName(platform);
+
   return (
-    <Theme name={getClientAppThemeSubName(platform)}>
-      <ClientAppSurfaceChrome>{children}</ClientAppSurfaceChrome>
-    </Theme>
+    <TamaguiProvider
+      key={`${appearance}:${platform}`}
+      config={tamaguiConfig}
+      defaultTheme={appearance}
+    >
+      <Theme name={themeSubName}>
+        <ClientAppSurfaceChrome>{children}</ClientAppSurfaceChrome>
+      </Theme>
+    </TamaguiProvider>
   );
 }

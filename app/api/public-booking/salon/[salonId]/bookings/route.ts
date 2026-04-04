@@ -9,6 +9,7 @@ import {
 } from "@/lib/api/maetry-sdk.server";
 import { handleValidationError } from "@/lib/api/route-handler";
 import { validateId } from "@/lib/api/validation";
+import { monitoredRoute } from "@/lib/monitoring/server";
 
 import { postPublicBookingBySalonId } from "@maetry/shared-sdk";
 
@@ -19,21 +20,32 @@ type RouteParams = {
 export async function POST(request: NextRequest, context: RouteParams) {
   const { salonId: rawSalonId } = await context.params;
 
-  try {
-    const salonId = validateId(rawSalonId, "salonId");
-    const body = await request.json();
-    const client = createMaetryServerClient();
-    const result = await postPublicBookingBySalonId({
-      body,
-      client,
-      path: { salonId },
-      ...MAETRY_THROW_ON_ERROR_OPTIONS,
-    });
+  return monitoredRoute(
+    request,
+    "public_booking_create",
+    async () => {
+      try {
+        const salonId = validateId(rawSalonId, "salonId");
+        const body = await request.json();
+        const client = createMaetryServerClient();
+        const result = await postPublicBookingBySalonId({
+          body,
+          client,
+          path: { salonId },
+          ...MAETRY_THROW_ON_ERROR_OPTIONS,
+        });
 
-    return NextResponse.json(unwrapMaetrySdkResult(result));
-  } catch (error) {
-    const validationError = handleValidationError(error, "INVALID_SALON_ID");
-    if (validationError) return validationError;
-    return maetrySdkErrorResponse(error, "FAILED_TO_CREATE_PUBLIC_BOOKING");
-  }
+        return NextResponse.json(unwrapMaetrySdkResult(result));
+      } catch (error) {
+        const validationError = handleValidationError(error, "INVALID_SALON_ID");
+        if (validationError) return validationError;
+        return maetrySdkErrorResponse(error, "FAILED_TO_CREATE_PUBLIC_BOOKING");
+      }
+    },
+    {
+      input: {
+        salon_id: rawSalonId,
+      },
+    },
+  );
 }

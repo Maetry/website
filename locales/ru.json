@@ -138,6 +138,8 @@
       "invalidSessionMessage": "Эта billing-страница требует secure-сессию из Maetry Console. Откройте billing из актуальной версии приложения.",
       "unavailableTitle": "Billing временно недоступен",
       "unavailableMessage": "Maetry не удалось загрузить текущие billing-данные для этого салона.",
+      "sessionExpiredTitle": "Сессия billing истекла",
+      "sessionExpiredMessage": "Защищённая ссылка или токен больше не действуют. Обычно это не сбой запроса к API — откройте billing снова из актуальной Maetry Console.",
       "title": "Billing & payments",
       "subtitle": "Выберите тариф и перейдите в secure web checkout в той же billing-сессии. Количество активных сотрудников синхронизируется с сервера.",
       "subtitleWithSalon": "Выберите актуальный тариф для {salonName} и перейдите в secure web checkout с той же billing-сессией, что и в Maetry Console.",

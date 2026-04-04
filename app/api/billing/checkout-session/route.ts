@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     },
     errorCode: "FAILED_TO_CREATE_BILLING_CHECKOUT_SESSION",
     method: "POST",
+    operation: "billing_checkout_session_create",
     path: "/v1/workspace/billing/checkout-session",
     request,
   });

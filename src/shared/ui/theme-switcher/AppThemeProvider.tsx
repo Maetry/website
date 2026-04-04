@@ -1,59 +1,100 @@
 "use client";
 
-import { useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 import {
-  NextThemeProvider,
-  type ThemeProviderProps,
-  useRootTheme,
-  useThemeSetting,
-} from "@tamagui/next-theme";
-import { TamaguiProvider } from "tamagui";
+  applyResolvedTheme,
+  getStoredThemePreference,
+  getSystemResolvedTheme,
+  persistThemePreference,
+  resolveThemePreference,
+  type ResolvedTheme,
+  type ThemePreference,
+} from "./theme";
 
-import tamaguiConfig from "@/lib/tamagui.config";
+type ThemeSettingValue = {
+  current: ThemePreference;
+  set: (next: ThemePreference) => void;
+};
 
-import { THEME_STORAGE_KEY } from "./theme";
+const ThemeSettingContext = createContext<ThemeSettingValue | null>(null);
 
-function RootThemeBridge() {
-  const settings = useThemeSetting();
-  const resolvedTheme = settings?.resolvedTheme === "dark" ? "dark" : "light";
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
-    document.documentElement.dataset.themeResolved = resolvedTheme;
-  }, [resolvedTheme]);
-
-  return null;
+export function useThemeSetting(): ThemeSettingValue | null {
+  return useContext(ThemeSettingContext);
 }
 
-/** Root provider по модели Tamagui: NextThemeProvider управляет light/dark, Tamagui читает root theme из него. */
-export function AppThemeProvider({
-  children,
-  ...props
-}: ThemeProviderProps) {
-  const [rootTheme, setRootTheme] = useRootTheme({ fallback: "light" });
+export function AppThemeProvider({ children }: { children: ReactNode }) {
+  const [preference, setPreference] = useState<ThemePreference>("system");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
+
+  useEffect(() => {
+    const storedPreference = getStoredThemePreference();
+    const systemResolvedTheme = getSystemResolvedTheme();
+
+    setPreference(storedPreference);
+    setResolvedTheme(
+      resolveThemePreference(storedPreference, systemResolvedTheme === "dark"),
+    );
+  }, []);
+
+  useEffect(() => {
+    persistThemePreference(preference);
+    setResolvedTheme(
+      resolveThemePreference(preference, getSystemResolvedTheme() === "dark"),
+    );
+  }, [preference]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const syncResolvedTheme = () => {
+      setResolvedTheme(
+        resolveThemePreference(preference, mediaQuery.matches),
+      );
+    };
+
+    syncResolvedTheme();
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", syncResolvedTheme);
+
+      return () => {
+        mediaQuery.removeEventListener("change", syncResolvedTheme);
+      };
+    }
+
+    mediaQuery.addListener(syncResolvedTheme);
+
+    return () => {
+      mediaQuery.removeListener(syncResolvedTheme);
+    };
+  }, [preference]);
+
+  const themeSetting = useMemo<ThemeSettingValue>(
+    () => ({
+      current: preference,
+      set: setPreference,
+    }),
+    [preference],
+  );
+
+  useEffect(() => {
+    applyResolvedTheme(resolvedTheme);
+  }, [resolvedTheme]);
 
   return (
-    <NextThemeProvider
-      defaultTheme="system"
-      disableTransitionOnChange
-      enableSystem
-      onChangeTheme={(name) => {
-        if (name === "dark" || name === "light") {
-          setRootTheme(name);
-        }
-      }}
-      storageKey={THEME_STORAGE_KEY}
-      value={{
-        dark: "t_dark",
-        light: "t_light",
-      }}
-      {...props}
-    >
-      <TamaguiProvider config={tamaguiConfig} defaultTheme={rootTheme}>
-        <RootThemeBridge />
-        {children}
-      </TamaguiProvider>
-    </NextThemeProvider>
+    <ThemeSettingContext.Provider value={themeSetting}>
+      {children}
+    </ThemeSettingContext.Provider>
   );
 }

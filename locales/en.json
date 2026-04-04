@@ -138,6 +138,8 @@
       "invalidSessionMessage": "This billing page requires a secure Maetry Console session. Open billing from the latest app version.",
       "unavailableTitle": "Billing is unavailable",
       "unavailableMessage": "Maetry could not load the current billing data for this salon.",
+      "sessionExpiredTitle": "Billing session expired",
+      "sessionExpiredMessage": "Your secure billing link or token is no longer valid. This is usually not an API failure — open billing again from the latest Maetry Console.",
       "title": "Billing & payments",
       "subtitle": "Choose a plan and continue to secure web checkout in the same billing session. Active seats stay synced from the server.",
       "subtitleWithSalon": "Choose the live plan for {salonName} and continue to secure web checkout with the same billing session used by Maetry Console.",

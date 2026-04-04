@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     },
     errorCode: "FAILED_TO_CHANGE_BILLING_PLAN",
     method: "POST",
+    operation: "billing_plan_change",
     path: "/v1/workspace/billing/change-plan",
     request,
   });

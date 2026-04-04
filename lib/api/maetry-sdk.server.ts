@@ -100,8 +100,13 @@ export function normalizeMaetrySdkError(error: unknown): ApiError {
   if (error && typeof error === "object") {
     const candidate = error as SharedApiErrorShape;
 
+    const status =
+      typeof candidate.status === "number" && Number.isFinite(candidate.status)
+        ? candidate.status
+        : 500;
+
     return new ApiError(
-      typeof candidate.status === "number" ? candidate.status : 500,
+      status,
       readStringField(candidate.message) ??
         readStringField(candidate.error) ??
         "Maetry API request failed",

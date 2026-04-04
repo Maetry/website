@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "API_TARGET=local node scripts/generate-billing-plan-features.mjs && API_TARGET=local next dev --turbopack",
+    "dev:local": "API_TARGET=local node scripts/generate-billing-plan-features.mjs && API_TARGET=local next dev --turbopack",
     "dev:stage": "API_TARGET=stage node scripts/generate-billing-plan-features.mjs && API_TARGET=stage next dev --turbopack",
+    "dev:prod": "API_TARGET=production node scripts/generate-billing-plan-features.mjs && API_TARGET=production next dev --turbopack",
     "build": "node scripts/generate-billing-plan-features.mjs && next build",
     "start": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --report-unused-disable-directives --max-warnings=0",
@@ -20,6 +22,7 @@
   "dependencies": {
     "@chakra-ui/react": "^3.34.0",
     "@emotion/react": "^11.14.0",
+    "@sentry/nextjs": "^10.47.0",
     "@tamagui/config": "^2.0.0-rc.33",
     "@tamagui/font-inter": "^2.0.0-rc.33",
     "@tamagui/next-theme": "^2.0.0-rc.33",

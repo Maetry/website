@@ -2,6 +2,8 @@ import "server-only";
 
 import type { NextRequest } from "next/server";
 
+import { monitored, setMonitoringContext, setMonitoringUser } from "@/lib/monitoring";
+
 import {
   getPublicBookingSalonProfile,
   postBillingSessionResolve,
@@ -42,17 +44,30 @@ export function requireBillingAuthContext(
 export async function resolveBillingSessionContext(
   session: string,
 ): Promise<BillingSessionContextResponse> {
-  const client = createMaetryServerClient();
+  return monitored(
+    "billing_session_resolve",
+    async () => {
+      const client = createMaetryServerClient();
 
-  const response = await postBillingSessionResolve({
-    body: {
-      session,
+      const response = await postBillingSessionResolve({
+        body: {
+          session,
+        },
+        client,
+        ...MAETRY_THROW_ON_ERROR_OPTIONS,
+      });
+
+      return unwrapMaetrySdkResult(response);
     },
-    client,
-    ...MAETRY_THROW_ON_ERROR_OPTIONS,
-  });
-
-  return unwrapMaetrySdkResult(response);
+    {
+      context: {
+        billing_input: {
+          session,
+        },
+      },
+      op: "service.billing",
+    },
+  );
 }
 
 export async function loadBillingHubData(
@@ -61,30 +76,48 @@ export async function loadBillingHubData(
   catalog: BillingCatalog;
   summary: BillingSummary;
 }> {
-  const client = createMaetryServerClient({
-    authorization: auth.authorization,
-  });
-  const headers = {
-    "Device-ID": auth.deviceId,
-  };
+  setMonitoringUser({ id: auth.deviceId });
 
-  const [catalogResponse, summaryResponse] = await Promise.all([
-    getWorkspaceBillingCatalog({
-      client,
-      headers,
-      ...MAETRY_THROW_ON_ERROR_OPTIONS,
-    }),
-    getWorkspaceBillingSummary({
-      client,
-      headers,
-      ...MAETRY_THROW_ON_ERROR_OPTIONS,
-    }),
-  ]);
+  return monitored(
+    "billing_hub_load",
+    async () => {
+      const client = createMaetryServerClient({
+        authorization: auth.authorization,
+      });
+      const headers = {
+        "Device-ID": auth.deviceId,
+      };
 
-  return {
-    catalog: unwrapMaetrySdkResult(catalogResponse),
-    summary: unwrapMaetrySdkResult(summaryResponse),
-  };
+      const [catalogResponse, summaryResponse] = await Promise.all([
+        getWorkspaceBillingCatalog({
+          client,
+          headers,
+          ...MAETRY_THROW_ON_ERROR_OPTIONS,
+        }),
+        getWorkspaceBillingSummary({
+          client,
+          headers,
+          ...MAETRY_THROW_ON_ERROR_OPTIONS,
+        }),
+      ]);
+
+      return {
+        catalog: unwrapMaetrySdkResult(catalogResponse),
+        summary: unwrapMaetrySdkResult(summaryResponse),
+      };
+    },
+    {
+      context: {
+        billing_auth: {
+          device_id: auth.deviceId,
+        },
+      },
+      data: {
+        device_id: auth.deviceId,
+      },
+      op: "service.billing",
+    },
+  );
 }
 
 export async function loadBillingSalonProfile(
@@ -112,19 +145,35 @@ export async function loadBillingSalonProfile(
 export async function createBillingPortalSession(
   auth: BillingAuthContext,
 ): Promise<BillingPortalSessionResponse> {
-  const client = createMaetryServerClient({
-    authorization: auth.authorization,
+  setMonitoringUser({ id: auth.deviceId });
+  setMonitoringContext("billing_portal_input", {
+    device_id: auth.deviceId,
   });
 
-  const response = await postWorkspaceBillingPortalSession({
-    client,
-    headers: {
-      "Device-ID": auth.deviceId,
+  return monitored(
+    "billing_portal_session_create",
+    async () => {
+      const client = createMaetryServerClient({
+        authorization: auth.authorization,
+      });
+
+      const response = await postWorkspaceBillingPortalSession({
+        client,
+        headers: {
+          "Device-ID": auth.deviceId,
+        },
+        ...MAETRY_THROW_ON_ERROR_OPTIONS,
+      });
+
+      return unwrapMaetrySdkResult(response);
     },
-    ...MAETRY_THROW_ON_ERROR_OPTIONS,
-  });
-
-  return unwrapMaetrySdkResult(response);
+    {
+      data: {
+        device_id: auth.deviceId,
+      },
+      op: "service.billing",
+    },
+  );
 }
 
 export async function createBillingPortalSessionFromRequest(

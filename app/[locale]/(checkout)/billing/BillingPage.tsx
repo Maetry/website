@@ -306,7 +306,7 @@ function PlanPickerCard({
           width="100%"
         >
           <YStack
-            alignItems="flex-start"
+            alignItems="center"
             gap="$1.5"
             minWidth={0}
             width="100%"
@@ -317,6 +317,7 @@ function PlanPickerCard({
               fontSize="$3"
               fontWeight="700"
               numberOfLines={2}
+              textAlign="center"
               width="100%"
             >
               {plan.title}
@@ -327,6 +328,7 @@ function PlanPickerCard({
               fontSize="$4"
               fontWeight="800"
               numberOfLines={1}
+              textAlign="center"
               width="100%"
             >
               {price}
@@ -337,6 +339,7 @@ function PlanPickerCard({
               fontSize="$1"
               fontWeight="600"
               numberOfLines={1}
+              textAlign="center"
               width="100%"
             >
               {subtitle}
@@ -956,17 +959,17 @@ export default function BillingPage({
                         ))}
                       </YStack>
                       {hasHiddenPlanFeatures ? (
-                        <Button
+                        <XStack
+                          alignItems="center"
                           alignSelf="flex-start"
-                          backgroundColor="transparent"
-                          borderColor="transparent"
-                          borderRadius={999}
-                          borderWidth={0}
-                          chromeless
-                          minHeight={32}
+                          aria-expanded={featuresExpanded}
+                          cursor="pointer"
+                          focusable
                           onPress={() => setFeaturesExpanded((prev) => !prev)}
-                          paddingHorizontal="$0"
-                          pressStyle={{ opacity: 0.72 }}
+                          paddingVertical={4}
+                          role="button"
+                          tabIndex={0}
+                          userSelect="none"
                         >
                           <Text color="$primary" fontSize="$3" fontWeight="700">
                             {featuresExpanded
@@ -975,7 +978,7 @@ export default function BillingPage({
                                   count: selectedPlanFeatures.length - visiblePlanFeatures.length,
                                 })}
                           </Text>
-                        </Button>
+                        </XStack>
                       ) : null}
                     </YStack>
                   ) : null}
@@ -1055,9 +1058,9 @@ export default function BillingPage({
                 width: "100vw",
               }}
             >
+              {/* Внешний ряд только скроллит; center на нём ломает скролл влево при overflow
+                  (scrollLeft ≥ 0, а контент «уезжает» влево за ноль). Центрирование — во внутреннем ряду. */}
               <XStack
-                alignItems="flex-end"
-                gap="$3"
                 style={{
                   paddingLeft: 20,
                   paddingRight: 20,
@@ -1073,25 +1076,36 @@ export default function BillingPage({
                   scrollbarWidth: "none",
                 }}
               >
-                {orderedPlans.map((plan) => {
-                  const offer = getBillingOffer(plan, selectedInterval);
-                  const breakdown =
-                    offer ? calculateBillingBreakdown(offer, activeSeats) : null;
+                <XStack
+                  alignItems="flex-end"
+                  flexShrink={0}
+                  gap="$3"
+                  justifyContent="center"
+                  style={{
+                    minWidth: "100%",
+                    width: "max-content",
+                  }}
+                >
+                  {orderedPlans.map((plan) => {
+                    const offer = getBillingOffer(plan, selectedInterval);
+                    const breakdown =
+                      offer ? calculateBillingBreakdown(offer, activeSeats) : null;
 
-                  return (
-                    <PlanPickerCard
-                      key={plan.code}
-                      breakdown={breakdown}
-                      interval={selectedInterval}
-                      isSelected={selectedPlanCode === plan.code}
-                      locale={locale}
-                      onSelect={() => handlePlanSelect(plan.code)}
-                      plan={plan}
-                      platform={platform}
-                      t={t}
-                    />
-                  );
-                })}
+                    return (
+                      <PlanPickerCard
+                        key={plan.code}
+                        breakdown={breakdown}
+                        interval={selectedInterval}
+                        isSelected={selectedPlanCode === plan.code}
+                        locale={locale}
+                        onSelect={() => handlePlanSelect(plan.code)}
+                        plan={plan}
+                        platform={platform}
+                        t={t}
+                      />
+                    );
+                  })}
+                </XStack>
               </XStack>
             </YStack>
 

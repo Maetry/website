@@ -4,17 +4,15 @@ import { useEffect, useState } from "react";
 
 import { AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button, Paragraph, Spinner, Text, Theme, XStack, YStack } from "tamagui";
+import { Button, Paragraph, Spinner, Text, XStack, YStack } from "tamagui";
 
 import { InviteScreen } from "@/components/invite";
 import { ApiError } from "@/lib/api/error-handler";
 import { resolveShortLink, type PublicClickResponse } from "@/lib/api/public-booking";
 import type { LinkKind } from "@/lib/api/shortLink";
+import { detectPlatform } from "@/lib/userAgent/detectPlatform";
 import { usePlatform } from "@/lib/userAgent/PlatformProvider";
-import {
-  getClientAppSurfaceStyle,
-  getClientAppThemeSubName,
-} from "@/src/shared/tamagui/clientAppTheme";
+import { getClientAppSurfaceStyle } from "@/src/shared/tamagui/clientAppTheme";
 
 type LinkHandlerProps = {
   nanoId: string;
@@ -57,6 +55,53 @@ function resolveInviteStoreUrl(response: PublicClickResponse): string | null {
   return null;
 }
 
+const ALLOWED_APP_NAVIGATION_PROTOCOLS = new Set(["maetry:", "https:", "http:"]);
+
+/**
+ * Проверка до window.location.assign: иначе Safari показывает «address is invalid»
+ * для битых custom scheme и пустых maetry:-ссылок.
+ */
+function canSafelyNavigateToAppUrl(rawUrl: string): boolean {
+  const trimmed = rawUrl.trim();
+  if (!trimmed) {
+    return false;
+  }
+
+  let url: URL;
+  try {
+    url = new URL(trimmed);
+  } catch {
+    return false;
+  }
+
+  const protocol = url.protocol.toLowerCase();
+  if (!ALLOWED_APP_NAVIGATION_PROTOCOLS.has(protocol)) {
+    return false;
+  }
+
+  if (protocol === "http:" || protocol === "https:") {
+    return Boolean(url.hostname);
+  }
+
+  // maetry: — не пустой хвост после схемы (maetry:, maetry://, maetry:///)
+  const schemeMatch = trimmed.match(/^maetry:/i);
+  if (!schemeMatch) {
+    return false;
+  }
+
+  const afterScheme = trimmed.slice(schemeMatch[0].length).trim();
+  if (!afterScheme || afterScheme === "//") {
+    return false;
+  }
+
+  // На десктопе custom scheme почти всегда приводит к ошибке в браузере — сразу fallback
+  if (detectPlatform().isDesktop) {
+    return false;
+  }
+
+  return true;
+}
+
 function openAppWithFallback(
   response: PublicClickResponse,
   onInviteFallback: (invite: InviteState) => void,
@@ -65,7 +110,7 @@ function openAppWithFallback(
     return;
   }
 
-  if (!response.appUrl) {
+  if (!response.appUrl || !canSafelyNavigateToAppUrl(response.appUrl)) {
     if (isInviteKind(response.kind)) {
       onInviteFallback({
         kind: response.kind,
@@ -160,50 +205,48 @@ function LinkStatusScreen({
   const surface = getClientAppSurfaceStyle(platform);
 
   return (
-    <Theme name={getClientAppThemeSubName(platform)}>
+    <YStack
+      alignItems="center"
+      flex={1}
+      justifyContent="center"
+      minHeight="100dvh"
+      padding="$6"
+      width="100%"
+    >
       <YStack
         alignItems="center"
-        flex={1}
-        justifyContent="center"
-        minHeight="100dvh"
-        padding="$6"
+        gap="$3"
+        maxWidth={420}
+        paddingHorizontal="$5"
+        paddingVertical="$6"
         width="100%"
       >
-        <YStack
-          alignItems="center"
-          gap="$3"
-          maxWidth={420}
-          paddingHorizontal="$5"
-          paddingVertical="$6"
-          width="100%"
-        >
-          {icon}
-          {plain ? null : (
-            <YStack alignItems="center" gap="$2">
-              <Text
-                color="$textPrimary"
-                fontSize={surface.state.titleFontSize}
-                fontWeight="700"
-                lineHeight={surface.state.titleLineHeight}
-                textAlign="center"
-              >
-                {title}
-              </Text>
-              <Paragraph
-                color="$textSecondary"
-                fontSize={surface.state.descriptionFontSize}
-                lineHeight={surface.state.descriptionLineHeight}
-                maxWidth={320}
-                textAlign="center"
-              >
-                {description}
-              </Paragraph>
-            </YStack>
-          )}
-          {action}
-        </YStack>
+        {icon}
+        {plain ? null : (
+          <YStack alignItems="center" gap="$2">
+            <Text
+              color="$textPrimary"
+              fontSize={surface.state.titleFontSize}
+              fontWeight="700"
+              lineHeight={surface.state.titleLineHeight}
+              textAlign="center"
+            >
+              {title}
+            </Text>
+            <Paragraph
+              color="$textSecondary"
+              fontSize={surface.state.descriptionFontSize}
+              lineHeight={surface.state.descriptionLineHeight}
+              maxWidth={320}
+              textAlign="center"
+            >
+              {description}
+            </Paragraph>
+          </YStack>
+        )}
+        {action}
       </YStack>
-    </Theme>
+    </YStack>
   );
 }
 

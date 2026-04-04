@@ -7,21 +7,9 @@ import { getMessages } from "next-intl/server";
 
 import { FirebaseTracker } from "@/lib/firebase";
 import { PlatformProvider } from "@/lib/userAgent/PlatformProvider";
-import { GlobalMarketingFooter } from "@/shared/chakra/marketing/GlobalMarketingFooter";
-import { MarketingProviders } from "@/shared/chakra/MarketingProviders";
 import { QueryProvider } from "@/shared/query/QueryProvider";
-import {
-  AppThemeProvider,
-  ThemeBootstrap,
-} from "@/shared/ui/theme-switcher";
 
 import { locales, isSupportedLocale, type Locale } from '../../i18n';
-
-const SHORTLINK_HOST = process.env.NEXT_PUBLIC_SHORTLINK_HOST ?? "link.maetry.com";
-
-function normalizeHost(host: string): string {
-  return host.replace(/^https?:\/\//, "");
-}
 
 const localeMetadata: Record<Locale, { description: string }> = {
   en: {
@@ -78,8 +66,6 @@ export default async function LocaleLayout({
   const { locale } = await params;
   const headersList = await headers();
   const userAgent = headersList.get("user-agent") ?? "";
-  const host = headersList.get("host") ?? "";
-  const isShortlinkSurface = normalizeHost(host) === normalizeHost(SHORTLINK_HOST);
 
   // Проверяем, что локаль поддерживается
   if (!isSupportedLocale(locale)) {
@@ -91,20 +77,10 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <QueryProvider>
-        <AppThemeProvider>
-          <ThemeBootstrap />
-          <PlatformProvider userAgent={userAgent}>
-            <FirebaseTracker />
-            {isShortlinkSurface ? (
-              children
-            ) : (
-              <MarketingProviders>
-                {children}
-                <GlobalMarketingFooter locale={locale} />
-              </MarketingProviders>
-            )}
-          </PlatformProvider>
-        </AppThemeProvider>
+        <PlatformProvider userAgent={userAgent}>
+          <FirebaseTracker />
+          {children}
+        </PlatformProvider>
       </QueryProvider>
     </NextIntlClientProvider>
   )

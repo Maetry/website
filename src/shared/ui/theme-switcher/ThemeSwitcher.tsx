@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useThemeSetting } from "@tamagui/next-theme";
-
+import { useThemeSetting } from "./AppThemeProvider";
 import type { ThemePreference } from "./theme";
 
 type ThemeSwitcherProps = {

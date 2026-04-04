@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import {
@@ -43,8 +43,14 @@ function getQueryClient() {
 }
 
 export function QueryProvider({ children }: { children: ReactNode }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const persister = useMemo(() => {
-    if (typeof window === "undefined") {
+    if (!isClient) {
       return undefined;
     }
 
@@ -52,7 +58,7 @@ export function QueryProvider({ children }: { children: ReactNode }) {
       key: QUERY_CACHE_KEY,
       storage: window.sessionStorage,
     });
-  }, []);
+  }, [isClient]);
 
   if (persister) {
     return (
