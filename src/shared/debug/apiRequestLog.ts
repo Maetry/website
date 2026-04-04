@@ -18,7 +18,7 @@ const MAX_ENTRIES = 14;
 export const API_REQUEST_LOG_SERVER_SNAPSHOT: ApiRequestLogEntry[] = [];
 
 let entries: ApiRequestLogEntry[] = API_REQUEST_LOG_SERVER_SNAPSHOT;
-let listeners = new Set<() => void>();
+const listeners = new Set<() => void>();
 let patchDepth = 0;
 let nativeFetch: typeof fetch | null = null;
 
@@ -143,7 +143,9 @@ function recordFinish(id: string, status: number | "error") {
 /** Подмена window.fetch: пишет в лог вызовы к same-origin `/api/*`. */
 export function installClientFetchDebugInterceptor(): () => void {
   if (typeof window === "undefined") {
-    return () => {};
+    return () => {
+      /* SSR: перехватчик не устанавливается */
+    };
   }
 
   if (patchDepth === 0) {
