@@ -86,7 +86,7 @@
     "successBookingHint": "La reserva ya está creada. Estamos cargando la confirmación final.",
     "submitLabel": "Confirmar reserva",
     "backLabel": "Atrás",
-    "successTitle": "Reserva confirmada",
+    "successTitle": "Solicitud de reserva enviada",
     "successSubtitle": "Añade la cita a tu cartera para tener los detalles siempre a mano.",
     "successProcedureAt": "{procedure} en {salon}",
     "successManageTitle": "Consigue la app para gestionar tu reserva",
@@ -101,6 +101,7 @@
     "successHelpAction": "¿Necesitas ayuda? Contactar con el salón",
     "successCreateAnother": "Crear otra reserva",
     "successClose": "Cerrar",
+    "successAppleWalletCaption": "Tu reserva queda aquí guardada; no la perderás.",
     "walletApple": "Añadir a Apple Wallet",
     "walletGoogle": "Añadir a Google Wallet",
     "walletShare": {

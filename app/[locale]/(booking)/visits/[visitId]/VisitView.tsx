@@ -38,6 +38,10 @@ import appStoreBadge from "@/public/images/appstore.svg";
 import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
 
 import { formatCurrency } from "../../_shared/formatting";
+import {
+  SectionLabel,
+  bookingSectionHeaderPaddingX,
+} from "../../_shared/primitives";
 
 const APP_STORE_URL = "https://apps.apple.com/app/id6746678571";
 
@@ -59,6 +63,10 @@ function VisitInfoRow({
   value?: string | null;
 }) {
   const surface = getBookingSurfaceStyle(platform);
+  const row = surface.row;
+  // Плотная пара «подпись / значение»: значение чуть меньше title строки — как indicator в booking rows.
+  const labelLineHeight = row.subtitleFontSize + 3;
+  const valueLineHeight = row.indicatorFontSize + 3;
 
   return (
     <XStack alignItems="center" gap="$2">
@@ -75,13 +83,26 @@ function VisitInfoRow({
           <Text color="$primary">{icon}</Text>
         </XStack>
       ) : null}
-      <YStack flex={1} gap={0}>
-        <Paragraph color="$textSecondary" marginBottom={0} marginTop={0}>
+      <YStack flex={1} gap="$0.5">
+        <Text
+          color="$textSecondary"
+          fontSize={row.subtitleFontSize}
+          lineHeight={labelLineHeight}
+          marginBottom={0}
+          marginTop={0}
+        >
           {label}
-        </Paragraph>
-        <Paragraph color="$textPrimary" flex={1} marginBottom={0} marginTop={0}>
+        </Text>
+        <Text
+          color="$textPrimary"
+          flex={1}
+          fontSize={row.indicatorFontSize}
+          lineHeight={valueLineHeight}
+          marginBottom={0}
+          marginTop={0}
+        >
           {value || "—"}
-        </Paragraph>
+        </Text>
       </YStack>
     </XStack>
   );
@@ -391,30 +412,21 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
             </XStack>
           </YStack>
 
-          <a
-            href={APP_STORE_URL}
-            rel="noopener noreferrer"
-            target="_blank"
-            aria-label={t("successDownloadApp")}
-            onClick={(event) => {
-              event.preventDefault();
-              handleDownloadApp();
-            }}
-            style={{
-              backgroundColor: "#13131A",
-              borderRadius: 16,
-              display: "block",
-              overflow: "hidden",
-              width: "100%",
-            }}
-          >
-            <div
+          <XStack justifyContent="center" width="100%">
+            <a
+              href={APP_STORE_URL}
+              rel="noopener noreferrer"
+              target="_blank"
+              aria-label={t("successDownloadApp")}
+              onClick={(event) => {
+                event.preventDefault();
+                handleDownloadApp();
+              }}
               style={{
-                alignItems: "center",
-                display: "flex",
-                height: 52,
-                justifyContent: "center",
-                width: "100%",
+                backgroundColor: "transparent",
+                display: "inline-block",
+                lineHeight: 0,
+                maxWidth: "100%",
               }}
             >
               <Image
@@ -425,89 +437,93 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
                 style={{
                   display: "block",
                   height: "auto",
-                  maxHeight: 52,
                   maxWidth: "100%",
                   objectFit: "contain",
                   width: "auto",
                 }}
                 width={140}
               />
-            </div>
-          </a>
+            </a>
+          </XStack>
         </YStack>
 
-        <YStack
-          backgroundColor="$cardBackground"
-          borderRadius={surface.visit.cardRadius}
-          overflow="hidden"
-          padding="$4"
-        >
-          <YStack gap="$4">
-            <Text color="$textPrimary" fontSize="$6" fontWeight="800">
-              {t("successDetailsTitle")}
-            </Text>
-            {appointment.procedureName ? (
-              <YStack gap="$3">
-                <VisitInfoRow
-                  icon={<WalletCards size={18} />}
-                  label={t("summaryService")}
-                  platform={platform}
-                  value={appointment.procedureName}
-                />
-                <VisitInfoRow
-                  icon={<CheckCircle2 size={18} />}
-                  label={t("summarySpecialist")}
-                  platform={platform}
-                  value={appointment.masterNickname ?? t("masterAny")}
-                />
-                {appointmentPrice ? (
+        <YStack gap={surface.section.bodyGapToken} width="100%">
+          <YStack paddingHorizontal={bookingSectionHeaderPaddingX(platform)}>
+            <SectionLabel platform={platform}>{t("successDetailsTitle")}</SectionLabel>
+          </YStack>
+          <YStack
+            backgroundColor="$cardBackground"
+            borderRadius={surface.visit.cardRadius}
+            overflow="hidden"
+            padding="$4"
+          >
+            <YStack gap="$4">
+              {appointment.procedureName ? (
+                <YStack gap="$3">
                   <VisitInfoRow
                     icon={<WalletCards size={18} />}
-                    label={t("summaryPrice")}
+                    label={t("summaryService")}
                     platform={platform}
-                    value={appointmentPrice}
+                    value={appointment.procedureName}
                   />
-                ) : null}
-              </YStack>
-            ) : null}
-
-            {appointment.procedureName ? <Separator /> : null}
-
-            {appointmentDate ? (
-              <YStack gap="$3">
-                <VisitInfoRow
-                  icon={<CalendarDays size={18} />}
-                  label={t("summaryDate")}
-                  platform={platform}
-                  value={appointmentDate}
-                />
-                {appointmentTime ? (
                   <VisitInfoRow
-                    icon={<Clock3 size={18} />}
-                    label={t("summaryTime")}
+                    icon={<CheckCircle2 size={18} />}
+                    label={t("summarySpecialist")}
                     platform={platform}
-                    value={appointmentTime}
+                    value={appointment.masterNickname ?? t("masterAny")}
                   />
-                ) : null}
-              </YStack>
-            ) : null}
+                  {appointmentPrice ? (
+                    <VisitInfoRow
+                      icon={<WalletCards size={18} />}
+                      label={t("summaryPrice")}
+                      platform={platform}
+                      value={appointmentPrice}
+                    />
+                  ) : null}
+                </YStack>
+              ) : null}
 
-            {appointmentDate ? <Separator /> : null}
+              {appointment.procedureName ? <Separator /> : null}
 
-            <VisitInfoRow
-              icon={<MapPin size={18} />}
-              label={t("summarySalon")}
-              platform={platform}
-              value={salonName ?? t("salonFallbackName")}
-            />
+              {appointmentDate ? (
+                <YStack gap="$3">
+                  <VisitInfoRow
+                    icon={<CalendarDays size={18} />}
+                    label={t("summaryDate")}
+                    platform={platform}
+                    value={appointmentDate}
+                  />
+                  {appointmentTime ? (
+                    <VisitInfoRow
+                      icon={<Clock3 size={18} />}
+                      label={t("summaryTime")}
+                      platform={platform}
+                      value={appointmentTime}
+                    />
+                  ) : null}
+                </YStack>
+              ) : null}
+
+              {appointmentDate ? <Separator /> : null}
+
+              <VisitInfoRow
+                icon={<MapPin size={18} />}
+                label={t("summarySalon")}
+                platform={platform}
+                value={salonName ?? t("salonFallbackName")}
+              />
+            </YStack>
           </YStack>
         </YStack>
 
         <YStack gap="$2.5">
           {appointment.appointmentId && isApplePlatform ? (
-            <XStack justifyContent="center">
+            <YStack alignItems="center" gap="$2" width="100%">
               <AddToAppleWalletBadge passId={appointment.appointmentId} />
-            </XStack>
+              <Paragraph color="$textSecondary" maxWidth={320} textAlign="center">
+                {t("successAppleWalletCaption")}
+              </Paragraph>
+            </YStack>
           ) : null}
           {appointment.appointmentId && !isApplePlatform ? (
             <SecondaryActionButton

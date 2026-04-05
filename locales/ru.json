@@ -86,7 +86,7 @@
     "successBookingHint": "Запись создана. Загружаем финальные данные подтверждения.",
     "submitLabel": "Подтвердить запись",
     "backLabel": "Назад",
-    "successTitle": "Запись подтверждена",
+    "successTitle": "Запрос на запись отправлен",
     "successSubtitle": "Добавьте визит в кошелёк, чтобы детали записи всегда были под рукой.",
     "successProcedureAt": "{procedure} в {salon}",
     "successManageTitle": "Управляйте записью в приложении",
@@ -101,6 +101,7 @@
     "successHelpAction": "Нужна помощь? Связаться с салоном",
     "successCreateAnother": "Создать ещё одну запись",
     "successClose": "Закрыть",
+    "successAppleWalletCaption": "Запись сохранена здесь — вы её не потеряете.",
     "walletApple": "Добавить в Apple Wallet",
     "walletGoogle": "Добавить в Google Wallet",
     "walletShare": {

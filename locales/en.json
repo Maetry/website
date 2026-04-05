@@ -86,7 +86,7 @@
     "successBookingHint": "The booking is created. We are loading the final confirmation details.",
     "submitLabel": "Confirm booking",
     "backLabel": "Back",
-    "successTitle": "Booking confirmed",
+    "successTitle": "Booking request sent",
     "successSubtitle": "Add the appointment to your wallet so the details stay close at hand.",
     "successProcedureAt": "{procedure} at {salon}",
     "successManageTitle": "Get the app to manage your booking",
@@ -101,6 +101,7 @@
     "successHelpAction": "Need help? Contact salon",
     "successCreateAnother": "Create another booking",
     "successClose": "Close",
+    "successAppleWalletCaption": "Your booking is saved here — you won't lose it.",
     "walletApple": "Add to Apple Wallet",
     "walletGoogle": "Add to Google Wallet",
     "walletShare": {
