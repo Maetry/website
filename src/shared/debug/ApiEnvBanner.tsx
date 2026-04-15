@@ -18,6 +18,7 @@ const STORAGE_KEY = "maetry_api_indicator_minimized";
 const modeLabels: Record<ApiConnectionDescriptor["mode"], string> = {
   customUrl: "По API_URL",
   defaultStage: "Stage (fallback)",
+  defaultProduction: "Production (fallback)",
   local: "Локально",
   production: "Production",
   stage: "Stage",
@@ -26,6 +27,7 @@ const modeLabels: Record<ApiConnectionDescriptor["mode"], string> = {
 const modeBorder: Record<ApiConnectionDescriptor["mode"], string> = {
   customUrl: "border-sky-400/55",
   defaultStage: "border-zinc-500/55",
+  defaultProduction: "border-rose-500/65",
   local: "border-emerald-400/55",
   production: "border-rose-500/65",
   stage: "border-amber-400/55",

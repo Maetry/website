@@ -85,7 +85,7 @@ export function formatDateLabel(
   }).format(date);
 }
 
-/** Заголовок выбранного слота: «Пн, 6 апр • 11:30» (порядок даты как в локали, без лишних точек). */
+/** Заголовок выбранного слота: дата как в локали + время в локальном 12/24h. */
 export function formatSlotSummaryTitle(
   date: Date,
   locale: string,
@@ -98,14 +98,12 @@ export function formatSlotSummaryTitle(
     weekday: "short",
   });
   const timeFmt = new Intl.DateTimeFormat(locale, {
-    hour: "2-digit",
-    hour12: false,
+    hour: "numeric",
     minute: "2-digit",
     timeZone,
   });
 
   const dParts = dateFmt.formatToParts(date);
-  const tParts = timeFmt.formatToParts(date);
 
   const datePortion = dParts
     .map((p) => {
@@ -128,13 +126,7 @@ export function formatSlotSummaryTitle(
     })
     .join("");
 
-  const pick = (parts: Intl.DateTimeFormatPart[], type: string) =>
-    parts.find((part) => part.type === type)?.value ?? "";
-
-  const hour = pick(tParts, "hour");
-  const minute = pick(tParts, "minute");
-
-  return `${datePortion} • ${hour}:${minute}`;
+  return `${datePortion} • ${timeFmt.format(date)}`;
 }
 
 export function getNightPeriodLabel(locale: string) {

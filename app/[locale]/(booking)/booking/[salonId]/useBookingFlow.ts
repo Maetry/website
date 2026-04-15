@@ -730,8 +730,7 @@ export function useBookingFlow({
   // Слоты
   const slotOptions = useMemo<SlotOption[]>(() => {
     const timeFormatter = new Intl.DateTimeFormat(locale, {
-      hour: "2-digit",
-      hour12: false,
+      hour: "numeric",
       minute: "2-digit",
       timeZone: timeZoneId,
     });

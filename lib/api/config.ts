@@ -2,7 +2,8 @@
 
 const API_LOCAL_URL = "http://localhost:8080";
 const API_STAGE_URL = "https://api-dev-601862402938.us-west2.run.app";
-const API_PRODUCTION_URL = "https://api-app-601862402938.us-west2.run.app";
+// Until a separate production API exists, production traffic uses the stage Cloud Run service.
+const API_PRODUCTION_URL = API_STAGE_URL;
 
 type ApiTarget = "local" | "production" | "stage";
 
@@ -27,6 +28,7 @@ function normalizeTarget(value?: string): ApiTarget | null {
 export function resolveApiUrl(): string {
   const direct = process.env.API_URL?.trim();
   const target = normalizeTarget(process.env.API_TARGET);
+  const vercelEnv = process.env.VERCEL_ENV?.trim().toLowerCase();
 
   // Explicit target wins over developer-local .env overrides.
   switch (target) {
@@ -44,6 +46,14 @@ export function resolveApiUrl(): string {
     return normalizeUrl(direct);
   }
 
+  if (vercelEnv === "production") {
+    return API_PRODUCTION_URL;
+  }
+
+  if (!vercelEnv && process.env.NODE_ENV === "production") {
+    return API_PRODUCTION_URL;
+  }
+
   return API_STAGE_URL;
 }
 
@@ -51,6 +61,7 @@ export function resolveApiUrl(): string {
 export type ApiConnectionMode =
   | "customUrl"
   | "defaultStage"
+  | "defaultProduction"
   | "local"
   | "production"
   | "stage";
@@ -64,12 +75,19 @@ export function getApiConnectionDescriptor(): ApiConnectionDescriptor {
   const direct = process.env.API_URL?.trim();
   const target = normalizeTarget(process.env.API_TARGET);
   const baseUrl = resolveApiUrl();
+  const vercelEnv = process.env.VERCEL_ENV?.trim().toLowerCase();
 
   if (target) {
     return { mode: target, baseUrl };
   }
   if (direct) {
     return { mode: "customUrl", baseUrl };
+  }
+  if (vercelEnv === "production") {
+    return { mode: "defaultProduction", baseUrl };
+  }
+  if (!vercelEnv && process.env.NODE_ENV === "production") {
+    return { mode: "defaultProduction", baseUrl };
   }
   return { mode: "defaultStage", baseUrl };
 }

@@ -19,58 +19,54 @@ export async function GET(request: NextRequest) {
   try {
     const id = validateId(rawId, "appointmentId");
     const apiUrl = resolveApiUrl();
-    const targetUrl = `${apiUrl}/wallet/google?id=${encodeURIComponent(id)}`;
-    
+    const targetUrl = `${apiUrl}/v1/wallet/google/booking/${encodeURIComponent(id)}`;
+
     const response = await fetch(targetUrl, {
-      method: 'GET',
-      cache: 'no-store',
-      redirect: 'follow',
+      method: "GET",
+      cache: "no-store",
+      redirect: "follow",
     });
 
     if (!response.ok) {
       const message = await response.text();
       return NextResponse.json(
-        { error: message || 'Failed to get Google Wallet URL' },
+        { error: message || "Failed to get Google Wallet URL" },
         { status: response.status }
       );
     }
 
-    // Если ответ - редирект, возвращаем его
     if (response.redirected && response.url) {
       return NextResponse.redirect(response.url);
     }
 
-    // Если ответ - JSON с URL, делаем редирект на этот URL
-    const data = await response.json();
-    const walletUrl = data.url || data;
-    
-    if (typeof walletUrl === 'string') {
+    const walletUrl = (await response.text()).trim();
+
+    if (walletUrl) {
       return NextResponse.redirect(walletUrl);
     }
 
     return NextResponse.json(
-      { error: 'Invalid response format' },
+      { error: "Invalid response format" },
       { status: 500 }
     );
   } catch (error) {
     if (error instanceof ApiError) {
       return NextResponse.json(
         { 
-          error: 'INVALID_APPOINTMENT_ID',
+          error: "INVALID_APPOINTMENT_ID",
           message: error.message
         },
         { status: error.status }
       );
     }
     
-    console.error('[wallet/google] proxy failed', error);
+    console.error("[wallet/google] proxy failed", error);
     return NextResponse.json(
       {
-        error: 'FAILED_TO_FETCH_WALLET_URL',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: "FAILED_TO_FETCH_WALLET_URL",
+        message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
   }
 }
-

@@ -216,8 +216,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
 
   const appointmentTime = appointment?.time?.start
     ? new Intl.DateTimeFormat(locale, {
-        hour: "2-digit",
-        hour12: false,
+        hour: "numeric",
         minute: "2-digit",
         timeZone: timeZoneId,
       }).format(new Date(appointment.time.start))

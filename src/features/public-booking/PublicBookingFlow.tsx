@@ -299,8 +299,7 @@ function formatDateValue(value: string, locale: string, timeZone: string) {
 
 function formatTimeValue(value: string, locale: string, timeZone: string) {
   return new Intl.DateTimeFormat(locale, {
-    hour: "2-digit",
-    hour12: false,
+    hour: "numeric",
     minute: "2-digit",
     timeZone,
   }).format(new Date(value));
