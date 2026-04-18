@@ -133,7 +133,6 @@ function openAppWithFallback(
     window.clearTimeout(timeoutId);
     document.removeEventListener("visibilitychange", handleVisibilityChange);
     window.removeEventListener("pagehide", handlePageHide);
-    window.removeEventListener("blur", handleBlur);
   };
 
   const fallback = () => {
@@ -174,15 +173,13 @@ function openAppWithFallback(
     cleanup();
   };
 
-  const handleBlur = () => {
-    didHide = true;
-  };
-
   const timeoutId = window.setTimeout(fallback, 1400);
 
+  // iOS Safari can blur the page while showing the native "Open in app?" sheet.
+  // If the user taps Cancel, the document stays visible and we still need the web fallback.
+  // Treat only a real hide/page unload as a successful handoff to the native app.
   document.addEventListener("visibilitychange", handleVisibilityChange);
   window.addEventListener("pagehide", handlePageHide);
-  window.addEventListener("blur", handleBlur);
 
   window.location.assign(response.appUrl);
 }

@@ -2,8 +2,7 @@
 
 const API_LOCAL_URL = "http://localhost:8080";
 const API_STAGE_URL = "https://api-dev-601862402938.us-west2.run.app";
-// Until a separate production API exists, production traffic uses the stage Cloud Run service.
-const API_PRODUCTION_URL = API_STAGE_URL;
+const API_PRODUCTION_URL = "https://api-app-601862402938.us-west2.run.app";
 
 type ApiTarget = "local" | "production" | "stage";
 
