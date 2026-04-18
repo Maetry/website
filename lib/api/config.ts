@@ -6,10 +6,6 @@ const API_PRODUCTION_URL = "https://api-app-601862402938.us-west2.run.app";
 
 type ApiTarget = "local" | "production" | "stage";
 
-function normalizeUrl(value: string): string {
-  return value.replace(/\/+$/, "");
-}
-
 function normalizeTarget(value?: string): ApiTarget | null {
   switch (value?.trim().toLowerCase()) {
     case "local":
@@ -25,9 +21,11 @@ function normalizeTarget(value?: string): ApiTarget | null {
 }
 
 export function resolveApiUrl(): string {
-  const direct = process.env.API_URL?.trim();
   const target = normalizeTarget(process.env.API_TARGET);
   const vercelEnv = process.env.VERCEL_ENV?.trim().toLowerCase();
+  const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
+  const isProductionDeployment =
+    vercelEnv === "production" || (!vercelEnv && nodeEnv === "production");
 
   // Explicit target wins over developer-local .env overrides.
   switch (target) {
@@ -41,25 +39,26 @@ export function resolveApiUrl(): string {
       break;
   }
 
-  if (direct) {
-    return normalizeUrl(direct);
-  }
-
-  if (vercelEnv === "production") {
+  // Production deploys must always use the production API.
+  if (isProductionDeployment) {
     return API_PRODUCTION_URL;
   }
 
-  if (!vercelEnv && process.env.NODE_ENV === "production") {
-    return API_PRODUCTION_URL;
+  if (vercelEnv === "preview") {
+    return API_STAGE_URL;
   }
 
-  return API_STAGE_URL;
+  if (nodeEnv === "development") {
+    return API_LOCAL_URL;
+  }
+
+  return API_PRODUCTION_URL;
 }
 
 /** Как выбран базовый URL для индикатора и отладки (без повторной логики resolve). */
 export type ApiConnectionMode =
-  | "customUrl"
-  | "defaultStage"
+  | "defaultLocal"
+  | "defaultPreviewStage"
   | "defaultProduction"
   | "local"
   | "production"
@@ -71,22 +70,24 @@ export type ApiConnectionDescriptor = {
 };
 
 export function getApiConnectionDescriptor(): ApiConnectionDescriptor {
-  const direct = process.env.API_URL?.trim();
   const target = normalizeTarget(process.env.API_TARGET);
   const baseUrl = resolveApiUrl();
   const vercelEnv = process.env.VERCEL_ENV?.trim().toLowerCase();
+  const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
+  const isProductionDeployment =
+    vercelEnv === "production" || (!vercelEnv && nodeEnv === "production");
 
   if (target) {
     return { mode: target, baseUrl };
   }
-  if (direct) {
-    return { mode: "customUrl", baseUrl };
-  }
-  if (vercelEnv === "production") {
+  if (isProductionDeployment) {
     return { mode: "defaultProduction", baseUrl };
   }
-  if (!vercelEnv && process.env.NODE_ENV === "production") {
-    return { mode: "defaultProduction", baseUrl };
+  if (vercelEnv === "preview") {
+    return { mode: "defaultPreviewStage", baseUrl };
   }
-  return { mode: "defaultStage", baseUrl };
+  if (nodeEnv === "development") {
+    return { mode: "defaultLocal", baseUrl };
+  }
+  return { mode: "defaultProduction", baseUrl };
 }
