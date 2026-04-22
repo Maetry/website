@@ -17,7 +17,13 @@ export type AnalyticsEvent =
   | 'billing_plan_change_requested'
   | 'billing_plan_change_completed'
   | 'wallet_pass_added'
-  | 'invite_page_viewed';
+  | 'invite_page_viewed'
+  | 'support_page_viewed'
+  | 'support_role_selected'
+  | 'support_issue_selected'
+  | 'support_form_started'
+  | 'support_form_submitted'
+  | 'support_email_fallback';
 
 export function useAnalytics() {
   const track = useCallback(

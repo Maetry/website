@@ -582,6 +582,270 @@
     "errorProcessing": "We couldn't process this link.",
     "retry": "Try again"
   },
+  "support": {
+    "header": {
+      "roles": "Who it's for",
+      "form": "Contact form",
+      "faq": "FAQ",
+      "emailAction": "Email support",
+      "appAction": "Get the app"
+    },
+    "hero": {
+      "eyebrow": "Maetry support",
+      "title": "Help for booking issues, account access and salon-side operations.",
+      "subtitle": "Use one support entry point for client questions, salon workflows, billing and technical issues. We review requests daily and route them to the right owner.",
+      "responseTitle": "Response window",
+      "responseBody": "We review all requests daily and reply as quickly as possible from the right support queue.",
+      "urgentTitle": "Urgent booking issues",
+      "urgentBody": "For same-day booking problems or appointment changes, contact the salon directly as well.",
+      "cardEyebrow": "Before you send",
+      "cardPoints": {
+        "one": "Use the email tied to the affected account or booking when possible.",
+        "two": "Include the salon name, date and screenshots if something failed on the web or in the app.",
+        "three": "Do not send passwords or full card numbers through support."
+      },
+      "emailAction": "Open email",
+      "formAction": "Use the form",
+      "roleCards": {
+        "client": {
+          "title": "I'm a client",
+          "description": "Booking confirmations, appointment changes, account recovery and app issues."
+        },
+        "salon": {
+          "title": "I'm a salon or team member",
+          "description": "Console access, billing, staff workflows, booking operations and business-side issues."
+        }
+      }
+    },
+    "roleSection": {
+      "eyebrow": "Two entry paths",
+      "title": "Start with the role closest to your issue.",
+      "body": "The page stays unified, but the request is structured differently for clients and salon teams so support does not waste time on back-and-forth."
+    },
+    "quickActions": {
+      "eyebrow": "Fast routing",
+      "title": "Most requests start in one of three buckets.",
+      "body": "Pick the closest category now. You can still change the exact issue type inside the form.",
+      "booking": "Booking help",
+      "account": "Account & access",
+      "billing": "Billing / subscription"
+    },
+    "selfServe": {
+      "emailTitle": "Email support",
+      "emailBody": "Use support@maetry.com if you prefer a direct inbox route.",
+      "appTitle": "Get the app",
+      "appBody": "Open the latest Maetry app before reporting account or booking issues.",
+      "telegramTitle": "Telegram",
+      "telegramBody": "Use Telegram if that is already your active communication channel with Maetry."
+    },
+    "prepare": {
+      "eyebrow": "Prep",
+      "title": "What to have ready before you submit",
+      "items": [
+        "Account email or phone tied to the affected booking or workspace",
+        "Salon name and booking date/time when the request is appointment-related",
+        "Screenshots or a short screen recording of the problem",
+        "Booking reference, payment date or invoice details if billing is involved"
+      ]
+    },
+    "warning": {
+      "title": "Sensitive information",
+      "body": "Do not include passwords, full card numbers or any private data you would not send in email. Use the account email tied to the issue whenever possible so support can verify the request faster."
+    },
+    "form": {
+      "eyebrow": "Contact-first support",
+      "title": "Send a structured request",
+      "intro": "Current selection: {issueType}. We use the details below to route your request without an extra clarification step.",
+      "roles": {
+        "client": "Client",
+        "salon_owner": "Salon owner / admin",
+        "team_member": "Team member",
+        "partner_other": "Partner / other"
+      },
+      "issueTypes": {
+        "booking": "Booking",
+        "account": "Account access",
+        "billing": "Billing",
+        "technical": "Technical issue",
+        "partnership": "Partnership / sales",
+        "privacy": "Privacy / legal request"
+      },
+      "fields": {
+        "role": "Who are you?",
+        "issueType": "What do you need help with?",
+        "fullName": "Full name",
+        "email": "Email",
+        "phone": "Phone or Telegram handle",
+        "subject": "Subject",
+        "description": "Description",
+        "attachments": "Attachments",
+        "consent": "Maetry may use these details to follow up on this request and confirm account or booking context.",
+        "bookingSubType": "Booking issue",
+        "salonName": "Salon name",
+        "appointmentDate": "Appointment date",
+        "appointmentTime": "Appointment time",
+        "location": "City / country",
+        "bookingReference": "Booking ID or link",
+        "paymentAmount": "Payment amount",
+        "accountEmail": "Account email",
+        "affectedRole": "Affected role",
+        "accountProblemType": "Account issue",
+        "productOrPlan": "Plan or product",
+        "businessName": "Business name",
+        "chargeDate": "Charge or invoice date",
+        "chargeAmount": "Amount / currency",
+        "billingSubType": "Billing issue",
+        "platform": "Platform",
+        "appVersion": "App version",
+        "browser": "Browser",
+        "reproductionSteps": "Steps to reproduce",
+        "occurredAt": "When it happened",
+        "severity": "Severity",
+        "privacyRequestType": "Request type",
+        "region": "Country / region",
+        "privacyDetails": "Extra details"
+      },
+      "placeholders": {
+        "fullName": "How should we address you?",
+        "email": "name@example.com",
+        "phone": "+1 555 555 1234 or @telegram",
+        "subject": "Short summary of the issue",
+        "description": "Explain what happened, what you expected and what is blocking you now.",
+        "select": "Select an option",
+        "salonName": "Salon or business name",
+        "location": "New York, USA",
+        "bookingReference": "Booking ID, deep link or confirmation URL",
+        "paymentAmount": "Example: 45 USD",
+        "accountEmail": "Email used in Maetry",
+        "productOrPlan": "Plan name, seat package or invoice context",
+        "businessName": "Business or workspace name",
+        "chargeAmount": "Example: 79 USD",
+        "appVersion": "Example: iOS 1.3.2",
+        "browser": "Example: Safari 18.4 on iPhone",
+        "reproductionSteps": "List the steps that lead to the issue.",
+        "region": "Country or legal region",
+        "privacyDetails": "Anything else legal or privacy support should know."
+      },
+      "hints": {
+        "phone": "Optional, but helpful if support needs a quicker follow-up."
+      },
+      "attachments": {
+        "hint": "Images, short videos or PDFs. Up to 4 files.",
+        "types": "Accepted formats: images, short screen recordings and PDF receipts.",
+        "maxCount": "You can attach up to 4 files.",
+        "maxSize": "Each attachment must be under 20 MB."
+      },
+      "bookingSubTypes": {
+        "confirmation": "Missing confirmation",
+        "reschedule": "Reschedule",
+        "cancellation": "Cancellation",
+        "refund": "Refund",
+        "other": "Other"
+      },
+      "accountRoles": {
+        "salon": "Salon",
+        "staff": "Staff"
+      },
+      "accountProblems": {
+        "login": "Login issue",
+        "verification": "Verification issue",
+        "wrong_email": "Wrong email",
+        "phone_mismatch": "Phone mismatch",
+        "account_blocked": "Account blocked"
+      },
+      "billingSubTypes": {
+        "failed_payment": "Failed payment",
+        "duplicate_charge": "Duplicate charge",
+        "cancel_subscription": "Cancel subscription",
+        "invoice_copy": "Invoice copy",
+        "refund": "Refund"
+      },
+      "platforms": {
+        "ios": "iPhone / iPad",
+        "android": "Android",
+        "web": "Web"
+      },
+      "severity": {
+        "blocking": "Blocking",
+        "degraded": "Degraded",
+        "cosmetic": "Cosmetic"
+      },
+      "privacyTypes": {
+        "delete_account": "Delete account",
+        "export_data": "Export data",
+        "privacy_question": "Privacy question",
+        "legal_complaint": "Legal complaint"
+      },
+      "partnershipHint": "Partnership and sales requests still use the same support intake here. Include company context, market and the kind of partnership you want to discuss.",
+      "actions": {
+        "submit": "Prepare request",
+        "submitting": "Preparing...",
+        "directEmail": "Prefer direct email instead?"
+      },
+      "errors": {
+        "required": "This field is required.",
+        "invalidEmail": "Enter a valid email address.",
+        "consent": "Please confirm that Maetry can follow up on this request.",
+        "selection": "Choose a valid option.",
+        "submit": "We couldn't prepare the request right now. You can still email support directly."
+      }
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Questions support pages usually need to answer up front",
+      "body": "This is not a full help center yet. It is the minimum self-serve layer that reduces avoidable back-and-forth before human support steps in.",
+      "items": [
+        {
+          "question": "I need help with a booking",
+          "answer": "Choose Booking in the form and include the salon name, appointment date and any booking link or confirmation details you have."
+        },
+        {
+          "question": "I didn't receive a confirmation",
+          "answer": "Include the booking date and salon name, then attach a screenshot of the last step you saw in the app or on the web."
+        },
+        {
+          "question": "I need to change my account email or phone",
+          "answer": "Choose Account access and submit the email currently tied to the affected Maetry account."
+        },
+        {
+          "question": "I'm a salon and need console help",
+          "answer": "Choose Account access or Technical issue depending on whether the problem is login-related or workflow-related inside the console."
+        },
+        {
+          "question": "I have a billing question",
+          "answer": "Choose Billing and include the plan or product plus the invoice or charge date if you have it."
+        },
+        {
+          "question": "I want to report a bug",
+          "answer": "Choose Technical issue, specify platform and severity, and list the exact steps needed to reproduce the problem."
+        }
+      ]
+    },
+    "footerLinks": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "privacyRequest": "Privacy request by email"
+    },
+    "success": {
+      "eyebrow": "Next step ready",
+      "submittedTitle": "Your support request is in the queue.",
+      "submittedBody": "We’ll reply to {email} as soon as the right team reviews it.",
+      "mailtoTitle": "Your support email draft is ready.",
+      "mailtoBody": "We prepared the email for {email}. Review it in your mail app and send it to finish the request.",
+      "nextTitle": "What happens next",
+      "nextReply": "Support will reply by email after reviewing the request details.",
+      "nextMailto": "Open the drafted email, then send it so the request actually reaches support.",
+      "attachmentsHint": "{count, plural, one {You selected 1 file. It will not be attached automatically to the email draft, so add it manually before sending.} other {You selected # files. They will not be attached automatically to the email draft, so add them manually before sending.}}",
+      "truncatedHint": "If the description in your email draft looks shortened, add the remaining context before sending.",
+      "urgent": "For urgent same-day appointment issues, contact the salon directly too.",
+      "otherWaysTitle": "Other ways to continue",
+      "homeLink": "Back to client home",
+      "businessLink": "Open business landing",
+      "newRequest": "Start another request",
+      "openDraft": "Open drafted email",
+      "emailAction": "Email support"
+    }
+  },
   "footer": {
     "privacyPolicy": "Privacy policy",
     "licenseAgreement": "License agreement",
@@ -619,6 +883,11 @@
       "title": "Maetry partner program | Refer salons and earn recurring revenue",
       "description": "Join the Maetry partner program for consultants, agencies and industry partners who help salons improve bookings and operations.",
       "keywords": "maetry partner program, salon software referrals, beauty salon partnership, salon operations software, recurring partner revenue"
+    },
+    "support": {
+      "title": "Maetry Support | Booking, account, billing and salon help",
+      "description": "Contact Maetry support for booking issues, account access, billing questions, privacy requests and salon-side operational help.",
+      "keywords": "maetry support, booking help, salon software support, maetry billing support, beauty booking support"
     }
   },
   "errorPage": {

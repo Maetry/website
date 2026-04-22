@@ -643,6 +643,270 @@
     "errorProcessing": "No pudimos procesar este enlace.",
     "retry": "Intentar de nuevo"
   },
+  "support": {
+    "header": {
+      "roles": "Para quién es",
+      "form": "Formulario",
+      "faq": "FAQ",
+      "emailAction": "Escribir a soporte",
+      "appAction": "Descargar la app"
+    },
+    "hero": {
+      "eyebrow": "Soporte de Maetry",
+      "title": "Ayuda para reservas, acceso a la cuenta y operación del salón.",
+      "subtitle": "Un solo punto de entrada para dudas de clientes, flujos del salón, billing y problemas técnicos. Revisamos las solicitudes cada día y las dirigimos al equipo correcto.",
+      "responseTitle": "Tiempo de respuesta",
+      "responseBody": "Revisamos todas las solicitudes a diario y respondemos lo antes posible desde la cola correcta.",
+      "urgentTitle": "Problemas urgentes de reserva",
+      "urgentBody": "Si el problema afecta una cita de hoy o un cambio urgente, contacta también al salón directamente.",
+      "cardEyebrow": "Antes de enviar",
+      "cardPoints": {
+        "one": "Usa el email vinculado a la cuenta o a la reserva siempre que sea posible.",
+        "two": "Incluye el nombre del salón, la fecha y capturas si algo falló en la web o en la app.",
+        "three": "No envíes contraseñas ni números completos de tarjeta por soporte."
+      },
+      "emailAction": "Abrir email",
+      "formAction": "Usar formulario",
+      "roleCards": {
+        "client": {
+          "title": "Soy cliente",
+          "description": "Confirmaciones de reserva, cambios de cita, recuperación de cuenta y problemas en la app."
+        },
+        "salon": {
+          "title": "Soy salón o miembro del equipo",
+          "description": "Acceso a la console, billing, flujos del equipo, reservas y problemas operativos del negocio."
+        }
+      }
+    },
+    "roleSection": {
+      "eyebrow": "Dos rutas de entrada",
+      "title": "Empieza por la función más cercana a tu problema.",
+      "body": "La página es una sola, pero la información se estructura distinto para clientes y equipos del salón para evitar mensajes de ida y vuelta."
+    },
+    "quickActions": {
+      "eyebrow": "Enrutado rápido",
+      "title": "La mayoría de las solicitudes empieza en una de estas tres categorías.",
+      "body": "Elige la categoría más cercana ahora. Después podrás cambiar el tipo exacto dentro del formulario.",
+      "booking": "Ayuda con reservas",
+      "account": "Cuenta y acceso",
+      "billing": "Billing / suscripción"
+    },
+    "selfServe": {
+      "emailTitle": "Email de soporte",
+      "emailBody": "Usa support@maetry.com si prefieres ir directo al inbox.",
+      "appTitle": "Descargar la app",
+      "appBody": "Abre la versión más reciente de Maetry antes de reportar problemas de cuenta o reservas.",
+      "telegramTitle": "Telegram",
+      "telegramBody": "Usa Telegram si ya es tu canal activo de comunicación con Maetry."
+    },
+    "prepare": {
+      "eyebrow": "Preparación",
+      "title": "Qué conviene tener listo antes de enviar",
+      "items": [
+        "El email o teléfono vinculado a la reserva o al workspace afectado",
+        "Nombre del salón y fecha/hora de la cita si el caso está relacionado con una reserva",
+        "Capturas de pantalla o una grabación corta de pantalla",
+        "Referencia de reserva, fecha del cobro o datos de la factura si hay billing de por medio"
+      ]
+    },
+    "warning": {
+      "title": "Información sensible",
+      "body": "No incluyas contraseñas, números completos de tarjeta ni datos privados que no enviarías por email. Usa el email vinculado al problema siempre que puedas para acelerar la verificación."
+    },
+    "form": {
+      "eyebrow": "Soporte contact-first",
+      "title": "Envía una solicitud estructurada",
+      "intro": "Selección actual: {issueType}. Los datos de abajo permiten enrutar tu solicitud sin un mensaje extra de aclaración.",
+      "roles": {
+        "client": "Cliente",
+        "salon_owner": "Dueño del salón / admin",
+        "team_member": "Miembro del equipo",
+        "partner_other": "Partner / otro"
+      },
+      "issueTypes": {
+        "booking": "Reserva",
+        "account": "Acceso a la cuenta",
+        "billing": "Billing",
+        "technical": "Problema técnico",
+        "partnership": "Partnership / ventas",
+        "privacy": "Solicitud de privacidad / legal"
+      },
+      "fields": {
+        "role": "¿Quién eres?",
+        "issueType": "¿Con qué necesitas ayuda?",
+        "fullName": "Nombre completo",
+        "email": "Email",
+        "phone": "Teléfono o usuario de Telegram",
+        "subject": "Asunto",
+        "description": "Descripción",
+        "attachments": "Adjuntos",
+        "consent": "Maetry puede usar estos datos para responder a esta solicitud y confirmar el contexto de cuenta o reserva.",
+        "bookingSubType": "Problema de reserva",
+        "salonName": "Nombre del salón",
+        "appointmentDate": "Fecha de la cita",
+        "appointmentTime": "Hora de la cita",
+        "location": "Ciudad / país",
+        "bookingReference": "ID de reserva o enlace",
+        "paymentAmount": "Importe pagado",
+        "accountEmail": "Email de la cuenta",
+        "affectedRole": "Rol afectado",
+        "accountProblemType": "Problema de cuenta",
+        "productOrPlan": "Plan o producto",
+        "businessName": "Nombre del negocio",
+        "chargeDate": "Fecha del cobro o factura",
+        "chargeAmount": "Importe / moneda",
+        "billingSubType": "Problema de billing",
+        "platform": "Plataforma",
+        "appVersion": "Versión de la app",
+        "browser": "Navegador",
+        "reproductionSteps": "Pasos para reproducir",
+        "occurredAt": "Cuándo ocurrió",
+        "severity": "Severidad",
+        "privacyRequestType": "Tipo de solicitud",
+        "region": "País / región",
+        "privacyDetails": "Detalles adicionales"
+      },
+      "placeholders": {
+        "fullName": "¿Cómo debemos llamarte?",
+        "email": "name@example.com",
+        "phone": "+1 555 555 1234 o @telegram",
+        "subject": "Resumen breve del problema",
+        "description": "Explica qué pasó, qué esperabas y qué te está bloqueando ahora.",
+        "select": "Selecciona una opción",
+        "salonName": "Nombre del salón o negocio",
+        "location": "Madrid, España",
+        "bookingReference": "ID de reserva, deep link o URL de confirmación",
+        "paymentAmount": "Ejemplo: 45 USD",
+        "accountEmail": "Email usado en Maetry",
+        "productOrPlan": "Nombre del plan, paquete de seats o contexto de factura",
+        "businessName": "Nombre del negocio o workspace",
+        "chargeAmount": "Ejemplo: 79 USD",
+        "appVersion": "Ejemplo: iOS 1.3.2",
+        "browser": "Ejemplo: Safari 18.4 en iPhone",
+        "reproductionSteps": "Describe los pasos exactos que llevan al problema.",
+        "region": "País o región legal",
+        "privacyDetails": "Cualquier dato extra que deba conocer el equipo legal o de privacidad."
+      },
+      "hints": {
+        "phone": "Opcional, pero útil si soporte necesita hacer seguimiento más rápido."
+      },
+      "attachments": {
+        "hint": "Imágenes, vídeos cortos o PDF. Hasta 4 archivos.",
+        "types": "Formatos aceptados: imágenes, grabaciones cortas de pantalla y recibos PDF.",
+        "maxCount": "Puedes adjuntar hasta 4 archivos.",
+        "maxSize": "Cada archivo debe pesar menos de 20 MB."
+      },
+      "bookingSubTypes": {
+        "confirmation": "No llegó la confirmación",
+        "reschedule": "Reprogramar",
+        "cancellation": "Cancelación",
+        "refund": "Reembolso",
+        "other": "Otro"
+      },
+      "accountRoles": {
+        "salon": "Salón",
+        "staff": "Staff"
+      },
+      "accountProblems": {
+        "login": "Problema de acceso",
+        "verification": "Problema de verificación",
+        "wrong_email": "Email incorrecto",
+        "phone_mismatch": "Teléfono no coincide",
+        "account_blocked": "Cuenta bloqueada"
+      },
+      "billingSubTypes": {
+        "failed_payment": "Pago fallido",
+        "duplicate_charge": "Cobro duplicado",
+        "cancel_subscription": "Cancelar suscripción",
+        "invoice_copy": "Copia de factura",
+        "refund": "Reembolso"
+      },
+      "platforms": {
+        "ios": "iPhone / iPad",
+        "android": "Android",
+        "web": "Web"
+      },
+      "severity": {
+        "blocking": "Bloqueante",
+        "degraded": "Degradado",
+        "cosmetic": "Cosmético"
+      },
+      "privacyTypes": {
+        "delete_account": "Eliminar cuenta",
+        "export_data": "Exportar datos",
+        "privacy_question": "Pregunta de privacidad",
+        "legal_complaint": "Reclamación legal"
+      },
+      "partnershipHint": "Las solicitudes de partnership y ventas también entran por esta vía. Incluye contexto de empresa, mercado y el tipo de colaboración que quieres explorar.",
+      "actions": {
+        "submit": "Preparar solicitud",
+        "submitting": "Preparando...",
+        "directEmail": "¿Prefieres escribir directamente?"
+      },
+      "errors": {
+        "required": "Este campo es obligatorio.",
+        "invalidEmail": "Introduce un email válido.",
+        "consent": "Confirma que Maetry puede responder a esta solicitud.",
+        "selection": "Selecciona una opción válida.",
+        "submit": "No pudimos preparar la solicitud ahora mismo. Aun así puedes escribir a soporte directamente."
+      }
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Preguntas que una página de soporte debe resolver desde el inicio",
+      "body": "Todavía no es un help center completo. Es la capa mínima de self-serve para evitar aclaraciones innecesarias antes de que intervenga soporte humano.",
+      "items": [
+        {
+          "question": "Necesito ayuda con una reserva",
+          "answer": "Elige «Reserva» en el formulario e incluye el nombre del salón, la fecha de la cita y cualquier enlace o detalle de confirmación que tengas."
+        },
+        {
+          "question": "No recibí confirmación",
+          "answer": "Incluye la fecha de la reserva y el nombre del salón, y adjunta una captura del último paso que viste en la app o en la web."
+        },
+        {
+          "question": "Necesito cambiar el email o teléfono de mi cuenta",
+          "answer": "Elige «Acceso a la cuenta» y envía el email actualmente vinculado a la cuenta de Maetry afectada."
+        },
+        {
+          "question": "Soy un salón y necesito ayuda con la console",
+          "answer": "Elige «Acceso a la cuenta» o «Problema técnico» según si el problema está relacionado con login o con un flujo dentro de la console."
+        },
+        {
+          "question": "Tengo una duda de billing",
+          "answer": "Elige «Billing» e incluye el plan o producto, además de la fecha del cobro o la factura si la tienes."
+        },
+        {
+          "question": "Quiero reportar un bug",
+          "answer": "Elige «Problema técnico», indica plataforma y severidad, y enumera los pasos exactos para reproducir el fallo."
+        }
+      ]
+    },
+    "footerLinks": {
+      "privacy": "Política de privacidad",
+      "terms": "Términos de uso",
+      "privacyRequest": "Solicitud de privacidad por email"
+    },
+    "success": {
+      "eyebrow": "Siguiente paso listo",
+      "submittedTitle": "Tu solicitud ya está en la cola.",
+      "submittedBody": "Responderemos a {email} en cuanto el equipo correcto revise el caso.",
+      "mailtoTitle": "Tu borrador de email a soporte está listo.",
+      "mailtoBody": "Preparamos el email para {email}. Revísalo en tu app de correo y envíalo para completar la solicitud.",
+      "nextTitle": "Qué pasa ahora",
+      "nextReply": "Soporte responderá por email después de revisar los detalles del caso.",
+      "nextMailto": "Abre el borrador de email y envíalo para que la solicitud llegue realmente a soporte.",
+      "attachmentsHint": "{count, plural, one {Has seleccionado 1 archivo. No se adjuntará automáticamente al borrador, así que añádelo manualmente antes de enviarlo.} other {Has seleccionado # archivos. No se adjuntarán automáticamente al borrador, así que añádelos manualmente antes de enviarlo.}}",
+      "truncatedHint": "Si la descripción del borrador aparece recortada, añade el resto del contexto antes de enviarlo.",
+      "urgent": "Para problemas urgentes de citas del mismo día, contacta también al salón directamente.",
+      "otherWaysTitle": "Otras formas de continuar",
+      "homeLink": "Volver al sitio para clientes",
+      "businessLink": "Abrir landing business",
+      "newRequest": "Crear otra solicitud",
+      "openDraft": "Abrir borrador de email",
+      "emailAction": "Escribir a soporte"
+    }
+  },
   "meta": {
     "home": {
       "title": "Maetry — Software de gestión para salones y marketplace de reservas de belleza",
@@ -662,6 +926,11 @@
       "title": "Programa de socios de Maetry | Refiere salones y genera ingresos recurrentes",
       "description": "Programa de socios de Maetry para consultores, agencias y partners del sector que ayudan a salones a ordenar reservas y operación diaria.",
       "keywords": "programa de socios maetry, referidos software para salones, software de gestión para salones, partnership belleza, ingresos recurrentes"
+    },
+    "support": {
+      "title": "Soporte de Maetry | Reservas, cuenta, billing y ayuda para salones",
+      "description": "Contacta con soporte de Maetry para problemas de reserva, acceso a la cuenta, billing, solicitudes de privacidad y ayuda operativa para salones.",
+      "keywords": "soporte maetry, ayuda con reservas, soporte software para salones, billing maetry, soporte de reservas belleza"
     }
   },
   "errorPage": {
