@@ -34,6 +34,8 @@ const intlMiddleware = createMiddleware({
 });
 
 const LOCALE_PREFIX_PATTERN = new RegExp(`^/(?:${locales.join('|')})(/|$)`);
+const CONSOLE_PREFIX_PATTERN = /^\/console(?:\/|$)/;
+const SHORTLINK_PATH_PATTERN = /^\/link\/[^/]+$/;
 
 // Вспомогательные функции
 function isSystemPath(pathname: string): boolean {
@@ -227,7 +229,35 @@ export function middleware(req: NextRequest) {
     return handleLocaleRoute(req, pathname, encodedTracking);
   }
 
-  // 3. Путь не содержит локаль - определяем локаль и редиректим на /{locale}/...
+  // 3. Локальный path-prefix routing для console на основном домене.
+  if (CONSOLE_PREFIX_PATTERN.test(pathname)) {
+    const locale = getLocaleFromRequest(req);
+    const rewriteUrl = req.nextUrl.clone();
+    rewriteUrl.pathname = `/${locale}${pathname}`;
+
+    const response = NextResponse.rewrite(rewriteUrl);
+    setLocaleCookie(response, locale);
+    if (encodedTracking) {
+      setTrackingCookie(response, encodedTracking);
+    }
+    return response;
+  }
+
+  // 4. Поддерживаем /link/{nanoId} на основном домене без смены видимого URL.
+  if (SHORTLINK_PATH_PATTERN.test(pathname)) {
+    const locale = getLocaleFromRequest(req);
+    const rewriteUrl = req.nextUrl.clone();
+    rewriteUrl.pathname = `/${locale}${pathname}`;
+
+    const response = NextResponse.rewrite(rewriteUrl);
+    setLocaleCookie(response, locale);
+    if (encodedTracking) {
+      setTrackingCookie(response, encodedTracking);
+    }
+    return response;
+  }
+
+  // 5. Путь не содержит локаль - определяем локаль и редиректим на /{locale}/...
   return handleRedirectWithoutLocale(req, pathname, encodedTracking);
 }
 

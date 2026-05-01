@@ -158,7 +158,7 @@ export function getVisitOrigin() {
 
 export function buildVisitUrl(locale: string, appointmentId: string) {
   return new URL(
-    `/${locale}/visits/${appointmentId}`,
+    `/${locale}/visit/${appointmentId}`,
     getVisitOrigin(),
   ).toString();
 }

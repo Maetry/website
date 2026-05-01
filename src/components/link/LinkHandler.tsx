@@ -55,11 +55,16 @@ function resolveInviteStoreUrl(response: PublicClickResponse): string | null {
   return null;
 }
 
-const ALLOWED_APP_NAVIGATION_PROTOCOLS = new Set(["maetry:", "https:", "http:"]);
+const ALLOWED_APP_NAVIGATION_PROTOCOLS = new Set([
+  "maetry:",
+  "maesole:",
+  "https:",
+  "http:",
+]);
 
 /**
  * Проверка до window.location.assign: иначе Safari показывает «address is invalid»
- * для битых custom scheme и пустых maetry:-ссылок.
+ * для битых legacy custom scheme и пустых ссылок.
  */
 function canSafelyNavigateToAppUrl(rawUrl: string): boolean {
   const trimmed = rawUrl.trim();
@@ -83,8 +88,8 @@ function canSafelyNavigateToAppUrl(rawUrl: string): boolean {
     return Boolean(url.hostname);
   }
 
-  // maetry: — не пустой хвост после схемы (maetry:, maetry://, maetry:///)
-  const schemeMatch = trimmed.match(/^maetry:/i);
+  // Legacy custom scheme: не пустой хвост после схемы.
+  const schemeMatch = trimmed.match(/^(maetry|maesole):/i);
   if (!schemeMatch) {
     return false;
   }

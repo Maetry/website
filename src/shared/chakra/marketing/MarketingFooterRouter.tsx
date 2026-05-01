@@ -10,8 +10,12 @@ function shouldHideMarketingFooter(pathname: string): boolean {
   return (
     p.includes("/booking/") ||
     p.includes("/billing") ||
+    p.includes("/invite/client/") ||
     p.includes("/client/invite") ||
+    p.includes("/console/invite/employee/") ||
+    p.includes("/console/invite/salon/") ||
     p.includes("/staff/invite") ||
+    p.includes("/visit/") ||
     p.includes("/visits/")
   );
 }

@@ -5,16 +5,27 @@
       {
         "appID": "HWPQBM32W8.com.maetry",
         "paths": [
+          "/visit/*",
+          "/*/visit/*",
           "/visits/*",
           "/*/visits/*",
           "/booking",
           "/*/booking",
           "/booking/*",
           "/*/booking/*",
+          "/invite/client/*",
+          "/*/invite/client/*",
           "/*/mirror/*",
           "/mirror/*",
           "/*/mirror",
           "/mirror"
+        ]
+      },
+      {
+        "appID": "HWPQBM32W8.com.maetry.console",
+        "paths": [
+          "/console/invite/employee/*",
+          "/console/invite/salon/*"
         ]
       }
     ]
