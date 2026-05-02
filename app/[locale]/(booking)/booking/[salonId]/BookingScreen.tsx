@@ -7,7 +7,10 @@ import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
 import type { BookingPlatformVariant } from "@/src/features/booking/utils/platform";
 
 import { BookingSection } from "../../_shared/BookingSection";
-import { SheetRoot, bookingSectionHeaderPaddingX } from "../../_shared/primitives";
+import {
+  SheetRoot,
+  bookingSectionHeaderPaddingX,
+} from "../../_shared/primitives";
 
 import { DetailsStep } from "./DetailsStep";
 import { MasterStep } from "./MasterStep";
@@ -60,11 +63,7 @@ function SummaryTotalRow({
   );
 }
 
-const BookingScreen = ({
-  salonId,
-  locale,
-  trackingId,
-}: BookingScreenProps) => {
+const BookingScreen = ({ salonId, locale, trackingId }: BookingScreenProps) => {
   const flow = useBookingFlow({ salonId, locale, trackingId });
   const t = useTranslations("booking");
   const surface = getBookingSurfaceStyle(flow.platform);
@@ -76,8 +75,7 @@ const BookingScreen = ({
         gap="$4"
         maxWidth={560}
         style={{
-          paddingBottom:
-            "calc(16px + env(safe-area-inset-bottom, 0px))",
+          paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
         }}
         width="100%"
       >
@@ -165,7 +163,6 @@ const BookingScreen = ({
 
         {flow.selectedSlot && flow.selectedProcedurePrice ? (
           <BookingSection
-           
             footer={
               <Paragraph
                 color="$textSecondary"
@@ -197,6 +194,7 @@ const BookingScreen = ({
             isSubmitting={flow.isSubmitting}
             onSubmit={flow.handleSubmitAppointment}
             platform={flow.platform}
+            submitErrorNonce={flow.submitErrorNonce}
             setClientName={flow.setClientName}
             setClientPhone={flow.setClientPhone}
             setFormErrors={flow.setFormErrors}

@@ -149,6 +149,7 @@ export type BookingFlow = {
   globalError: string | null;
   isSubmitting: boolean;
   isFormValid: boolean;
+  submitErrorNonce: number;
 
   currentVisualStep: Step;
 
@@ -177,10 +178,7 @@ type UseBookingFlowParams = {
   trackingId?: string | null;
 };
 
-function resolveSetterValue<T>(
-  value: SetStateAction<T>,
-  currentValue: T,
-): T {
+function resolveSetterValue<T>(value: SetStateAction<T>, currentValue: T): T {
   return typeof value === "function"
     ? (value as (previousValue: T) => T)(currentValue)
     : value;
@@ -205,6 +203,7 @@ export function useBookingFlow({
   const queryClient = useQueryClient();
   const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
   const isLeavingBookingFlowRef = useRef(false);
+  const [submitErrorNonce, setSubmitErrorNonce] = useState(0);
   const apiMessageTemplate = useCallback(
     (message: string) => t("errors.apiMessage", { message }),
     [t],
@@ -225,9 +224,15 @@ export function useBookingFlow({
   } = state.context;
   const isSubmitting = state.matches("submitting");
 
-  const profileQuery = useQuery(publicSalonProfileQueryOptions(salonId, locale));
-  const catalogQuery = useQuery(publicSalonCatalogQueryOptions(salonId, locale));
-  const mastersQuery = useQuery(publicSalonMastersQueryOptions(salonId, locale));
+  const profileQuery = useQuery(
+    publicSalonProfileQueryOptions(salonId, locale),
+  );
+  const catalogQuery = useQuery(
+    publicSalonCatalogQueryOptions(salonId, locale),
+  );
+  const mastersQuery = useQuery(
+    publicSalonMastersQueryOptions(salonId, locale),
+  );
 
   const salonProfile = profileQuery.data ?? null;
   const procedures = useMemo<Procedure[]>(
@@ -366,8 +371,7 @@ export function useBookingFlow({
   }, [procedureGroups, t]);
 
   const selectedGroup = useMemo(
-    () =>
-      procedureGroups.find((group) => group.id === selectedGroupId) ?? null,
+    () => procedureGroups.find((group) => group.id === selectedGroupId) ?? null,
     [procedureGroups, selectedGroupId],
   );
 
@@ -406,7 +410,9 @@ export function useBookingFlow({
       return;
     }
 
-    const validIds = new Set(procedureCategories.map((category) => category.id));
+    const validIds = new Set(
+      procedureCategories.map((category) => category.id),
+    );
     const next = expandedCategoryIds.filter((id) => validIds.has(id));
     if (next.length !== expandedCategoryIds.length) {
       send({ type: "SET_EXPANDED_CATEGORY", value: next });
@@ -468,7 +474,7 @@ export function useBookingFlow({
       masterId: selectedProcedure.masterId ?? null,
       procedureIds:
         selectedProcedure.kind === "complex"
-          ? selectedProcedure.complexProcedureIds ?? []
+          ? (selectedProcedure.complexProcedureIds ?? [])
           : undefined,
       salonId,
       selectionId: selectedProcedure.id,
@@ -510,7 +516,10 @@ export function useBookingFlow({
   });
 
   useEffect(() => {
-    if (slotsQuery.data?.timeZoneId && slotsQuery.data.timeZoneId !== timeZoneId) {
+    if (
+      slotsQuery.data?.timeZoneId &&
+      slotsQuery.data.timeZoneId !== timeZoneId
+    ) {
       setTimeZoneId(slotsQuery.data.timeZoneId);
     }
   }, [slotsQuery.data?.timeZoneId, timeZoneId]);
@@ -526,7 +535,7 @@ export function useBookingFlow({
         masterId: procedure.masterId ?? null,
         procedureIds:
           procedure.kind === "complex"
-            ? procedure.complexProcedureIds ?? []
+            ? (procedure.complexProcedureIds ?? [])
             : undefined,
         salonId,
         selectionId: procedure.id,
@@ -563,7 +572,9 @@ export function useBookingFlow({
       const urlState = readBookingDraftUrlState(searchParams);
 
       const requestedProcedureKey =
-        urlState.selectedProcedureKey ?? draftSnapshot?.selectedProcedureKey ?? null;
+        urlState.selectedProcedureKey ??
+        draftSnapshot?.selectedProcedureKey ??
+        null;
       const requestedGroupId =
         urlState.selectedGroupId ?? draftSnapshot?.selectedGroupId ?? null;
       const requestedDateKey =
@@ -571,26 +582,25 @@ export function useBookingFlow({
       const requestedSlotStart =
         urlState.selectedSlotStart ?? draftSnapshot?.selectedSlotStart ?? null;
 
-      let nextProcedure =
-        requestedProcedureKey
-          ? procedures.find(
-              (procedure) =>
-                getProcedureSelectionKey(procedure) === requestedProcedureKey,
-            ) ?? null
-          : null;
+      let nextProcedure = requestedProcedureKey
+        ? (procedures.find(
+            (procedure) =>
+              getProcedureSelectionKey(procedure) === requestedProcedureKey,
+          ) ?? null)
+        : null;
 
-      const nextGroup =
-        nextProcedure
-          ? procedureGroups.find((group) =>
-              group.procedures.some(
-                (procedure) =>
-                  getProcedureSelectionKey(procedure) ===
-                  getProcedureSelectionKey(nextProcedure!),
-              ),
-            ) ?? null
-          : requestedGroupId
-            ? procedureGroups.find((group) => group.id === requestedGroupId) ?? null
-            : null;
+      const nextGroup = nextProcedure
+        ? (procedureGroups.find((group) =>
+            group.procedures.some(
+              (procedure) =>
+                getProcedureSelectionKey(procedure) ===
+                getProcedureSelectionKey(nextProcedure!),
+            ),
+          ) ?? null)
+        : requestedGroupId
+          ? (procedureGroups.find((group) => group.id === requestedGroupId) ??
+            null)
+          : null;
 
       if (!nextProcedure && nextGroup?.procedures.length === 1) {
         nextProcedure = nextGroup.procedures[0] ?? null;
@@ -605,9 +615,10 @@ export function useBookingFlow({
             getProcedureSelectionKey(nextProcedure!),
         )
       ) {
-        nextProcedure = nextGroup.procedures.length === 1
-          ? (nextGroup.procedures[0] ?? null)
-          : null;
+        nextProcedure =
+          nextGroup.procedures.length === 1
+            ? (nextGroup.procedures[0] ?? null)
+            : null;
       }
 
       const nextDateKey =
@@ -626,7 +637,7 @@ export function useBookingFlow({
               masterId: nextProcedure.masterId ?? null,
               procedureIds:
                 nextProcedure.kind === "complex"
-                  ? nextProcedure.complexProcedureIds ?? []
+                  ? (nextProcedure.complexProcedureIds ?? [])
                   : undefined,
               salonId,
               selectionId: nextProcedure.id,
@@ -635,12 +646,14 @@ export function useBookingFlow({
             }),
           );
 
-          const draftSlots = "intervals" in data
-            ? data.intervals
-            : data.slots.map((slot) => slot.total);
+          const draftSlots =
+            "intervals" in data
+              ? data.intervals
+              : data.slots.map((slot) => slot.total);
 
           nextSlot =
-            draftSlots.find((slot) => slot.start === requestedSlotStart) ?? null;
+            draftSlots.find((slot) => slot.start === requestedSlotStart) ??
+            null;
 
           if (data.timeZoneId && data.timeZoneId !== timeZoneId) {
             setTimeZoneId(data.timeZoneId);
@@ -759,10 +772,25 @@ export function useBookingFlow({
       maxHour: number;
       minHour: number;
     }> = [
-      { key: "morning", label: t("timePeriods.morning"), maxHour: 11, minHour: 6 },
+      {
+        key: "morning",
+        label: t("timePeriods.morning"),
+        maxHour: 11,
+        minHour: 6,
+      },
       { key: "day", label: t("timePeriods.day"), maxHour: 17, minHour: 12 },
-      { key: "evening", label: t("timePeriods.evening"), maxHour: 21, minHour: 18 },
-      { key: "night", label: getNightPeriodLabel(locale), maxHour: 23, minHour: 22 },
+      {
+        key: "evening",
+        label: t("timePeriods.evening"),
+        maxHour: 21,
+        minHour: 18,
+      },
+      {
+        key: "night",
+        label: getNightPeriodLabel(locale),
+        maxHour: 23,
+        minHour: 22,
+      },
     ];
 
     return periodDefinitions
@@ -784,9 +812,7 @@ export function useBookingFlow({
   const isFormValid =
     clientName.trim().length > 0 && validatePhone(normalizePhone(clientPhone));
 
-  const handleSubmitAppointment = async (
-    event: FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmitAppointment = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const trimmedName = clientName.trim();
@@ -803,11 +829,13 @@ export function useBookingFlow({
 
     if (Object.keys(nextErrors).length > 0) {
       send({ type: "SET_FORM_ERRORS", value: nextErrors });
+      setSubmitErrorNonce((current) => current + 1);
       return;
     }
 
     if (!selectedProcedure || !selectedSlot) {
       send({ type: "SET_GLOBAL_ERROR", value: t("errors.createAppointment") });
+      setSubmitErrorNonce((current) => current + 1);
       return;
     }
 
@@ -836,6 +864,7 @@ export function useBookingFlow({
       const appointmentId = data.appointmentId;
 
       if (!appointmentId) {
+        setSubmitErrorNonce((current) => current + 1);
         send({
           type: "SUBMIT_FAILURE",
           error: t("errors.createAppointment"),
@@ -860,6 +889,7 @@ export function useBookingFlow({
       router.push(`/${locale}/visit/${appointmentId}`);
     } catch (error) {
       isLeavingBookingFlowRef.current = false;
+      setSubmitErrorNonce((current) => current + 1);
       send({
         type: "SUBMIT_FAILURE",
         error: resolveApiMessage(
@@ -879,8 +909,7 @@ export function useBookingFlow({
     formatAddress(salonProfile?.address, { includeCountry: false }) ||
     undefined;
   const mapAddressQuery =
-    formatAddress(salonProfile?.address, { includeCountry: true }) ||
-    undefined;
+    formatAddress(salonProfile?.address, { includeCountry: true }) || undefined;
 
   const selectedProcedurePrice = formatCurrency(
     selectedProcedure?.price?.amount ?? selectedGroup?.minPrice ?? null,
@@ -889,11 +918,7 @@ export function useBookingFlow({
   );
 
   const selectedSlotSummaryTitle = selectedSlot
-    ? formatSlotSummaryTitle(
-        new Date(selectedSlot.start),
-        locale,
-        timeZoneId,
-      )
+    ? formatSlotSummaryTitle(new Date(selectedSlot.start), locale, timeZoneId)
     : null;
 
   const selectedSlotDurationSubtitle =
@@ -920,8 +945,7 @@ export function useBookingFlow({
           timeZone: timeZoneId,
         }).format(date),
         isWeekend: [0, 6].includes(date.getUTCDay()),
-        isToday:
-          option.key === getDateKeyForTimeZone(new Date(), timeZoneId),
+        isToday: option.key === getDateKeyForTimeZone(new Date(), timeZoneId),
         key: option.key,
         monthLabel: new Intl.DateTimeFormat(locale, {
           month: "long",
@@ -940,13 +964,14 @@ export function useBookingFlow({
     slotCalendarDays[0]?.monthLabel ??
     "";
 
-  const currentVisualStep: Step = state.matches("details") || state.matches("submitting")
-    ? "details"
-    : state.matches("time")
-      ? "time"
-      : state.matches("master")
-        ? "master"
-        : "service";
+  const currentVisualStep: Step =
+    state.matches("details") || state.matches("submitting")
+      ? "details"
+      : state.matches("time")
+        ? "time"
+        : state.matches("master")
+          ? "master"
+          : "service";
 
   useEffect(() => {
     if (!hasHydratedDraft || isLeavingBookingFlowRef.current) {
@@ -995,35 +1020,45 @@ export function useBookingFlow({
     selectedSlot,
   ]);
 
-  const setSelectedGroupId: Dispatch<SetStateAction<string | null>> = (value) => {
+  const setSelectedGroupId: Dispatch<SetStateAction<string | null>> = (
+    value,
+  ) => {
     send({
       type: "SET_GROUP_ID",
       value: resolveSetterValue(value, selectedGroupId),
     });
   };
 
-  const setSelectedProcedureKey: Dispatch<SetStateAction<string | null>> = (value) => {
+  const setSelectedProcedureKey: Dispatch<SetStateAction<string | null>> = (
+    value,
+  ) => {
     send({
       type: "SET_PROCEDURE_KEY",
       value: resolveSetterValue(value, selectedProcedureKey),
     });
   };
 
-  const setSelectedSlot: Dispatch<SetStateAction<SlotInterval | null>> = (value) => {
+  const setSelectedSlot: Dispatch<SetStateAction<SlotInterval | null>> = (
+    value,
+  ) => {
     send({
       type: "SET_SLOT",
       value: resolveSetterValue(value, selectedSlot),
     });
   };
 
-  const setSelectedDateKey: Dispatch<SetStateAction<string | null>> = (value) => {
+  const setSelectedDateKey: Dispatch<SetStateAction<string | null>> = (
+    value,
+  ) => {
     send({
       type: "SET_DATE",
       value: resolveSetterValue(value, selectedDateKey),
     });
   };
 
-  const setExpandedCategoryIds: Dispatch<SetStateAction<string[]>> = (value) => {
+  const setExpandedCategoryIds: Dispatch<SetStateAction<string[]>> = (
+    value,
+  ) => {
     send({
       type: "SET_EXPANDED_CATEGORY",
       value: resolveSetterValue(value, expandedCategoryIds),
@@ -1087,6 +1122,7 @@ export function useBookingFlow({
     globalError,
     isSubmitting,
     isFormValid,
+    submitErrorNonce,
 
     currentVisualStep,
 

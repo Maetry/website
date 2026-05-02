@@ -1,9 +1,16 @@
 "use client";
 
-import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
+import {
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type Dispatch,
+  type FormEvent,
+  type SetStateAction,
+} from "react";
 
 import { useTranslations } from "next-intl";
-import { Input, Spinner, Text, XStack, YStack } from "tamagui";
+import { Input, Text, XStack, YStack } from "tamagui";
 
 import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
 import type { BookingPlatformVariant } from "@/src/features/booking/utils/platform";
@@ -39,6 +46,7 @@ type DetailsStepProps = {
   isSubmitting: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   platform: BookingPlatformVariant;
+  submitErrorNonce: number;
   setClientName: Dispatch<SetStateAction<string>>;
   setClientPhone: Dispatch<SetStateAction<string>>;
   setFormErrors: Dispatch<SetStateAction<{ name?: string; phone?: string }>>;
@@ -134,17 +142,32 @@ export function DetailsStep({
   isSubmitting,
   onSubmit,
   platform,
+  submitErrorNonce,
   setClientName,
   setClientPhone,
   setFormErrors,
 }: DetailsStepProps) {
   const t = useTranslations("booking");
   const surface = getBookingSurfaceStyle(platform);
+  const [isShaking, setIsShaking] = useState(false);
   const footerMessage =
     formErrors.name || formErrors.phone || globalError || t("fieldPhoneHelper");
   const hasFooterError = Boolean(
     formErrors.name || formErrors.phone || globalError,
   );
+
+  useEffect(() => {
+    if (submitErrorNonce === 0) {
+      return;
+    }
+
+    setIsShaking(true);
+    const timeoutId = window.setTimeout(() => {
+      setIsShaking(false);
+    }, 420);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [submitErrorNonce]);
 
   return (
     <form onSubmit={onSubmit}>
@@ -176,26 +199,84 @@ export function DetailsStep({
         </BookingSection>
 
         <YStack gap="$2">
-          <PrimaryAction
-            disabled={!isFormValid || isSubmitting}
-            platform={platform}
-            type="submit"
-            width="100%"
+          <YStack
+            style={{
+              animation: isShaking
+                ? "booking-submit-shake 420ms ease-in-out"
+                : undefined,
+            }}
           >
-            <XStack alignItems="center" gap="$2">
-              {isSubmitting ? <Spinner /> : null}
-              <Text
-                color="white"
-                fontSize={surface.action.textFontSize}
-                fontWeight="600"
-                lineHeight={surface.action.textLineHeight}
-              >
-                {isSubmitting ? t("loading.submit") : t("submitLabel")}
-              </Text>
-            </XStack>
-          </PrimaryAction>
+            <PrimaryAction
+              disabled={!isFormValid || isSubmitting}
+              platform={platform}
+              type="submit"
+              width="100%"
+            >
+              <XStack alignItems="center" gap="$2">
+                {isSubmitting ? (
+                  <span aria-hidden="true" className="booking-submit-spinner" />
+                ) : null}
+                <Text
+                  color="white"
+                  fontSize={surface.action.textFontSize}
+                  fontWeight="600"
+                  lineHeight={surface.action.textLineHeight}
+                >
+                  {isSubmitting ? t("loading.submit") : t("submitLabel")}
+                </Text>
+              </XStack>
+            </PrimaryAction>
+          </YStack>
+          {globalError ? (
+            <Text
+              color="$danger"
+              fontSize={surface.details.helperFontSize}
+              lineHeight={surface.details.helperLineHeight}
+            >
+              {globalError}
+            </Text>
+          ) : null}
         </YStack>
       </YStack>
+      <style jsx>{`
+        @keyframes booking-submit-spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes booking-submit-shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          20% {
+            transform: translateX(-8px);
+          }
+          40% {
+            transform: translateX(7px);
+          }
+          60% {
+            transform: translateX(-5px);
+          }
+          80% {
+            transform: translateX(3px);
+          }
+        }
+
+        .booking-submit-spinner {
+          width: 14px;
+          height: 14px;
+          border: 2px solid rgba(255, 255, 255, 0.35);
+          border-top-color: white;
+          border-radius: 999px;
+          animation: booking-submit-spin 0.8s linear infinite;
+          flex: 0 0 auto;
+        }
+      `}</style>
     </form>
   );
 }
