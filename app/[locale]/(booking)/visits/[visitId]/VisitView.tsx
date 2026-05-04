@@ -51,6 +51,42 @@ type VisitViewProps = {
   locale: string;
 };
 
+function parseValidDate(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function resolveTimeZone(value?: string | null) {
+  const candidate = value?.trim() || "UTC";
+
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: candidate });
+    return candidate;
+  } catch {
+    return "UTC";
+  }
+}
+
+function safeFormatDate(
+  date: Date | null,
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+) {
+  if (!date) {
+    return null;
+  }
+
+  try {
+    return new Intl.DateTimeFormat(locale, options).format(date);
+  } catch {
+    return null;
+  }
+}
+
 function VisitInfoRow({
   icon,
   label,
@@ -170,7 +206,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
         }
 
         setAppointment(appointmentData);
-        setTimeZoneId(appointmentData.timezoneId || "UTC");
+        setTimeZoneId(resolveTimeZone(appointmentData.timezoneId));
 
         if (appointmentData.salonName) {
           setSalonName(appointmentData.salonName);
@@ -205,22 +241,21 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
     };
   }, [visitId, t]);
 
-  const appointmentDate = appointment?.time?.start
-    ? new Intl.DateTimeFormat(locale, {
-        day: "numeric",
-        month: "long",
-        timeZone: timeZoneId,
-        weekday: "long",
-      }).format(new Date(appointment.time.start))
-    : null;
+  const appointmentStartDate = parseValidDate(appointment?.time?.start);
+  const appointmentEndDate = parseValidDate(appointment?.time?.end);
 
-  const appointmentTime = appointment?.time?.start
-    ? new Intl.DateTimeFormat(locale, {
-        hour: "numeric",
-        minute: "2-digit",
-        timeZone: timeZoneId,
-      }).format(new Date(appointment.time.start))
-    : null;
+  const appointmentDate = safeFormatDate(appointmentStartDate, locale, {
+    day: "numeric",
+    month: "long",
+    timeZone: timeZoneId,
+    weekday: "long",
+  });
+
+  const appointmentTime = safeFormatDate(appointmentStartDate, locale, {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: timeZoneId,
+  });
 
   const appointmentPrice = formatCurrency(
     appointment?.price?.amount,
@@ -244,12 +279,12 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${appointmentSalonName} ${appointment.salonAddress}`)}`
     : null;
   const calendarUrl =
-    appointment?.time?.start
+    appointmentStartDate
       ? (() => {
-          const startDate = new Date(appointment.time.start);
-          const endDate = appointment.time.end
-            ? new Date(appointment.time.end)
-            : new Date(startDate.getTime() + 60 * 60 * 1000);
+          const startDate = appointmentStartDate;
+          const endDate =
+            appointmentEndDate ??
+            new Date(startDate.getTime() + 60 * 60 * 1000);
           const formatCalendarDate = (value: Date) =>
             value.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 
@@ -258,7 +293,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
             salon: appointmentSalonName,
           });
 
-          return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(appointmentTitle)}&dates=${formatCalendarDate(startDate)}/${formatCalendarDate(endDate)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(appointment.salonAddress ?? appointmentSalonName)}`;
+          return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(appointmentTitle)}&dates=${formatCalendarDate(startDate)}/${formatCalendarDate(endDate)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(appointment?.salonAddress ?? appointmentSalonName)}`;
         })()
       : null;
 
