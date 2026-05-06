@@ -39,6 +39,7 @@ function stripStepNumberPrefix(title: string): string {
 const highlightIcons = [Search, Star, Calendar] as const;
 const howClientsIcons = [MapPin, Link2] as const;
 const outcomeIcons = [Search, Star, Calendar] as const;
+const SECTION_SCROLL_MARGIN_TOP = { base: "72px", md: "76px" } as const;
 
 function BusinessSectionEyebrow({ children }: { children: ReactNode }) {
   return <MarketingEyebrow variant="section">{children}</MarketingEyebrow>;
@@ -112,6 +113,7 @@ export function HomeExperienceView({
         <Box
           as="section"
           id="discover"
+          scrollMarginTop={SECTION_SCROLL_MARGIN_TOP}
           py={{ base: 12, lg: 16 }}
           bg={{ base: "white", _dark: "#0b0d12" }}
         >
@@ -162,6 +164,7 @@ export function HomeExperienceView({
         <Box
           as="section"
           id="coverage"
+          scrollMarginTop={SECTION_SCROLL_MARGIN_TOP}
           py={{ base: 12, lg: 16 }}
           bg="marketing.sectionMuted"
         >
@@ -284,6 +287,7 @@ export function HomeExperienceView({
         <Box
           as="section"
           id="booking"
+          scrollMarginTop={SECTION_SCROLL_MARGIN_TOP}
           py={{ base: 12, lg: 16 }}
           bg="marketing.sectionMuted"
         >
@@ -355,6 +359,7 @@ export function HomeExperienceView({
         <Box
           as="section"
           id="download"
+          scrollMarginTop={SECTION_SCROLL_MARGIN_TOP}
           py={{ base: 12, lg: 16 }}
           bg={{ base: "white", _dark: "#0b0d12" }}
         >
@@ -396,13 +401,8 @@ export function HomeExperienceView({
               </VStack>
               <Flex gap={3} flexWrap="wrap" justify="center" pt={4}>
                 <MarketingButtonLink
-                  href={BUSINESS_CONSOLE_URL}
-                  label={content.common.openConsoleLabel}
-                />
-                <MarketingButtonLink
                   href={businessHref}
                   label={content.common.businessLabel}
-                  variant="secondary"
                 />
               </Flex>
             </VStack>
@@ -438,10 +438,6 @@ export function HomeExperienceView({
               {hero.description}
             </Text>
             <Flex gap={3} flexWrap="wrap" justify="center">
-              <MarketingButtonLink
-                href={BUSINESS_CONSOLE_URL}
-                label={hero.primaryCta}
-              />
               <MarketingButtonLink
                 href={SUPPORT_EMAIL_HREF}
                 label={hero.secondaryCta}
@@ -527,7 +523,13 @@ export function HomeExperienceView({
         </Container>
       </Box>
 
-      <Box as="section" id="platform" py={{ base: 12, lg: 16 }} bg={{ base: "white", _dark: "#0b0d12" }}>
+      <Box
+        as="section"
+        id="platform"
+        scrollMarginTop={SECTION_SCROLL_MARGIN_TOP}
+        py={{ base: 12, lg: 16 }}
+        bg={{ base: "white", _dark: "#0b0d12" }}
+      >
         <Container maxW="7xl" px={{ base: 4, sm: 6, lg: 8 }}>
           <Box mb={8} maxW="3xl">
             <BusinessSectionEyebrow>{b.platformEyebrow}</BusinessSectionEyebrow>
@@ -583,6 +585,7 @@ export function HomeExperienceView({
       <Box
         as="section"
         id="journey"
+        scrollMarginTop={SECTION_SCROLL_MARGIN_TOP}
         py={{ base: 12, lg: 16 }}
         bg="marketing.sectionMuted"
       >
@@ -651,7 +654,13 @@ export function HomeExperienceView({
         </Container>
       </Box>
 
-      <Box as="section" id="pricing" py={{ base: 12, lg: 16 }} bg={{ base: "white", _dark: "#0b0d12" }}>
+      <Box
+        as="section"
+        id="pricing"
+        scrollMarginTop={SECTION_SCROLL_MARGIN_TOP}
+        py={{ base: 12, lg: 16 }}
+        bg={{ base: "white", _dark: "#0b0d12" }}
+      >
         <Container maxW="7xl" px={{ base: 4, sm: 6, lg: 8 }}>
           <Box mb={8} maxW="3xl">
             <BusinessSectionEyebrow>{b.pricingEyebrow}</BusinessSectionEyebrow>
@@ -745,7 +754,13 @@ export function HomeExperienceView({
         </Container>
       </Box>
 
-      <Box as="section" id="faq" py={{ base: 12, lg: 16 }} bg={{ base: "white", _dark: "#0b0d12" }}>
+      <Box
+        as="section"
+        id="faq"
+        scrollMarginTop={SECTION_SCROLL_MARGIN_TOP}
+        py={{ base: 12, lg: 16 }}
+        bg={{ base: "white", _dark: "#0b0d12" }}
+      >
         <Container maxW="7xl" px={{ base: 4, sm: 6, lg: 8 }}>
           <Box mb={8} maxW="3xl">
             <BusinessSectionEyebrow>{b.faqEyebrow}</BusinessSectionEyebrow>

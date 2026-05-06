@@ -3,7 +3,12 @@ import type { MarketingFooterProps } from "@/shared/chakra/marketing/MarketingFo
 export type MarketingLocale = "en" | "ru" | "es";
 export type SiteExperience = "consumer" | "business";
 
-export const APP_STORE_URL = "https://apps.apple.com/app/id6746678571";
+export const APP_STORE_CONSUMER_URL =
+  "https://apps.apple.com/us/app/id6746678571";
+export const APP_STORE_BUSINESS_URL =
+  "https://apps.apple.com/us/app/id6755662689";
+// Совместимость со старым импортом в server-компонентах и lib-слое.
+export const APP_STORE_URL = APP_STORE_CONSUMER_URL;
 export const BUSINESS_CONSOLE_URL = "https://console.maetry.com/auth";
 export const SUPPORT_EMAIL = "support@maetry.com";
 export const SUPPORT_EMAIL_HREF = `mailto:${SUPPORT_EMAIL}`;
@@ -998,11 +1003,11 @@ export function getMarketingContent(locale: string): LocaleContent {
 }
 
 export function buildAppStoreUrl(campaign: string): string {
-  const url = new URL(APP_STORE_URL);
-  url.searchParams.set("utm_source", "website");
-  url.searchParams.set("utm_medium", "landing");
-  url.searchParams.set("utm_campaign", campaign);
-  return url.toString();
+  if (campaign === "business_landing") {
+    return APP_STORE_BUSINESS_URL;
+  }
+
+  return APP_STORE_CONSUMER_URL;
 }
 
 export function getBusinessHref(host: string | null, locale: string): string {

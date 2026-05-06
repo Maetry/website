@@ -32,6 +32,10 @@ import {
   waitForPublicBooking,
   type PublicBookingVisit,
 } from "@/lib/api/public-booking";
+import {
+  buildPlatformCalendarUrl,
+  buildPlatformMapsUrl,
+} from "@/lib/platform-links";
 import { isAbortError } from "@/lib/api/utils";
 import { usePlatform } from "@/lib/userAgent/PlatformProvider";
 import appStoreBadge from "@/public/images/appstore.svg";
@@ -273,10 +277,13 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
   const walletLabel =
     preferredWalletType === "google" ? t("walletGoogle") : t("walletApple");
   const isApplePlatform = platformInfo.isIOS || platformInfo.isMacOS;
+  const preferredMapsPlatform = isApplePlatform ? "apple" : "android";
+  const preferredCalendarPlatform = platformInfo.isAndroid ? "android" : "apple";
   const mapsUrl = appointment?.salonAddress
-    ? platformInfo.isIOS || platformInfo.isMacOS
-      ? `https://maps.apple.com/?q=${encodeURIComponent(appointmentSalonName)}&address=${encodeURIComponent(appointment.salonAddress)}`
-      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${appointmentSalonName} ${appointment.salonAddress}`)}`
+    ? buildPlatformMapsUrl(preferredMapsPlatform, {
+        address: appointment.salonAddress,
+        salonName: appointmentSalonName,
+      })
     : null;
   const calendarUrl =
     appointmentStartDate
@@ -285,20 +292,32 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
           const endDate =
             appointmentEndDate ??
             new Date(startDate.getTime() + 60 * 60 * 1000);
-          const formatCalendarDate = (value: Date) =>
-            value.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-
           const description = t("successProcedureAt", {
             procedure: appointmentTitle,
             salon: appointmentSalonName,
           });
 
-          return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(appointmentTitle)}&dates=${formatCalendarDate(startDate)}/${formatCalendarDate(endDate)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(appointment?.salonAddress ?? appointmentSalonName)}`;
+          return buildPlatformCalendarUrl(preferredCalendarPlatform, {
+            details: description,
+            endDate,
+            location: appointment?.salonAddress ?? appointmentSalonName,
+            startDate,
+            title: appointmentTitle,
+          });
         })()
       : null;
 
   const openExternal = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const openPlatformDestination = (url: string) => {
+    if (platformInfo.isAndroid || platformInfo.isIOS || platformInfo.isMacOS) {
+      window.location.href = url;
+      return;
+    }
+
+    openExternal(url);
   };
 
   const handleDownloadApp = () => {
@@ -570,14 +589,14 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
             <SecondaryActionButton
               icon={<CalendarPlus size={18} />}
               label={t("successAddToCalendar")}
-              onPress={() => openExternal(calendarUrl)}
+              onPress={() => openPlatformDestination(calendarUrl)}
             />
           ) : null}
           {mapsUrl ? (
             <SecondaryActionButton
               icon={<MapPin size={18} />}
               label={t("successOpenInMaps")}
-              onPress={() => openExternal(mapsUrl)}
+              onPress={() => openPlatformDestination(mapsUrl)}
             />
           ) : null}
         </YStack>

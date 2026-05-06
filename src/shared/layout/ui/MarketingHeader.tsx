@@ -54,7 +54,11 @@ function DesktopNavLink({
   href,
   label,
   plain,
-}: HeaderLink & { plain?: boolean }) {
+  router,
+}: HeaderLink & {
+  plain?: boolean;
+  router: ReturnType<typeof useRouter>;
+}) {
   const styles = plain
     ? {
         display: "inline-flex" as const,
@@ -93,6 +97,21 @@ function DesktopNavLink({
         href={href}
         target={href.startsWith("http") ? "_blank" : undefined}
         rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+        {...styles}
+      >
+        {label}
+      </Link>
+    );
+  }
+
+  if (href.startsWith("#") || href.includes("#")) {
+    return (
+      <Link
+        href={href}
+        onClick={(event) => {
+          event.preventDefault();
+          followInPageOrPush(href, router);
+        }}
         {...styles}
       >
         {label}
@@ -155,6 +174,8 @@ export function MarketingHeader({
     },
   };
 
+  const hasMultiplePrefs = showThemeSwitcher && showLocaleSwitcher;
+
   return (
     <Box position="sticky" top={0} zIndex={2500} w="100%">
       <Box {...blurStrip}>
@@ -211,6 +232,7 @@ export function MarketingHeader({
                   key={`${item.href}-${item.label}`}
                   {...item}
                   plain={navStyle === "inline"}
+                  router={router}
                 />
               ))}
               {secondaryAction?.linkVariant === "secondaryGhost" ? (
@@ -218,6 +240,7 @@ export function MarketingHeader({
                   href={secondaryAction.href}
                   label={secondaryAction.label}
                   plain={navStyle === "inline"}
+                  router={router}
                 />
               ) : null}
             </Flex>
@@ -225,19 +248,23 @@ export function MarketingHeader({
               <Flex
                 align="center"
                 gap={2}
-                rounded="full"
-                borderWidth="1px"
-                borderColor="marketing.border"
-                bg={{
-                  base: "rgba(249,249,249,0.9)",
-                  _dark: "rgba(255,255,255,0.06)",
-                }}
-                px={2}
-                py={1.5}
+                rounded={hasMultiplePrefs ? "full" : undefined}
+                borderWidth={hasMultiplePrefs ? "1px" : "0"}
+                borderColor={hasMultiplePrefs ? "marketing.border" : undefined}
+                bg={
+                  hasMultiplePrefs
+                    ? {
+                        base: "rgba(249,249,249,0.9)",
+                        _dark: "rgba(255,255,255,0.06)",
+                      }
+                    : undefined
+                }
+                px={hasMultiplePrefs ? 2 : 0}
+                py={hasMultiplePrefs ? 1.5 : 0}
                 flexShrink={0}
               >
                 {showThemeSwitcher ? <ThemeSwitcher /> : null}
-                {showLocaleSwitcher ? <LanguageSwitcher /> : null}
+                {showLocaleSwitcher ? <LanguageSwitcher display="icon" /> : null}
               </Flex>
             ) : null}
             {secondaryAction && secondaryAction.linkVariant !== "secondaryGhost" ? (
@@ -259,9 +286,11 @@ export function MarketingHeader({
           <Flex
             display={{ base: "flex", md: "none" }}
             align="center"
+            gap={2}
             flexShrink={0}
             ms="auto"
           >
+            {showLocaleSwitcher ? <LanguageSwitcher display="icon" /> : null}
             <Menu.Root
               key={pathname}
               closeOnSelect

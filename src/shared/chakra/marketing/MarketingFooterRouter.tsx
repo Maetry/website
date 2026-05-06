@@ -7,17 +7,21 @@ import type { MarketingFooterProps } from "./MarketingFooter";
 
 function shouldHideMarketingFooter(pathname: string): boolean {
   const p = pathname.toLowerCase();
-  return (
-    p.includes("/booking/") ||
-    p.includes("/billing") ||
-    p.includes("/invite/client/") ||
-    p.includes("/client/invite") ||
-    p.includes("/console/invite/employee/") ||
-    p.includes("/console/invite/salon/") ||
-    p.includes("/staff/invite") ||
-    p.includes("/visit/") ||
-    p.includes("/visits/")
-  );
+
+  // Показываем footer ТОЛЬКО на этих страницах:
+  // - главная /{locale}
+  // - /{locale}/business
+  // - /{locale}/affiliate
+  // Все остальные страницы (booking, visits, support, checkout и т.д.) - без футера
+  const isAllowedPage =
+    p === "/" ||
+    p === "/en" ||
+    p === "/ru" ||
+    p === "/es" ||
+    p.includes("/business") ||
+    p.includes("/affiliate");
+
+  return !isAllowedPage;
 }
 
 export function MarketingFooterRouter({

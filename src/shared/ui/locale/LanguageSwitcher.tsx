@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -22,19 +22,32 @@ const buttonDefaultClass =
 const buttonOnDarkClass =
   "inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors border border-white/20 bg-white/10 text-white/90 hover:bg-white/15";
 
+const buttonCompactClass =
+  "inline-flex items-center justify-center gap-1 rounded-full border border-black/10 bg-white/85 p-2 text-gray-600 transition-colors hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10";
+
+const buttonCompactOnDarkClass =
+  "inline-flex items-center justify-center gap-1 rounded-full border border-white/20 bg-white/10 p-2 text-white/90 transition-colors hover:bg-white/15";
+
 const menuDefaultClass =
-  "absolute right-0 bottom-full mb-2 w-32 rounded-md shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50 overflow-hidden";
+  "absolute right-0 top-full mt-2 w-32 rounded-md shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50 overflow-hidden";
 
 const menuOnDarkClass =
-  "absolute right-0 bottom-full mb-2 w-32 rounded-md shadow-lg z-50 overflow-hidden bg-[#1c1d24] border border-white/15";
+  "absolute right-0 top-full mt-2 w-32 rounded-md shadow-lg z-50 overflow-hidden bg-[#1c1d24] border border-white/15";
 
-const LanguageSwitcher: React.FC<{ variant?: "default" | "onDark" }> = ({
+type LanguageSwitcherProps = {
+  variant?: "default" | "onDark";
+  display?: "full" | "icon";
+};
+
+const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   variant = "default",
+  display = "full",
 }) => {
   const params = useParams();
   const pathname = usePathname();
   const locale = (params?.locale as string) || "ru";
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
   const selectedLanguage =
     languages.find((language) => language.key === locale) || languages[0];
@@ -49,10 +62,7 @@ const LanguageSwitcher: React.FC<{ variant?: "default" | "onDark" }> = ({
   useEffect(() => {
     const handleWindowClick = (event: Event) => {
       const target = event.target as Element;
-      if (
-        target &&
-        target.closest("button")?.id === "cursor-language-selector"
-      ) {
+      if (target && rootRef.current?.contains(target)) {
         return;
       }
       setIsOpen(false);
@@ -64,31 +74,42 @@ const LanguageSwitcher: React.FC<{ variant?: "default" | "onDark" }> = ({
   }, []);
 
   const onDark = variant === "onDark";
+  const iconOnly = display === "icon";
+  const buttonClass = iconOnly
+    ? onDark
+      ? buttonCompactOnDarkClass
+      : buttonCompactClass
+    : onDark
+      ? buttonOnDarkClass
+      : buttonDefaultClass;
 
   return (
-    <div className="relative">
+    <div ref={rootRef} className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
         type="button"
-        className={onDark ? buttonOnDarkClass : buttonDefaultClass}
-        id="cursor-language-selector"
+        className={buttonClass}
         aria-expanded={isOpen}
+        aria-label={`Select language, current ${selectedLanguage.name}`}
       >
         {/* Globe icon */}
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
         </svg>
-        <span className="capitalize">{selectedLanguage.shortName}</span>
-        {/* Chevron down icon */}
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
-        >
-          <path d="M7 10l5 5 5-5z" />
-        </svg>
+        {iconOnly ? null : (
+          <span className="capitalize">{selectedLanguage.shortName}</span>
+        )}
+        {iconOnly ? null : (
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+          >
+            <path d="M7 10l5 5 5-5z" />
+          </svg>
+        )}
       </button>
 
       {isOpen && (
@@ -96,7 +117,6 @@ const LanguageSwitcher: React.FC<{ variant?: "default" | "onDark" }> = ({
           className={onDark ? menuOnDarkClass : menuDefaultClass}
           role="menu"
           aria-orientation="vertical"
-          aria-labelledby="cursor-language-selector"
         >
           <div className="py-1" role="none">
             {languages.map((language) => (

@@ -631,6 +631,11 @@
     },
     "downloadTitle": "Descarga Maetry",
     "downloadDescription": "Instala la app, inicia sesión y vuelve a abrir el enlace para aceptar la invitación.",
+    "copyLinkTitle": "Conserva este enlace de invitación",
+    "copyLinkDescription": "Antes de abrir App Store copiaremos el enlace actual para que la app pueda continuar desde esta invitación.",
+    "copyLinkSuccess": "El enlace de invitación fue copiado. Después de instalar la app, ábrelo otra vez desde el portapapeles o el historial del navegador.",
+    "downloadAndCopyAction": "Copiar enlace y descargar la app",
+    "invitedByLabel": "Invitación de",
     "appStoreButtonTitle": "Descargar en App Store",
     "footerCopyright": "© 2026 Maetry LLC. Todos los derechos reservados."
   },

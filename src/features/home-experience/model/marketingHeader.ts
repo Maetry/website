@@ -10,12 +10,6 @@ import {
   type SiteExperience,
 } from "./content";
 
-function withSectionHash(href: string, sectionId: string): string {
-  const base = href.includes("#") ? href.slice(0, href.indexOf("#")) : href;
-  const id = sectionId.replace(/^#/, "");
-  return `${base}#${id}`;
-}
-
 /** Пропсы шапки лендинга: логотип, навигация (якорь / страница / mailto / внешняя ссылка), крайняя CTA. */
 export function buildHomeExperienceHeaderProps(args: {
   locale: string;
@@ -51,13 +45,13 @@ export function buildHomeExperienceHeaderProps(args: {
     nav: headerNav,
     primaryAction: {
       href: appHref,
-      label: content.common.appStoreLabel,
+      label: isBusiness ? "Console App" : content.common.appStoreLabel,
       tone: "primary",
     },
     secondaryAction: isBusiness
       ? undefined
       : {
-          href: withSectionHash(consumerHref, "download"),
+          href: `/${normalizedLocale}/business`,
           label: content.common.businessLabel,
           tone: "secondary",
           linkVariant: "secondaryGhost",

@@ -23,6 +23,7 @@ import {
   type PublicSearchSlotsResponse,
   type PublicSalonProfile,
 } from "@/lib/api/public-booking";
+import { buildPlatformMapsUrl } from "@/lib/platform-links";
 import {
   publicBookingKeys,
   publicBookingSlotsQueryOptions,
@@ -933,7 +934,10 @@ export function useBookingFlow({
       : null;
 
   const mapAddressUrl = mapAddressQuery
-    ? `https://maps.apple.com/?q=${encodeURIComponent(salonName)}&address=${encodeURIComponent(mapAddressQuery)}`
+    ? buildPlatformMapsUrl(platform === "ios" ? "apple" : "android", {
+        address: mapAddressQuery,
+        salonName,
+      })
     : null;
 
   const slotCalendarDays = useMemo<CalendarDay[]>(() => {

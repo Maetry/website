@@ -570,6 +570,11 @@
     },
     "downloadTitle": "Download Maetry",
     "downloadDescription": "Install the app, sign in and reopen the link to accept the invitation.",
+    "copyLinkTitle": "Keep this invitation link",
+    "copyLinkDescription": "We will copy the current invitation link before opening the App Store so the app can continue from this invite.",
+    "copyLinkSuccess": "Invitation link copied. After installing the app, reopen it from your clipboard or browser history.",
+    "downloadAndCopyAction": "Copy link and download app",
+    "invitedByLabel": "Invited by",
     "appStoreButtonTitle": "Download on the App Store",
     "footerCopyright": "© 2026 Maetry LLC. All rights reserved."
   },

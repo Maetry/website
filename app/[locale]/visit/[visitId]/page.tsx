@@ -4,6 +4,9 @@ export {
 } from "@/app/[locale]/(booking)/visits/[visitId]/page";
 
 import { VisitViewIsland } from "@/app/[locale]/(booking)/visits/[visitId]/VisitViewIsland";
+import { GlobalMarketingFooter } from "@/shared/chakra/marketing/GlobalMarketingFooter";
+import { AppThemeProvider } from "@/shared/ui/theme-switcher";
+import { ClientAppUiProvider } from "@/src/shared/tamagui/ClientAppUiProvider";
 
 type VisitPageProps = {
   params: Promise<{
@@ -16,10 +19,17 @@ const VisitAliasPage = async ({ params }: VisitPageProps) => {
   const resolvedParams = await params;
 
   return (
-    <VisitViewIsland
-      locale={resolvedParams.locale}
-      visitId={resolvedParams.visitId}
-    />
+    <>
+      <ClientAppUiProvider>
+        <VisitViewIsland
+          locale={resolvedParams.locale}
+          visitId={resolvedParams.visitId}
+        />
+      </ClientAppUiProvider>
+      <AppThemeProvider>
+        <GlobalMarketingFooter locale={resolvedParams.locale} />
+      </AppThemeProvider>
+    </>
   );
 };
 

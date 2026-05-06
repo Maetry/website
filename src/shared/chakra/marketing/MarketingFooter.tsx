@@ -15,7 +15,6 @@ import {
 
 import type { MarketingLocale } from "@/features/home-experience/model/content";
 import logo from "@/public/images/logo.svg";
-import LanguageSwitcher from "@/shared/ui/locale/LanguageSwitcher";
 import ThemeSwitcher from "@/shared/ui/theme-switcher/ThemeSwitcher";
 
 type FooterLink = { href: string; label: string; newTab?: boolean };
@@ -190,7 +189,6 @@ export function MarketingFooter(p: MarketingFooterProps) {
             {p.appearanceLabel}
           </Text>
           <HStack gap={2} align="center" flexWrap="wrap">
-            <LanguageSwitcher variant="onDark" />
             <ThemeSwitcher variant="onDark" />
           </HStack>
         </Flex>
