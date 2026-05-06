@@ -23,7 +23,6 @@ import {
   type PublicSearchSlotsResponse,
   type PublicSalonProfile,
 } from "@/lib/api/public-booking";
-import { buildPlatformMapsUrl } from "@/lib/platform-links";
 import {
   publicBookingKeys,
   publicBookingSlotsQueryOptions,
@@ -31,6 +30,7 @@ import {
   publicSalonMastersQueryOptions,
   publicSalonProfileQueryOptions,
 } from "@/lib/api/public-booking.queries";
+import { buildPlatformMapsUrl } from "@/lib/platform-links";
 import {
   adaptCatalogToProcedures,
   type Procedure,

@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-import { AppWindow, CheckCheck, Download, Sparkles } from "lucide-react";
 import { useParams } from "next/navigation";
+
+import { AppWindow, CheckCheck, Download, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar, Button, Paragraph, Text, XStack, YStack } from "tamagui";
 
@@ -11,9 +12,9 @@ import {
   getCampaignByLink,
   getPublicSalonProfile,
 } from "@/lib/api/public-booking";
+import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
 import { APP_STORE_BUSINESS_URL } from "@/src/features/home-experience/model/content";
 import { ClientAppUiProvider } from "@/src/shared/tamagui/ClientAppUiProvider";
-import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
 
 const APP_STORE_URL = APP_STORE_BUSINESS_URL;
 

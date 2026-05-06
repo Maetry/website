@@ -32,11 +32,11 @@ import {
   waitForPublicBooking,
   type PublicBookingVisit,
 } from "@/lib/api/public-booking";
+import { isAbortError } from "@/lib/api/utils";
 import {
   buildPlatformCalendarUrl,
   buildPlatformMapsUrl,
 } from "@/lib/platform-links";
-import { isAbortError } from "@/lib/api/utils";
 import { usePlatform } from "@/lib/userAgent/PlatformProvider";
 import appStoreBadge from "@/public/images/appstore.svg";
 import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";

@@ -20,7 +20,6 @@ import {
 } from "@/shared/chakra/marketing";
 
 import {
-  BUSINESS_CONSOLE_URL,
   SUPPORT_EMAIL_HREF,
   type LocaleContent,
 } from "../model/content";
