@@ -6,7 +6,6 @@ import { AlertCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button, Paragraph, Spinner, Text, XStack, YStack } from "tamagui";
 
-import { InviteScreen } from "@/components/invite";
 import { ApiError } from "@/lib/api/error-handler";
 import { resolveShortLink, type PublicClickResponse } from "@/lib/api/public-booking";
 import type { LinkKind } from "@/lib/api/shortLink";
@@ -18,14 +17,8 @@ type LinkHandlerProps = {
   nanoId: string;
 };
 
-type InviteState = {
-  kind: Exclude<LinkKind, "marketing">;
-  storeUrl: string | null;
-};
-
 type LinkState =
   | { status: "loading" }
-  | { status: "invite"; invite: InviteState }
   | { status: "error"; message: string };
 
 function resolveLinkError(error: unknown, fallbackMessage: string) {
@@ -42,17 +35,6 @@ function resolveLinkError(error: unknown, fallbackMessage: string) {
 
 function isInviteKind(kind: LinkKind): kind is Exclude<LinkKind, "marketing"> {
   return kind === "clientInvite" || kind === "employeeInvite";
-}
-
-function resolveInviteStoreUrl(response: PublicClickResponse): string | null {
-  if (
-    (response.fallbackTarget === "appStore" || response.fallbackTarget === "playStore")
-    && response.fallbackUrl
-  ) {
-    return response.fallbackUrl;
-  }
-
-  return null;
 }
 
 function resolveInviteFallbackUrl(
@@ -126,11 +108,7 @@ function canSafelyNavigateToAppUrl(rawUrl: string): boolean {
   return true;
 }
 
-function openAppWithFallback(
-  response: PublicClickResponse,
-  locale: string,
-  onInviteFallback: (invite: InviteState) => void,
-) {
+function openAppWithFallback(response: PublicClickResponse, locale: string) {
   if (typeof window === "undefined") {
     return;
   }
@@ -285,12 +263,7 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
           return;
         }
 
-        openAppWithFallback(response, locale, (invite) => {
-          setState({
-            invite,
-            status: "invite",
-          });
-        });
+        openAppWithFallback(response, locale);
       } catch (error) {
         if (controller.signal.aborted) {
           return;
@@ -356,11 +329,5 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
       />
     );
   }
-
-  return (
-    <InviteScreen
-      kind={state.invite.kind}
-      storeUrl={state.invite.storeUrl}
-    />
-  );
+  return null;
 };
