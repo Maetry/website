@@ -21,6 +21,8 @@ type LinkState =
   | { status: "loading" }
   | { status: "error"; message: string };
 
+const CANONICAL_CONSUMER_ORIGIN = "https://maetry.com";
+
 function resolveLinkError(error: unknown, fallbackMessage: string) {
   if (error instanceof ApiError && error.message) {
     return error.message;
@@ -37,6 +39,35 @@ function isInviteKind(kind: LinkKind): kind is Exclude<LinkKind, "marketing"> {
   return kind === "clientInvite" || kind === "employeeInvite";
 }
 
+function normalizeHost(rawHost: string): string {
+  return rawHost.replace(/^https?:\/\//, "").toLowerCase();
+}
+
+function resolveInviteBaseUrl(): string {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  const currentHost = normalizeHost(window.location.host);
+  const shortlinkHost = normalizeHost(
+    process.env.NEXT_PUBLIC_SHORTLINK_HOST ?? "link.maetry.com",
+  );
+  const isLocal =
+    currentHost.includes("localhost") || currentHost.includes("127.0.0.1");
+  const isPreview =
+    currentHost.includes("vercel.app") || currentHost.includes("vercel.live");
+
+  if (isLocal || isPreview || !currentHost.includes("maetry.com")) {
+    return "";
+  }
+
+  if (currentHost === shortlinkHost) {
+    return CANONICAL_CONSUMER_ORIGIN;
+  }
+
+  return "";
+}
+
 function resolveInviteFallbackUrl(
   response: PublicClickResponse,
   locale: string,
@@ -45,12 +76,14 @@ function resolveInviteFallbackUrl(
     return null;
   }
 
+  const baseUrl = resolveInviteBaseUrl();
+
   if (response.kind === "clientInvite") {
-    return `/${locale}/client/invite/${encodeURIComponent(response.nanoId)}`;
+    return `${baseUrl}/${locale}/client/invite/${encodeURIComponent(response.nanoId)}`;
   }
 
   if (response.kind === "employeeInvite") {
-    return `/${locale}/staff/invite/${encodeURIComponent(response.nanoId)}`;
+    return `${baseUrl}/${locale}/staff/invite/${encodeURIComponent(response.nanoId)}`;
   }
 
   return null;
