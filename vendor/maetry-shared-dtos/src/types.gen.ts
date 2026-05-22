@@ -1137,7 +1137,6 @@ export type SearchParametersRetrieve = {
     latitude?: number;
     longitude?: number;
     pagination?: Pagination;
-    salonType?: SalonType;
     value?: string;
 };
 
@@ -1353,7 +1352,6 @@ export type WorkspaceParametersCreate = {
     name: string;
     timetable?: TimetableParametersCreatePattern;
     timeZoneId: string;
-    type: SalonType;
 };
 
 export type WorkspaceParametersPatch = {
@@ -1361,7 +1359,6 @@ export type WorkspaceParametersPatch = {
     description?: string;
     logo?: string;
     name?: string;
-    type?: SalonType;
 };
 
 export type WorkspaceResponsesFull = {

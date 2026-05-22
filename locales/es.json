@@ -947,6 +947,10 @@
     "description": "La invitación puede haber caducado o haber sido revocada. Pide al remitente un nuevo enlace o entra en Maetry.",
     "cta": "Ir a maetry.com"
   },
+  "notFoundPage": {
+    "title": "Página no encontrada",
+    "cta": "Ir a la página principal"
+  },
   "inviteMeta": {
     "employeeTitle": "Maetry — invitación al equipo",
     "clientTitle": "Maetry — invitación para cliente"

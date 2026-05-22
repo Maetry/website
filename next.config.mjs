@@ -21,6 +21,9 @@ const nextConfig = {
       { source: '/ambassadors', destination: '/affiliate', permanent: true },
       { source: '/employees/invite', destination: '/staff/invite', permanent: true },
       { source: '/clients/invite', destination: '/client/invite', permanent: true },
+      { source: '/:locale/invite/client/:linkId', destination: '/:locale/client/invite/:linkId', permanent: true },
+      { source: '/:locale/invite/employee/:linkId', destination: '/:locale/staff/invite/:linkId', permanent: true },
+      { source: '/:locale/invite/salon/:linkId', destination: '/:locale/staff/invite/:linkId', permanent: true },
     ];
   },
   async headers() {

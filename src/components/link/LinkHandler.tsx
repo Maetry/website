@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { AlertCircle } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button, Paragraph, Spinner, Text, XStack, YStack } from "tamagui";
 
 import { InviteScreen } from "@/components/invite";
@@ -50,6 +50,25 @@ function resolveInviteStoreUrl(response: PublicClickResponse): string | null {
     && response.fallbackUrl
   ) {
     return response.fallbackUrl;
+  }
+
+  return null;
+}
+
+function resolveInviteFallbackUrl(
+  response: PublicClickResponse,
+  locale: string,
+): string | null {
+  if (!response.nanoId) {
+    return null;
+  }
+
+  if (response.kind === "clientInvite") {
+    return `/${locale}/client/invite/${encodeURIComponent(response.nanoId)}`;
+  }
+
+  if (response.kind === "employeeInvite") {
+    return `/${locale}/staff/invite/${encodeURIComponent(response.nanoId)}`;
   }
 
   return null;
@@ -109,21 +128,25 @@ function canSafelyNavigateToAppUrl(rawUrl: string): boolean {
 
 function openAppWithFallback(
   response: PublicClickResponse,
+  locale: string,
   onInviteFallback: (invite: InviteState) => void,
 ) {
   if (typeof window === "undefined") {
     return;
   }
 
-  if (!response.appUrl || !canSafelyNavigateToAppUrl(response.appUrl)) {
-    if (isInviteKind(response.kind)) {
-      onInviteFallback({
-        kind: response.kind,
-        storeUrl: resolveInviteStoreUrl(response),
-      });
-      return;
-    }
+  const inviteFallbackUrl = isInviteKind(response.kind)
+    ? resolveInviteFallbackUrl(response, locale)
+    : null;
 
+  // Invite short links всегда канонизируем в локализованный web route.
+  // Дальше universal/app links на основном домене сами решают, открывать app или web.
+  if (inviteFallbackUrl) {
+    window.location.replace(inviteFallbackUrl);
+    return;
+  }
+
+  if (!response.appUrl || !canSafelyNavigateToAppUrl(response.appUrl)) {
     if (response.fallbackUrl) {
       window.location.replace(response.fallbackUrl);
     }
@@ -150,14 +173,6 @@ function openAppWithFallback(
 
     if (response.fallbackTarget === "webBooking" && response.fallbackUrl) {
       window.location.replace(response.fallbackUrl);
-      return;
-    }
-
-    if (isInviteKind(response.kind)) {
-      onInviteFallback({
-        kind: response.kind,
-        storeUrl: resolveInviteStoreUrl(response),
-      });
       return;
     }
 
@@ -253,6 +268,7 @@ function LinkStatusScreen({
 }
 
 export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
+  const locale = useLocale();
   const t = useTranslations("linkHandler");
   const [state, setState] = useState<LinkState>({ status: "loading" });
 
@@ -269,7 +285,7 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
           return;
         }
 
-        openAppWithFallback(response, (invite) => {
+        openAppWithFallback(response, locale, (invite) => {
           setState({
             invite,
             status: "invite",
@@ -292,7 +308,7 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
     return () => {
       controller.abort();
     };
-  }, [nanoId, t]);
+  }, [locale, nanoId, t]);
 
   if (state.status === "loading") {
     return (

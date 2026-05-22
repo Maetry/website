@@ -13,8 +13,8 @@
           "/*/booking",
           "/booking/*",
           "/*/booking/*",
-          "/invite/client/*",
-          "/*/invite/client/*",
+          "/client/invite/*",
+          "/*/client/invite/*",
           "/*/mirror/*",
           "/mirror/*",
           "/*/mirror",
@@ -24,8 +24,8 @@
       {
         "appID": "HWPQBM32W8.com.maetry.console",
         "paths": [
-          "/console/invite/employee/*",
-          "/console/invite/salon/*"
+          "/staff/invite/*",
+          "/*/staff/invite/*"
         ]
       }
     ]
