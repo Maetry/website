@@ -15,7 +15,8 @@ import {
 import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
 import { ClientAppUiProvider } from "@/src/shared/tamagui/ClientAppUiProvider";
 
-const APP_STORE_URL = "https://apps.apple.com/app/id6746678571";
+const APP_STORE_URL =
+  "https://apps.apple.com/app/apple-store/id6746678571";
 
 function copyTextFallback(value: string) {
   const textarea = document.createElement("textarea");

@@ -4,9 +4,9 @@ export type MarketingLocale = "en" | "ru" | "es";
 export type SiteExperience = "consumer" | "business";
 
 export const APP_STORE_CONSUMER_URL =
-  "https://apps.apple.com/us/app/id6746678571";
+  "https://apps.apple.com/app/apple-store/id6746678571";
 export const APP_STORE_BUSINESS_URL =
-  "https://apps.apple.com/us/app/id6755662689";
+  "https://apps.apple.com/app/apple-store/id6755662689";
 // Совместимость со старым импортом в server-компонентах и lib-слое.
 export const APP_STORE_URL = APP_STORE_CONSUMER_URL;
 export const BUSINESS_CONSOLE_URL = "https://console.maetry.com/auth";
