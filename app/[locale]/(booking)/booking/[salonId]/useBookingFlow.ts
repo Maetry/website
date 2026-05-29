@@ -887,7 +887,7 @@ export function useBookingFlow({
       }
 
       send({ type: "SUBMIT_SUCCESS" });
-      router.push(`/${locale}/visit/${appointmentId}`);
+      router.push(`/${locale}/visits/${appointmentId}`);
     } catch (error) {
       isLeavingBookingFlowRef.current = false;
       setSubmitErrorNonce((current) => current + 1);
