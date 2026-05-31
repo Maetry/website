@@ -117,6 +117,7 @@
       "contractGapCatalog": "The salon catalog endpoint appears to require customer authorization. Public booking cannot fully work until the backend exposes this data for public links.",
       "validationName": "Please enter your name",
       "validationPhone": "Please enter a valid phone number",
+      "slotExpired": "This time slot has already passed. Please choose another time.",
       "validationSelection": "Choose a service before continuing.",
       "validationSlot": "Choose an available time slot before continuing.",
       "apiMessage": "{message}"

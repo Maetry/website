@@ -117,6 +117,7 @@
       "contractGapCatalog": "Похоже, endpoint каталога салона всё ещё требует customer auth. Полноценная public-запись заработает после исправления backend-контракта.",
       "validationName": "Введите имя",
       "validationPhone": "Введите корректный номер телефона",
+      "slotExpired": "Этот слот уже прошёл. Выберите другое время.",
       "validationSelection": "Сначала выберите услугу.",
       "validationSlot": "Сначала выберите свободный слот времени.",
       "apiMessage": "{message}"

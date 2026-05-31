@@ -185,6 +185,10 @@ function resolveSetterValue<T>(value: SetStateAction<T>, currentValue: T): T {
     : value;
 }
 
+function isSlotInFuture(slot: SlotInterval, nowTimestamp: number): boolean {
+  return new Date(slot.start).getTime() > nowTimestamp;
+}
+
 export function useBookingFlow({
   salonId,
   locale,
@@ -205,12 +209,23 @@ export function useBookingFlow({
   const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
   const isLeavingBookingFlowRef = useRef(false);
   const [submitErrorNonce, setSubmitErrorNonce] = useState(0);
+  const [nowTimestamp, setNowTimestamp] = useState(() => Date.now());
   const apiMessageTemplate = useCallback(
     (message: string) => t("errors.apiMessage", { message }),
     [t],
   );
   const [timeZoneId, setTimeZoneId] = useState("UTC");
   const [state, send] = useMachine(bookingFlowMachine);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNowTimestamp(Date.now());
+    }, 30_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const {
     clientName,
@@ -653,7 +668,11 @@ export function useBookingFlow({
               : data.slots.map((slot) => slot.total);
 
           nextSlot =
-            draftSlots.find((slot) => slot.start === requestedSlotStart) ??
+            draftSlots.find(
+              (slot) =>
+                slot.start === requestedSlotStart &&
+                isSlotInFuture(slot, nowTimestamp),
+            ) ??
             null;
 
           if (data.timeZoneId && data.timeZoneId !== timeZoneId) {
@@ -715,6 +734,7 @@ export function useBookingFlow({
     salonId,
     searchParams,
     send,
+    nowTimestamp,
     timeZoneId,
   ]);
 
@@ -750,6 +770,7 @@ export function useBookingFlow({
     });
 
     return [...slots]
+      .filter((slot) => isSlotInFuture(slot, nowTimestamp))
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
       .map((slot) => {
         const startDate = new Date(slot.start);
@@ -762,7 +783,15 @@ export function useBookingFlow({
           start: slot.start,
         };
       });
-  }, [locale, slots, timeZoneId]);
+  }, [locale, nowTimestamp, slots, timeZoneId]);
+
+  useEffect(() => {
+    if (!selectedSlot || isSlotInFuture(selectedSlot, nowTimestamp)) {
+      return;
+    }
+
+    send({ type: "SET_SLOT", value: null });
+  }, [nowTimestamp, selectedSlot, send]);
 
   const slotPeriods = useMemo<SlotPeriod[]>(() => {
     if (!slotOptions.length) return [];
@@ -836,6 +865,16 @@ export function useBookingFlow({
 
     if (!selectedProcedure || !selectedSlot) {
       send({ type: "SET_GLOBAL_ERROR", value: t("errors.createAppointment") });
+      setSubmitErrorNonce((current) => current + 1);
+      return;
+    }
+
+    if (!isSlotInFuture(selectedSlot, Date.now())) {
+      send({ type: "SET_SLOT", value: null });
+      send({
+        type: "SET_GLOBAL_ERROR",
+        value: t("errors.slotExpired"),
+      });
       setSubmitErrorNonce((current) => current + 1);
       return;
     }

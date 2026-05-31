@@ -117,6 +117,7 @@
       "contractGapCatalog": "Parece que el endpoint del catálogo del salón todavía requiere autorización del cliente. La reserva pública no funcionará del todo hasta que el backend exponga estos datos para enlaces públicos.",
       "validationName": "Introduce tu nombre",
       "validationPhone": "Introduce un teléfono válido",
+      "slotExpired": "Este horario ya pasó. Elige otra hora.",
       "validationSelection": "Elige un servicio antes de continuar.",
       "validationSlot": "Elige un horario disponible antes de continuar.",
       "apiMessage": "{message}"
