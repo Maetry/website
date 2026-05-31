@@ -92,9 +92,11 @@ export function ServiceStep({
       durationValues.size > 1 && groupDurationValue
         ? t("serviceValueFrom", { value: groupDurationValue })
         : groupDurationValue;
-    const specialistsSubtitle = t("serviceSpecialistsCount", {
-      count: group.procedures.length,
-    });
+    const specialistCount = group.procedures.length;
+    const specialistsSubtitle =
+      specialistCount > 1
+        ? t("serviceSpecialistsCount", { count: specialistCount })
+        : undefined;
 
     return (
       <YStack key={group.id}>

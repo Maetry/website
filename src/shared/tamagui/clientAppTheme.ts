@@ -418,3 +418,14 @@ export function getClientAppThemeSubName(
 ): "client_android" | "client_ios" {
   return platform === "android" ? "client_android" : "client_ios";
 }
+
+export function getClientAppThemeName(
+  platform: ClientPlatformVariant,
+  appearance: ClientAppAppearance,
+):
+  | "dark_client_android"
+  | "dark_client_ios"
+  | "light_client_android"
+  | "light_client_ios" {
+  return `${appearance}_${getClientAppThemeSubName(platform)}`;
+}
