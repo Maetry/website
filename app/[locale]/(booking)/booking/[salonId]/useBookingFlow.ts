@@ -271,7 +271,7 @@ export function useBookingFlow({
 
     procedures.forEach((procedure) => {
       const baseTitle =
-        procedure.serviceTitle?.trim() ??
+        procedure.title?.trim() ??
         procedure.alias?.trim() ??
         procedure.id;
 

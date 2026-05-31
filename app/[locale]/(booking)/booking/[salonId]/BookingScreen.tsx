@@ -93,28 +93,18 @@ const BookingScreen = ({ salonId, locale, trackingId }: BookingScreenProps) => {
 
         <ServiceStep
           currentVisualStep={flow.currentVisualStep}
-          expandedCategoryIds={flow.expandedCategoryIds}
           locale={flow.locale}
           onDeselectGroup={() => {
             flow.setSelectedGroupId(null);
             flow.setSelectedProcedureKey(null);
             flow.setSelectedSlot(null);
           }}
-          onToggleCategory={(categoryId) => {
-            flow.setExpandedCategoryIds((previous) =>
-              previous.includes(categoryId)
-                ? previous.filter((id) => id !== categoryId)
-                : [...previous, categoryId],
-            );
-          }}
           onSelectGroup={flow.handleSelectGroup}
           platform={flow.platform}
-          procedureCategories={flow.procedureCategories}
           procedureGroups={flow.procedureGroups}
           proceduresError={flow.proceduresError}
           proceduresLoading={flow.proceduresLoading}
           selectedGroup={flow.selectedGroup}
-          selectedProcedure={flow.selectedProcedure}
         />
 
         {flow.selectedGroup ? (

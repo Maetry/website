@@ -14,6 +14,8 @@ export type ServiceTagUi = {
 
 export type Procedure = {
   alias?: string;
+  /** Название процедуры из каталога (procedure.title). */
+  title?: string;
   bundleSize?: number;
   complexProcedureIds?: string[];
   duration?: number;
@@ -123,6 +125,7 @@ export function adaptCatalogToProcedures(
         return [{
           id: procedure.id,
           alias: procedure.title,
+          title: procedure.title,
           bundleSize: undefined,
           complexProcedureIds: undefined,
           duration: procedure.minDuration,
@@ -152,6 +155,7 @@ export function adaptCatalogToProcedures(
           return {
             id: procedure.id,
             alias: procedure.title,
+            title: procedure.title,
             bundleSize: undefined,
             complexProcedureIds: undefined,
             duration: execution.duration ?? procedure.minDuration,
@@ -215,6 +219,7 @@ export function adaptCatalogToProcedures(
               return {
                 id: complex.id,
                 alias: complex.title,
+                title: complex.title,
                 bundleSize: procedures.length,
                 complexProcedureIds: procedureIds,
                 duration,
@@ -241,6 +246,7 @@ export function adaptCatalogToProcedures(
           return [{
             id: complex.id,
             alias: complex.title,
+            title: complex.title,
             bundleSize: procedures.length,
             complexProcedureIds: procedureIds,
             duration,
