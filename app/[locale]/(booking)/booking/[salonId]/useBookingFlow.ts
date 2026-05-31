@@ -201,9 +201,9 @@ export function useBookingFlow({
   const t = useTranslations("booking");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const hotfixNanoId = searchParams.get("nanoid");
   const trackingId =
     trackingIdProp ??
-    searchParams.get("nanoid") ??
     searchParams.get("trackingId");
   const queryClient = useQueryClient();
   const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
@@ -257,10 +257,10 @@ export function useBookingFlow({
         ? adaptCatalogToProcedures(
             catalogQuery.data,
             mastersQuery.data ?? [],
-            trackingId,
+            hotfixNanoId,
           )
         : [],
-    [catalogQuery.data, mastersQuery.data, trackingId],
+    [catalogQuery.data, hotfixNanoId, mastersQuery.data],
   );
   const proceduresLoading =
     catalogQuery.isPending || profileQuery.isPending || mastersQuery.isPending;
