@@ -104,7 +104,7 @@ function dedupeServiceTags(
   return out;
 }
 
-const HOTFIX_SALON_PROCEDURE_ORDER_SALON_ID = "rs3l1d2Ec9";
+const HOTFIX_SALON_PROCEDURE_ORDER_NANO_ID = "rs3l1d2Ec9";
 
 const HOTFIX_SALON_PROCEDURE_ORDER = new Map<string, number>([
   ["92c31d71-c6c9-490e-b565-627f0110c70e", 0], // Classic Haircut
@@ -121,9 +121,9 @@ const HOTFIX_SALON_PROCEDURE_ORDER = new Map<string, number>([
 
 function orderCatalogProceduresForHotfix(
   procedures: NonNullable<PublicSalonCatalog["procedures"]>,
-  salonId?: string,
+  nanoId?: string | null,
 ) {
-  if (salonId !== HOTFIX_SALON_PROCEDURE_ORDER_SALON_ID) {
+  if (nanoId !== HOTFIX_SALON_PROCEDURE_ORDER_NANO_ID) {
     return procedures;
   }
 
@@ -157,7 +157,7 @@ function orderCatalogProceduresForHotfix(
 export function adaptCatalogToProcedures(
   catalog: PublicSalonCatalog | null,
   masters: PublicSalonMaster[],
-  salonId?: string,
+  nanoId?: string | null,
 ): Procedure[] {
   if (!catalog) {
     return [];
@@ -165,7 +165,7 @@ export function adaptCatalogToProcedures(
 
   const mastersById = buildMasterMap(masters);
 
-  return orderCatalogProceduresForHotfix(catalog.procedures ?? [], salonId)
+  return orderCatalogProceduresForHotfix(catalog.procedures ?? [], nanoId)
     .filter((procedure) => procedure.id && !procedure.archived)
     .filter((procedure) => procedure.onlineBookingEnabled !== false)
     .flatMap((procedure) => {

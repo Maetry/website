@@ -257,10 +257,10 @@ export function useBookingFlow({
         ? adaptCatalogToProcedures(
             catalogQuery.data,
             mastersQuery.data ?? [],
-            salonId,
+            trackingId,
           )
         : [],
-    [catalogQuery.data, mastersQuery.data, salonId],
+    [catalogQuery.data, mastersQuery.data, trackingId],
   );
   const proceduresLoading =
     catalogQuery.isPending || profileQuery.isPending || mastersQuery.isPending;
