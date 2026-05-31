@@ -254,9 +254,13 @@ export function useBookingFlow({
   const procedures = useMemo<Procedure[]>(
     () =>
       catalogQuery.data
-        ? adaptCatalogToProcedures(catalogQuery.data, mastersQuery.data ?? [])
+        ? adaptCatalogToProcedures(
+            catalogQuery.data,
+            mastersQuery.data ?? [],
+            salonId,
+          )
         : [],
-    [catalogQuery.data, mastersQuery.data],
+    [catalogQuery.data, mastersQuery.data, salonId],
   );
   const proceduresLoading =
     catalogQuery.isPending || profileQuery.isPending || mastersQuery.isPending;
