@@ -121,11 +121,15 @@ const HOTFIX_PROCEDURE_ORDER = new Map<string, number>([
   ["0aabac72-b0dd-48ed-be14-c8a19a528445", 9],
 ]);
 
+function getHotfixProcedurePriority(procedureId: string): number {
+  return HOTFIX_PROCEDURE_ORDER.get(procedureId.toLowerCase()) ?? Number.POSITIVE_INFINITY;
+}
+
 function sortProceduresForBooking(procedures: Procedure[]): Procedure[] {
   return procedures
     .map((procedure, index) => ({
       index,
-      priority: HOTFIX_PROCEDURE_ORDER.get(procedure.id) ?? Number.POSITIVE_INFINITY,
+      priority: getHotfixProcedurePriority(procedure.id),
       procedure,
     }))
     .sort((left, right) => {
