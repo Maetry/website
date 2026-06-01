@@ -108,6 +108,36 @@ export type ProcedureCategoryGroup = {
   grouping: "tag" | "inferred" | "uncategorized";
 };
 
+const HOTFIX_PROCEDURE_ORDER = new Map<string, number>([
+  ["92c31d71-c6c9-490e-b565-627f0110c70e", 0],
+  ["1e11fa3e-6fc7-4e9c-b732-e4c5c2c83583", 1],
+  ["5d8da97a-de45-44f8-adf9-4b1b6cf2e11d", 2],
+  ["a4c50e39-2279-4fd6-9382-58dc48c5386c", 3],
+  ["08a56111-006d-454a-afdd-1bf315531326", 4],
+  ["4ff3e3e0-7804-493a-8506-c5ca52fc6b98", 5],
+  ["e034d3c8-ec52-473c-a7ba-b4abaec50e2e", 6],
+  ["896d7887-c87d-4907-a7eb-e41c2a2fe81c", 7],
+  ["b88f8b4b-79e5-45fc-9702-1dcaca29fe55", 8],
+  ["0aabac72-b0dd-48ed-be14-c8a19a528445", 9],
+]);
+
+function sortProceduresForBooking(procedures: Procedure[]): Procedure[] {
+  return procedures
+    .map((procedure, index) => ({
+      index,
+      priority: HOTFIX_PROCEDURE_ORDER.get(procedure.id) ?? Number.POSITIVE_INFINITY,
+      procedure,
+    }))
+    .sort((left, right) => {
+      if (left.priority !== right.priority) {
+        return left.priority - right.priority;
+      }
+
+      return left.index - right.index;
+    })
+    .map(({ procedure }) => procedure);
+}
+
 type TimePeriodKey = "morning" | "day" | "evening" | "night";
 
 export type SlotPeriod = {
@@ -254,7 +284,9 @@ export function useBookingFlow({
   const procedures = useMemo<Procedure[]>(
     () =>
       catalogQuery.data
-        ? adaptCatalogToProcedures(catalogQuery.data, mastersQuery.data ?? [])
+        ? sortProceduresForBooking(
+            adaptCatalogToProcedures(catalogQuery.data, mastersQuery.data ?? []),
+          )
         : [],
     [catalogQuery.data, mastersQuery.data],
   );
