@@ -12,15 +12,14 @@ export function getTimeZoneParts(date: Date, timeZone: string) {
     year: "numeric",
   });
 
-  return formatter.formatToParts(date).reduce<Record<string, string>>(
-    (acc, part) => {
+  return formatter
+    .formatToParts(date)
+    .reduce<Record<string, string>>((acc, part) => {
       if (part.type !== "literal") {
         acc[part.type] = part.value;
       }
       return acc;
-    },
-    {},
-  );
+    }, {});
 }
 
 export function getTimeZoneOffsetMinutes(date: Date, timeZone: string) {
@@ -87,7 +86,8 @@ export function formatDateLabel(
 
 /** Заголовок выбранного слота: дата как в локали + время в локальном 12/24h. */
 export function formatSlotSummaryTitle(
-  date: Date,
+  startDate: Date,
+  endDate: Date,
   locale: string,
   timeZone: string,
 ) {
@@ -103,7 +103,7 @@ export function formatSlotSummaryTitle(
     timeZone,
   });
 
-  const dParts = dateFmt.formatToParts(date);
+  const dParts = dateFmt.formatToParts(startDate);
 
   const datePortion = dParts
     .map((p) => {
@@ -126,7 +126,7 @@ export function formatSlotSummaryTitle(
     })
     .join("");
 
-  return `${datePortion} • ${timeFmt.format(date)}`;
+  return `${datePortion} • ${timeFmt.format(startDate)} – ${timeFmt.format(endDate)}`;
 }
 
 export function getNightPeriodLabel(locale: string) {
@@ -186,7 +186,9 @@ export const BOOKING_UNCATEGORIZED_SERVICE_CATEGORY_ID =
  * Категория из первого тега сервиса API (например spa → «SPA» в текущей локали).
  */
 export function inferProcedureCategoryFromTags(group: {
-  procedures: Array<{ serviceTags?: Array<{ tag: string; translate: string }> }>;
+  procedures: Array<{
+    serviceTags?: Array<{ tag: string; translate: string }>;
+  }>;
 }): { categoryId: string; title: string } | null {
   const primary = group.procedures[0]?.serviceTags?.[0];
   if (!primary) {

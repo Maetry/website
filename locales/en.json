@@ -49,7 +49,7 @@
     "detailsTitle": "Leave your contact details",
     "detailsHint": "The salon will use your phone number only to confirm the appointment.",
     "fieldNameLabel": "Name",
-    "fieldNamePlaceholder": "What should the salon call you?",
+    "fieldNamePlaceholder": "Your name",
     "fieldPhoneLabel": "Phone",
     "fieldPhonePlaceholder": "+1 555 555 1234",
     "fieldPhoneHelper": "Your number is used only to confirm the booking.",

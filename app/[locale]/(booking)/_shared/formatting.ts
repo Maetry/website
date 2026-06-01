@@ -11,8 +11,10 @@ export function formatCurrency(
   }
 
   try {
+    const hasFraction = Math.abs(amount % 1) > Number.EPSILON;
     return new Intl.NumberFormat(locale ?? "en", {
       currency,
+      minimumFractionDigits: hasFraction ? 2 : 0,
       maximumFractionDigits: 2,
       style: "currency",
     }).format(amount);
@@ -50,11 +52,7 @@ export function formatDuration(minutes?: number | null, locale?: string) {
 export function getInitials(value?: string | null) {
   if (!value) return "M";
 
-  const parts = value
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
+  const parts = value.trim().split(/\s+/).filter(Boolean).slice(0, 2);
 
   if (!parts.length) return "M";
   return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");

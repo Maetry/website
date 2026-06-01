@@ -122,7 +122,10 @@ const HOTFIX_PROCEDURE_ORDER = new Map<string, number>([
 ]);
 
 function getHotfixProcedurePriority(procedureId: string): number {
-  return HOTFIX_PROCEDURE_ORDER.get(procedureId.toLowerCase()) ?? Number.POSITIVE_INFINITY;
+  return (
+    HOTFIX_PROCEDURE_ORDER.get(procedureId.toLowerCase()) ??
+    Number.POSITIVE_INFINITY
+  );
 }
 
 function sortProceduresForBooking(procedures: Procedure[]): Procedure[] {
@@ -289,7 +292,10 @@ export function useBookingFlow({
     () =>
       catalogQuery.data
         ? sortProceduresForBooking(
-            adaptCatalogToProcedures(catalogQuery.data, mastersQuery.data ?? []),
+            adaptCatalogToProcedures(
+              catalogQuery.data,
+              mastersQuery.data ?? [],
+            ),
           )
         : [],
     [catalogQuery.data, mastersQuery.data],
@@ -322,9 +328,7 @@ export function useBookingFlow({
 
     procedures.forEach((procedure) => {
       const baseTitle =
-        procedure.title?.trim() ??
-        procedure.alias?.trim() ??
-        procedure.id;
+        procedure.title?.trim() ?? procedure.alias?.trim() ?? procedure.id;
 
       const key = baseTitle.toLowerCase();
       const existing = groupsMap.get(key);
@@ -708,8 +712,7 @@ export function useBookingFlow({
               (slot) =>
                 slot.start === requestedSlotStart &&
                 isSlotInFuture(slot, nowTimestamp),
-            ) ??
-            null;
+            ) ?? null;
 
           if (data.timeZoneId && data.timeZoneId !== timeZoneId) {
             setTimeZoneId(data.timeZoneId);
@@ -994,7 +997,12 @@ export function useBookingFlow({
   );
 
   const selectedSlotSummaryTitle = selectedSlot
-    ? formatSlotSummaryTitle(new Date(selectedSlot.start), locale, timeZoneId)
+    ? formatSlotSummaryTitle(
+        new Date(selectedSlot.start),
+        new Date(selectedSlot.end),
+        locale,
+        timeZoneId,
+      )
     : null;
 
   const selectedSlotDurationSubtitle =

@@ -167,7 +167,7 @@ const BookingScreen = ({ salonId, locale, trackingId }: BookingScreenProps) => {
             title={t("summaryTotalTitle")}
           >
             <SummaryTotalRow
-              label={t("summaryTotalLabel")}
+              label={`${t("paywall.estimatedTotal")}:`}
               platform={flow.platform}
               price={flow.selectedProcedurePrice}
             />
