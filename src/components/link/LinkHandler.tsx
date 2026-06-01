@@ -89,28 +89,6 @@ function resolveInviteFallbackUrl(
   return null;
 }
 
-function withNanoIdQuery(url: string, nanoId: string): string {
-  try {
-    const resolved = new URL(url, window.location.origin);
-    resolved.searchParams.set("nanoid", nanoId);
-    return resolved.toString();
-  } catch {
-    return url;
-  }
-}
-
-function resolveFallbackUrl(response: PublicClickResponse): string | null {
-  if (!response.fallbackUrl) {
-    return null;
-  }
-
-  if (response.fallbackTarget !== "webBooking") {
-    return response.fallbackUrl;
-  }
-
-  return withNanoIdQuery(response.fallbackUrl, response.nanoId);
-}
-
 const ALLOWED_APP_NAVIGATION_PROTOCOLS = new Set([
   "maetry:",
   "maesole:",
@@ -179,11 +157,9 @@ function openAppWithFallback(response: PublicClickResponse, locale: string) {
     return;
   }
 
-  const fallbackUrl = resolveFallbackUrl(response);
-
   if (!response.appUrl || !canSafelyNavigateToAppUrl(response.appUrl)) {
-    if (fallbackUrl) {
-      window.location.replace(fallbackUrl);
+    if (response.fallbackUrl) {
+      window.location.replace(response.fallbackUrl);
     }
     return;
   }
@@ -206,9 +182,13 @@ function openAppWithFallback(response: PublicClickResponse, locale: string) {
 
     cleanup();
 
-    if (fallbackUrl) {
-      window.location.replace(fallbackUrl);
+    if (response.fallbackTarget === "webBooking" && response.fallbackUrl) {
+      window.location.replace(response.fallbackUrl);
       return;
+    }
+
+    if (response.fallbackUrl) {
+      window.location.replace(response.fallbackUrl);
     }
   };
 

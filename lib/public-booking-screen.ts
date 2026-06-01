@@ -104,60 +104,9 @@ function dedupeServiceTags(
   return out;
 }
 
-const HOTFIX_SALON_PROCEDURE_ORDER_NANO_ID = "rs3l1d2Ec9";
-
-const HOTFIX_SALON_PROCEDURE_ORDER = new Map<string, number>([
-  ["92c31d71-c6c9-490e-b565-627f0110c70e", 0], // Classic Haircut
-  ["1e11fa3e-6fc7-4e9c-b732-e4c5c2c83583", 1], // Beard Trim
-  ["5d8da97a-de45-44f8-adf9-4b1b6cf2e11d", 2], // Classic Haircut & Beard Trim
-  ["a4c50e39-2279-4fd6-9382-58dc48c5386c", 3], // Line-up
-  ["08a56111-006d-454a-afdd-1bf315531326", 4], // Royal Shave
-  ["4ff3e3e0-7804-493a-8506-c5ca52fc6b98", 5], // Bald Shave
-  ["e034d3c8-ec52-473c-a7ba-b4abaec50e2e", 6], // Nose Wax
-  ["896d7887-c87d-4907-a7eb-e41c2a2fe81c", 7], // Ear Wax
-  ["b88f8b4b-79e5-45fc-9702-1dcaca29fe55", 8], // Middle Brow Wax
-  ["0aabac72-b0dd-48ed-be14-c8a19a528445", 9], // Black Mask
-]);
-
-function orderCatalogProceduresForHotfix(
-  procedures: NonNullable<PublicSalonCatalog["procedures"]>,
-  nanoId?: string | null,
-) {
-  if (nanoId !== HOTFIX_SALON_PROCEDURE_ORDER_NANO_ID) {
-    return procedures;
-  }
-
-  return procedures
-    .map((procedure, index) => ({ index, procedure }))
-    .sort((left, right) => {
-      const leftRank = HOTFIX_SALON_PROCEDURE_ORDER.get(left.procedure.id);
-      const rightRank = HOTFIX_SALON_PROCEDURE_ORDER.get(right.procedure.id);
-
-      if (leftRank === undefined && rightRank === undefined) {
-        return left.index - right.index;
-      }
-
-      if (leftRank === undefined) {
-        return 1;
-      }
-
-      if (rightRank === undefined) {
-        return -1;
-      }
-
-      if (leftRank !== rightRank) {
-        return leftRank - rightRank;
-      }
-
-      return left.index - right.index;
-    })
-    .map(({ procedure }) => procedure);
-}
-
 export function adaptCatalogToProcedures(
   catalog: PublicSalonCatalog | null,
   masters: PublicSalonMaster[],
-  nanoId?: string | null,
 ): Procedure[] {
   if (!catalog) {
     return [];
@@ -165,7 +114,7 @@ export function adaptCatalogToProcedures(
 
   const mastersById = buildMasterMap(masters);
 
-  return orderCatalogProceduresForHotfix(catalog.procedures ?? [], nanoId)
+  return (catalog.procedures ?? [])
     .filter((procedure) => procedure.id && !procedure.archived)
     .filter((procedure) => procedure.onlineBookingEnabled !== false)
     .flatMap((procedure) => {
