@@ -124,7 +124,7 @@ export function ServiceStep({
     return (
       <BookingSection platform={platform} title={t("serviceTitle")}>
         <BookingRow
-          ctaLabel={t("changeSelectionShort")}
+          ctaLabel={t("editSelectionShort")}
           onPress={onDeselectGroup}
           platform={platform}
           subtitle={selectedGroup.description ?? undefined}

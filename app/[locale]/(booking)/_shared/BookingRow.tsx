@@ -15,9 +15,11 @@ type BookingRowProps = {
   indicator?: ReactNode;
   onPress?: () => void;
   overline?: string | null;
+  overlineUppercase?: boolean;
   platform: BookingPlatformVariant;
   selected?: boolean;
   subtitle?: string | null;
+  tall?: boolean;
   title: string;
 };
 
@@ -27,9 +29,11 @@ export function BookingRow({
   indicator,
   onPress,
   overline,
+  overlineUppercase = true,
   platform,
   selected = false,
   subtitle,
+  tall = false,
   title,
 }: BookingRowProps) {
   const surface = getBookingSurfaceStyle(platform);
@@ -50,7 +54,7 @@ export function BookingRow({
               fontSize={surface.row.overlineFontSize}
               fontWeight="600"
               lineHeight={surface.row.overlineLineHeight}
-              textTransform="uppercase"
+              textTransform={overlineUppercase ? "uppercase" : "none"}
             >
               {overline}
             </Text>
@@ -79,7 +83,11 @@ export function BookingRow({
           {indicator}
         </XStack>
       ) : ctaLabel ? (
-        <Text color="$primary" fontSize={surface.row.ctaFontSize} fontWeight="600">
+        <Text
+          color="$primary"
+          fontSize={surface.row.ctaFontSize}
+          fontWeight="600"
+        >
           {ctaLabel}
         </Text>
       ) : null}
@@ -90,7 +98,11 @@ export function BookingRow({
     return (
       <YStack
         paddingHorizontal={surface.row.staticPaddingHorizontal}
-        paddingVertical={surface.row.staticPaddingVertical}
+        paddingVertical={
+          tall
+            ? surface.row.staticPaddingVertical + 4
+            : surface.row.staticPaddingVertical
+        }
       >
         {content}
       </YStack>
@@ -104,6 +116,15 @@ export function BookingRow({
       platform={platform}
       pressStyle={{ backgroundColor: "$bookingRowPressBackground" }}
       selected={selected}
+      style={
+        tall
+          ? {
+              minHeight: surface.row.buttonMinHeight + 12,
+              paddingTop: surface.row.buttonPaddingVertical + 4,
+              paddingBottom: surface.row.buttonPaddingVertical + 4,
+            }
+          : undefined
+      }
     >
       {content}
     </RowButton>

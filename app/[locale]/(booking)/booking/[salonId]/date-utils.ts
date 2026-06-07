@@ -202,10 +202,24 @@ export function inferProcedureCategoryFromTags(group: {
 }
 
 export function getProcedureSelectionKey(procedure: {
+  bundleItems?: Array<{
+    executionId?: string | null;
+    procedureId: string;
+  }>;
+  executionId?: string | null;
   id: string;
+  kind?: "bundle" | "procedure";
   masterId?: string | null;
 }) {
-  return `${procedure.id}:${procedure.masterId ?? "any"}`;
+  if (procedure.kind === "bundle") {
+    const bundleItemsKey = (procedure.bundleItems ?? [])
+      .map((item) => `${item.procedureId}:${item.executionId ?? "any"}`)
+      .join(",");
+
+    return `bundle:${procedure.id}:${procedure.masterId ?? "any"}:${bundleItemsKey}`;
+  }
+
+  return `procedure:${procedure.id}:${procedure.executionId ?? procedure.masterId ?? "any"}`;
 }
 
 export function buildSlotsCacheKey(

@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 
 import { ApiError } from "@/lib/api/error-handler";
 import {
+  PublicBookingCreatePayload,
   PublicBookingVisit,
   PublicComplexSlot,
   PublicDateInterval,
@@ -17,6 +18,7 @@ import {
   PublicSalonCatalogProcedure,
   PublicSalonMaster,
   PublicSalonProfile,
+  PublicSearchSlotsBody,
   PublicSearchSlotsResponse,
   createPublicBooking,
   getPublicBooking,
@@ -534,6 +536,39 @@ function buildSlotOptions(
   }));
 }
 
+function buildSelectedServiceItem(
+  selection: SelectionOption,
+  selectedMasterId: string | null,
+): PublicSearchSlotsBody["items"][number] {
+  if (selection.kind === "procedure") {
+    return {
+      procedure: {
+        ...(selectedMasterId ? { executionId: selectedMasterId } : {}),
+        procedureId: selection.id,
+      },
+    };
+  }
+
+  return {
+    bundle: {
+      bundleId: selection.id,
+      items: selection.procedures.map((procedure) => ({
+        ...(selectedMasterId ? { executionId: selectedMasterId } : {}),
+        procedureId: procedure.id,
+      })),
+    },
+  };
+}
+
+function buildSelectedService(
+  selection: SelectionOption,
+  selectedMasterId: string | null,
+): PublicSearchSlotsBody {
+  return {
+    items: [buildSelectedServiceItem(selection, selectedMasterId)],
+  };
+}
+
 function Avatar({
   imageUrl,
   name,
@@ -870,14 +905,8 @@ export function PublicBookingFlow({
 
     return {
       date: toTimeZoneIsoDate(selectedDateKey, salonTimeZone),
-      masterId: selectedMasterId,
-      procedureIds:
-        selectedSelection.kind === "complex"
-          ? selectedSelection.procedures.map((procedure) => procedure.id)
-          : undefined,
       salonId,
-      selectionId: selectedSelection.id,
-      selectionKind: selectedSelection.kind,
+      selectedService: buildSelectedService(selectedSelection, selectedMasterId),
       timeZone: salonTimeZone,
     } as const;
   }, [
@@ -909,11 +938,14 @@ export function PublicBookingFlow({
       selectedSlotsQueryOptions?.queryKey ??
       publicBookingKeys.slots({
         date: "idle",
-        masterId: null,
-        procedureIds: [],
         salonId,
-        selectionId: "idle",
-        selectionKind: "procedure",
+        selectedService: {
+          items: [{
+            procedure: {
+              procedureId: "idle",
+            },
+          }],
+        },
         timeZone: salonTimeZone,
       }),
     enabled: Boolean(selectedSlotsQueryParams),
@@ -1101,6 +1133,11 @@ export function PublicBookingFlow({
       return;
     }
 
+    const selectedService = buildSelectedService(
+      selectedSelection,
+      selectedMasterId,
+    );
+
     if (submitGuardRef.current) {
       return;
     }
@@ -1110,18 +1147,14 @@ export function PublicBookingFlow({
     setSubmitError(null);
 
     try {
-      const createdBooking = await createPublicBooking(salonId, {
-        ...(selectedSelection.kind === "procedure"
-          ? { procedureId: selectedSelection.id }
-          : { complexId: selectedSelection.id }),
-        ...(selectedSelection.kind === "procedure" && selectedMasterId
-          ? { executorId: selectedMasterId }
-          : {}),
+      const payload: PublicBookingCreatePayload = {
         ...(trackingId ? { trackingId } : {}),
         clientName: clientName.trim(),
         clientPhone: normalizedPhone,
+        selectedService,
         time: selectedSlot.interval,
-      });
+      };
+      const createdBooking = await createPublicBooking(salonId, payload);
 
       const bookingId = createdBooking.appointmentId ?? null;
 

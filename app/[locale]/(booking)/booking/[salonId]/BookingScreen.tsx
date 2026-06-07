@@ -13,9 +13,8 @@ import {
 } from "../../_shared/primitives";
 
 import { DetailsStep } from "./DetailsStep";
-import { MasterStep } from "./MasterStep";
 import { SalonHeader, SalonHeaderSkeleton } from "./SalonHeader";
-import { ServiceStep } from "./ServiceStep";
+import { ServiceSelectionsStep } from "./ServiceSelectionsStep";
 import { TimeStep } from "./TimeStep";
 import { useBookingFlow } from "./useBookingFlow";
 
@@ -91,52 +90,35 @@ const BookingScreen = ({ salonId, locale, trackingId }: BookingScreenProps) => {
           />
         )}
 
-        <ServiceStep
+        <ServiceSelectionsStep
+          canAddAnotherService={flow.canAddAnotherService}
           currentVisualStep={flow.currentVisualStep}
           locale={flow.locale}
-          onDeselectGroup={() => {
-            flow.setSelectedGroupId(null);
-            flow.setSelectedProcedureKey(null);
-            flow.setSelectedSlot(null);
-          }}
-          onSelectGroup={flow.handleSelectGroup}
+          onAddService={flow.addServiceSection}
+          onRequestSectionAction={flow.handleSectionActionRequest}
+          onSectionDelete={flow.handleSectionDelete}
+          onSectionEditConfirm={flow.handleSectionEditConfirm}
+          onSelectBundleProcedureMaster={
+            flow.handleSectionSelectBundleProcedureMaster
+          }
+          onSelectGroup={flow.handleSectionSelectGroup}
+          onSelectProcedure={flow.handleSectionSelectProcedure}
+          onToggleBundleProcedurePicker={flow.handleToggleBundleProcedurePicker}
+          onToggleDescription={flow.handleToggleSectionDescription}
           platform={flow.platform}
           procedureGroups={flow.procedureGroups}
           proceduresError={flow.proceduresError}
           proceduresLoading={flow.proceduresLoading}
-          selectedGroup={flow.selectedGroup}
+          sections={flow.sections}
         />
 
-        {flow.selectedGroup ? (
-          <MasterStep
-            currentVisualStep={flow.currentVisualStep}
-            locale={flow.locale}
-            onDeselectProcedure={() => {
-              flow.setSelectedProcedureKey(null);
-              flow.setSelectedSlot(null);
-            }}
-            onSelectProcedure={flow.handleSelectProcedure}
-            platform={flow.platform}
-            selectedGroup={flow.selectedGroup}
-            selectedProcedure={flow.selectedProcedure}
-          />
-        ) : null}
-
-        {flow.selectedProcedure ? (
+        {flow.isReadyForTimeSelection ? (
           <TimeStep
             currentVisualStep={flow.currentVisualStep}
             onDeselectSlot={() => flow.setSelectedSlot(null)}
-            onRetrySlots={() => {
-              if (flow.selectedProcedure && flow.selectedDateKey) {
-                void flow.fetchSlotsForProcedure(
-                  flow.selectedProcedure,
-                  flow.selectedDateKey,
-                  { force: true },
-                );
-              }
-            }}
+            onRetrySlots={() => void flow.refetchSlots()}
             onSelectDate={flow.setSelectedDateKey}
-            onSelectSlot={flow.handleSelectSlot}
+            onSelectSlot={(slot) => flow.setSelectedSlot(slot)}
             platform={flow.platform}
             selectedDateKey={flow.selectedDateKey}
             selectedProcedure={flow.selectedProcedure}

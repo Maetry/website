@@ -1,3 +1,4 @@
+import type { PublicSearchSlotsBody } from "./public-booking";
 import {
   getPublicSalonCatalog,
   getPublicSalonMasters,
@@ -5,17 +6,78 @@ import {
   searchPublicBookingSlots,
 } from "./public-booking";
 
-type SlotSelectionKind = "complex" | "procedure";
-
-export type PublicBookingSlotsQueryParams = {
+type LegacyPublicBookingSlotsQueryParams = {
   date: string;
   masterId?: string | null;
   procedureIds?: string[];
   salonId: string;
   selectionId: string;
-  selectionKind: SlotSelectionKind;
+  selectionKind: "complex" | "procedure";
   timeZone: string;
 };
+
+export type PublicBookingSlotsQueryParams =
+  | {
+      date: string;
+      salonId: string;
+      selectedService: PublicSearchSlotsBody;
+      timeZone: string;
+    }
+  | LegacyPublicBookingSlotsQueryParams;
+
+function normalizeSelectedService(
+  params: PublicBookingSlotsQueryParams,
+): PublicSearchSlotsBody {
+  if ("selectedService" in params) {
+    return params.selectedService;
+  }
+
+  if (params.selectionKind === "complex") {
+    return {
+      items: [{
+        bundle: {
+          bundleId: params.selectionId,
+          items: (params.procedureIds ?? []).map((procedureId) => ({
+            ...(params.masterId ? { executionId: params.masterId } : {}),
+            procedureId,
+          })),
+        },
+      }],
+    };
+  }
+
+  return {
+    items: [{
+      procedure: {
+        ...(params.masterId ? { executionId: params.masterId } : {}),
+        procedureId: params.selectionId,
+      },
+    }],
+  };
+}
+
+function normalizeSelectedServiceCacheKey(selectedService: PublicSearchSlotsBody) {
+  return selectedService.items.map((item) => {
+    if ("procedure" in item) {
+      return {
+        procedure: {
+          executionId: item.procedure.executionId ?? null,
+          procedureId: item.procedure.procedureId,
+        },
+      };
+    }
+
+    return {
+      bundle: {
+        bundleId: item.bundle.bundleId,
+        items: item.bundle.items.map((bundleItem) => ({
+          executionId: bundleItem.executionId ?? null,
+          procedureId: bundleItem.procedureId,
+        })),
+      },
+    };
+  });
+}
 
 export const publicBookingKeys = {
   salonCatalog: (salonId: string, locale?: string) =>
@@ -30,11 +92,10 @@ export const publicBookingKeys = {
       "slots",
       {
         date: params.date,
-        masterId: params.masterId ?? null,
-        procedureIds: params.procedureIds ?? [],
         salonId: params.salonId,
-        selectionId: params.selectionId,
-        selectionKind: params.selectionKind,
+        selectedService: normalizeSelectedServiceCacheKey(
+          normalizeSelectedService(params),
+        ),
         timeZone: params.timeZone,
       },
     ] as const,
@@ -87,19 +148,7 @@ export function publicBookingSlotsQueryOptions(
     queryFn: ({ signal }: { signal: AbortSignal }) =>
       searchPublicBookingSlots(
         {
-          body:
-            params.selectionKind === "complex"
-              ? {
-                  id: params.selectionId,
-                  procedures: (params.procedureIds ?? []).map((id) => ({
-                    ...(params.masterId ? { executorId: params.masterId } : {}),
-                    id,
-                  })),
-                }
-              : {
-                  ...(params.masterId ? { executorId: params.masterId } : {}),
-                  id: params.selectionId,
-                },
+          body: normalizeSelectedService(params),
           date: params.date,
           salonId: params.salonId,
         },

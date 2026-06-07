@@ -1,6 +1,6 @@
 import type { Step } from "@/lib/public-booking-screen";
 
-const BOOKING_DRAFT_VERSION = 1;
+const BOOKING_DRAFT_VERSION = 3;
 const BOOKING_DRAFT_STORAGE_PREFIX = "booking-draft";
 
 type BookingDraftScope = {
@@ -12,6 +12,15 @@ type SearchParamsLike = {
   get(name: string): string | null;
 };
 
+export type BookingDraftServiceSection = {
+  selectedBundleProcedureSelections?: Array<{
+    executionId: string | null;
+    procedureId: string;
+  }>;
+  selectedGroupId: string | null;
+  selectedProcedureKey: string | null;
+};
+
 export type BookingDraftSnapshot = {
   clientName: string;
   clientPhone: string;
@@ -20,9 +29,8 @@ export type BookingDraftSnapshot = {
   locale: string;
   salonId: string;
   selectedDateKey: string | null;
-  selectedGroupId: string | null;
-  selectedProcedureKey: string | null;
   selectedSlotStart: string | null;
+  serviceSections: BookingDraftServiceSection[];
   updatedAt: number;
   version: typeof BOOKING_DRAFT_VERSION;
 };
@@ -64,9 +72,94 @@ export function normalizeBookingDraftStep(
 }
 
 export function clampBookingDraftStep(desired: Step, maxAllowed: Step): Step {
-  return BOOKING_DRAFT_STEP_ORDER[desired] <= BOOKING_DRAFT_STEP_ORDER[maxAllowed]
+  return BOOKING_DRAFT_STEP_ORDER[desired] <=
+    BOOKING_DRAFT_STEP_ORDER[maxAllowed]
     ? desired
     : maxAllowed;
+}
+
+function normalizeServiceSections(parsed: {
+  serviceSections?: unknown;
+  selectedBundleProcedureSelections?: unknown;
+  selectedGroupId?: string | null;
+  selectedProcedureKey?: string | null;
+}) {
+  if (Array.isArray(parsed.serviceSections)) {
+    const normalized: BookingDraftServiceSection[] = [];
+
+    for (const section of parsed.serviceSections) {
+      if (!section || typeof section !== "object") {
+        continue;
+      }
+
+      const sectionValue = section as {
+        selectedBundleProcedureSelections?: unknown;
+        selectedGroupId?: unknown;
+        selectedProcedureKey?: unknown;
+      };
+
+      const selectedBundleProcedureSelections = Array.isArray(
+        sectionValue.selectedBundleProcedureSelections,
+      )
+        ? sectionValue.selectedBundleProcedureSelections
+            .map((selection: unknown) => {
+              if (!selection || typeof selection !== "object") {
+                return null;
+              }
+
+              const selectionValue = selection as {
+                executionId?: unknown;
+                procedureId?: unknown;
+              };
+
+              return typeof selectionValue.procedureId === "string"
+                ? {
+                    executionId:
+                      typeof selectionValue.executionId === "string"
+                        ? selectionValue.executionId
+                        : null,
+                    procedureId: selectionValue.procedureId,
+                  }
+                : null;
+            })
+            .filter(
+              (
+                selection,
+              ): selection is NonNullable<
+                BookingDraftServiceSection["selectedBundleProcedureSelections"]
+              >[number] => selection !== null,
+            )
+        : [];
+
+      normalized.push({
+        selectedBundleProcedureSelections,
+        selectedGroupId:
+          typeof sectionValue.selectedGroupId === "string"
+            ? sectionValue.selectedGroupId
+            : null,
+        selectedProcedureKey:
+          typeof sectionValue.selectedProcedureKey === "string"
+            ? sectionValue.selectedProcedureKey
+            : null,
+      });
+    }
+
+    if (normalized.length > 0) {
+      return normalized;
+    }
+  }
+
+  if (parsed.selectedGroupId || parsed.selectedProcedureKey) {
+    return [
+      {
+        selectedBundleProcedureSelections: [],
+        selectedGroupId: parsed.selectedGroupId ?? null,
+        selectedProcedureKey: parsed.selectedProcedureKey ?? null,
+      },
+    ];
+  }
+
+  return [];
 }
 
 export function readBookingDraftSnapshot(
@@ -83,14 +176,32 @@ export function readBookingDraftSnapshot(
       return null;
     }
 
-    const parsed = JSON.parse(raw) as Partial<BookingDraftSnapshot> & {
+    const parsed = JSON.parse(raw) as {
+      clientName?: string;
+      clientPhone?: string;
+      currentStep?: string | null;
       expandedCategoryId?: string | null;
+      expandedCategoryIds?: string[];
+      locale?: string;
+      salonId?: string;
+      selectedDateKey?: string | null;
+      selectedGroupId?: string | null;
+      selectedProcedureKey?: string | null;
+      selectedSlotStart?: string | null;
+      serviceSections?: BookingDraftServiceSection[];
+      updatedAt?: number;
+      version?: number;
     };
 
+    if (parsed.locale !== scope.locale || parsed.salonId !== scope.salonId) {
+      return null;
+    }
+
     if (
-      parsed.version !== BOOKING_DRAFT_VERSION ||
-      parsed.locale !== scope.locale ||
-      parsed.salonId !== scope.salonId
+      parsed.version !== undefined &&
+      parsed.version !== 1 &&
+      parsed.version !== 2 &&
+      parsed.version !== BOOKING_DRAFT_VERSION
     ) {
       return null;
     }
@@ -118,9 +229,8 @@ export function readBookingDraftSnapshot(
       locale: scope.locale,
       salonId: scope.salonId,
       selectedDateKey: parsed.selectedDateKey ?? null,
-      selectedGroupId: parsed.selectedGroupId ?? null,
-      selectedProcedureKey: parsed.selectedProcedureKey ?? null,
       selectedSlotStart: parsed.selectedSlotStart ?? null,
+      serviceSections: normalizeServiceSections(parsed),
       updatedAt: parsed.updatedAt ?? Date.now(),
       version: BOOKING_DRAFT_VERSION,
     };
@@ -157,14 +267,17 @@ export function hasMeaningfulBookingDraft(
     | "clientName"
     | "clientPhone"
     | "selectedDateKey"
-    | "selectedGroupId"
-    | "selectedProcedureKey"
     | "selectedSlotStart"
+    | "serviceSections"
   >,
 ): boolean {
   return Boolean(
-    snapshot.selectedGroupId ||
-      snapshot.selectedProcedureKey ||
+    snapshot.serviceSections.some(
+      (section) =>
+        section.selectedGroupId ||
+        section.selectedProcedureKey ||
+        (section.selectedBundleProcedureSelections?.length ?? 0) > 0,
+    ) ||
       snapshot.selectedDateKey ||
       snapshot.selectedSlotStart ||
       snapshot.clientName.trim() ||
@@ -183,9 +296,7 @@ export function readBookingDraftUrlState(
   };
 }
 
-export function writeBookingDraftUrlState(
-  state: BookingDraftUrlState,
-): void {
+export function writeBookingDraftUrlState(state: BookingDraftUrlState): void {
   if (typeof window === "undefined") {
     return;
   }

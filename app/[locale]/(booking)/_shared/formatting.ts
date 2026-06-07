@@ -86,12 +86,38 @@ export function resolveApiMessage(
   fallbackMessage: string,
   apiMessageTemplate: (message: string) => string,
 ) {
-  if (error instanceof ApiError && error.message) {
-    return apiMessageTemplate(error.message);
+  const sanitizeMessage = (message: string | undefined) => {
+    const trimmed = message?.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const normalized = trimmed.toLowerCase();
+    if (
+      normalized === "maetry api request failed" ||
+      normalized === "api request failed" ||
+      normalized === "failed to fetch" ||
+      normalized === "internal server error" ||
+      normalized === "unknown error"
+    ) {
+      return null;
+    }
+
+    return trimmed;
+  };
+
+  if (error instanceof ApiError) {
+    const message = sanitizeMessage(error.message);
+    if (message) {
+      return apiMessageTemplate(message);
+    }
   }
 
-  if (error instanceof Error && error.message) {
-    return apiMessageTemplate(error.message);
+  if (error instanceof Error) {
+    const message = sanitizeMessage(error.message);
+    if (message) {
+      return apiMessageTemplate(message);
+    }
   }
 
   return fallbackMessage;

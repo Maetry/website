@@ -227,15 +227,6 @@ export function DetailsStep({
               </XStack>
             </PrimaryAction>
           </YStack>
-          {globalError ? (
-            <Text
-              color="$danger"
-              fontSize={surface.details.helperFontSize}
-              lineHeight={surface.details.helperLineHeight}
-            >
-              {globalError}
-            </Text>
-          ) : null}
         </YStack>
       </YStack>
       <style jsx>{`

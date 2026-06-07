@@ -14,12 +14,13 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMachine } from "@xstate/react";
 import { useTranslations } from "next-intl";
 
 import {
   createPublicBooking,
   waitForPublicBooking,
+  type PublicBookingCreatePayload,
+  type PublicSearchSlotsBody,
   type PublicSearchSlotsResponse,
   type PublicSalonProfile,
 } from "@/lib/api/public-booking";
@@ -33,6 +34,9 @@ import {
 import { buildPlatformMapsUrl } from "@/lib/platform-links";
 import {
   adaptCatalogToProcedures,
+  buildBundlePrice,
+  type BundleProcedureItem,
+  type BundleProcedureSelection,
   type Procedure,
   type ProcedureGroup,
   type SlotInterval,
@@ -62,8 +66,8 @@ import {
   readBookingDraftUrlState,
   writeBookingDraftSnapshot,
   writeBookingDraftUrlState,
+  type BookingDraftServiceSection,
 } from "./bookingDraft";
-import { bookingFlowMachine } from "./bookingFlowMachine";
 import {
   DAYS_AHEAD,
   addDaysToDateKey,
@@ -106,6 +110,44 @@ export type ProcedureCategoryGroup = {
   id: string;
   title: string;
   grouping: "tag" | "inferred" | "uncategorized";
+};
+
+type BookingServiceSectionState = {
+  activeBundleProcedureId: string | null;
+  id: string;
+  isActionMenuOpen: boolean;
+  isDescriptionExpanded: boolean;
+  selectedBundleProcedureSelections: BundleProcedureSelection[];
+  selectedGroupId: string | null;
+  selectedProcedureKey: string | null;
+};
+
+export type BookingServiceSection = BookingServiceSectionState & {
+  footerDuration: string | null;
+  footerPrice: string | null;
+  isComplete: boolean;
+  selectedGroup: ProcedureGroup | null;
+  selectedProcedure: Procedure | null;
+};
+
+export type BookingSummaryServiceItem = {
+  id: string;
+  items?: Array<{
+    id: string;
+    specialist: string | null;
+    title: string;
+  }>;
+  meta: string | null;
+  specialist: string | null;
+  title: string;
+};
+
+export type BookingSummary = {
+  services: BookingSummaryServiceItem[];
+  slotSubtitle: string | null;
+  slotTitle: string | null;
+  totalDuration: string | null;
+  totalPrice: string | null;
 };
 
 const HOTFIX_PROCEDURE_ORDER = new Map<string, number>([
@@ -154,76 +196,228 @@ export type SlotPeriod = {
 };
 
 export type BookingFlow = {
-  platform: BookingPlatformVariant;
-  locale: string;
-
-  salonProfile: PublicSalonProfile | null;
-  salonName: string;
-  salonAddress: string | undefined;
-  mapAddressUrl: string | null;
-
-  proceduresLoading: boolean;
-  proceduresError: string | null;
-  procedureGroups: ProcedureGroup[];
-  procedureCategories: ProcedureCategoryGroup[];
-  selectedGroup: ProcedureGroup | null;
-  selectedProcedure: Procedure | null;
-  expandedCategoryIds: string[];
-
-  selectedSlot: SlotInterval | null;
-  selectedDateKey: string | null;
-  slotsLoading: boolean;
-  slotsError: string | null;
-  slotPeriods: SlotPeriod[];
-  slotCalendarDays: CalendarDay[];
-  slotMonthTitle: string;
-  selectedSlotSummaryTitle: string | null;
-  selectedSlotDurationSubtitle: string | null;
-  selectedProcedurePrice: string | null;
-
+  addServiceSection: () => void;
+  bookingSummary: BookingSummary;
+  canAddAnotherService: boolean;
   clientName: string;
   clientPhone: string;
+  currentVisualStep: Step;
   formErrors: { name?: string; phone?: string };
   globalError: string | null;
-  isSubmitting: boolean;
-  isFormValid: boolean;
-  submitErrorNonce: number;
-
-  currentVisualStep: Step;
-
-  handleSelectGroup: (group: ProcedureGroup) => void;
-  handleSelectProcedure: (procedure: Procedure) => void;
-  handleSelectSlot: (slot: SlotInterval) => void;
+  handleSectionActionRequest: (sectionId: string) => void;
+  handleSectionDelete: (sectionId: string) => void;
+  handleSectionEditConfirm: (sectionId: string) => void;
+  handleSectionSelectGroup: (sectionId: string, group: ProcedureGroup) => void;
+  handleSectionSelectBundleProcedureMaster: (
+    sectionId: string,
+    procedureId: string,
+    executionId: string | null,
+  ) => void;
+  handleSectionSelectProcedure: (
+    sectionId: string,
+    procedure: Procedure,
+  ) => void;
+  handleToggleBundleProcedurePicker: (
+    sectionId: string,
+    procedureId: string,
+  ) => void;
   handleSubmitAppointment: (event: FormEvent<HTMLFormElement>) => void;
-  setSelectedGroupId: Dispatch<SetStateAction<string | null>>;
-  setSelectedProcedureKey: Dispatch<SetStateAction<string | null>>;
-  setSelectedSlot: Dispatch<SetStateAction<SlotInterval | null>>;
-  setSelectedDateKey: Dispatch<SetStateAction<string | null>>;
-  setExpandedCategoryIds: Dispatch<SetStateAction<string[]>>;
+  handleToggleSectionDescription: (sectionId: string) => void;
+  isFormValid: boolean;
+  isReadyForTimeSelection: boolean;
+  isSubmitting: boolean;
+  locale: string;
+  mapAddressUrl: string | null;
+  platform: BookingPlatformVariant;
+  procedureCategories: ProcedureCategoryGroup[];
+  procedureGroups: ProcedureGroup[];
+  proceduresError: string | null;
+  proceduresLoading: boolean;
+  refetchSlots: () => Promise<void>;
+  salonAddress: string | undefined;
+  salonName: string;
+  salonProfile: PublicSalonProfile | null;
+  sections: BookingServiceSection[];
+  selectedDateKey: string | null;
+  selectedProcedure: Procedure | null;
+  selectedProcedurePrice: string | null;
+  selectedSlot: SlotInterval | null;
+  selectedSlotDurationSubtitle: string | null;
+  selectedSlotSummaryTitle: string | null;
   setClientName: Dispatch<SetStateAction<string>>;
   setClientPhone: Dispatch<SetStateAction<string>>;
   setFormErrors: Dispatch<SetStateAction<{ name?: string; phone?: string }>>;
-  fetchSlotsForProcedure: (
-    procedure: Procedure,
-    dateKey: string,
-    options?: { force?: boolean },
-  ) => Promise<void>;
+  setSelectedDateKey: Dispatch<SetStateAction<string | null>>;
+  setSelectedSlot: Dispatch<SetStateAction<SlotInterval | null>>;
+  slotCalendarDays: CalendarDay[];
+  slotMonthTitle: string;
+  slotPeriods: SlotPeriod[];
+  slotsError: string | null;
+  slotsLoading: boolean;
+  submitErrorNonce: number;
 };
 
 type UseBookingFlowParams = {
-  salonId: string;
   locale: string;
+  salonId: string;
   trackingId?: string | null;
 };
 
-function resolveSetterValue<T>(value: SetStateAction<T>, currentValue: T): T {
-  return typeof value === "function"
-    ? (value as (previousValue: T) => T)(currentValue)
-    : value;
+function createSectionId() {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return crypto.randomUUID();
+  }
+
+  return `section-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function createEmptySection(
+  overrides: Partial<BookingServiceSectionState> = {},
+): BookingServiceSectionState {
+  return {
+    activeBundleProcedureId: null,
+    id: overrides.id ?? createSectionId(),
+    isActionMenuOpen: false,
+    isDescriptionExpanded: false,
+    selectedBundleProcedureSelections: [],
+    selectedGroupId: null,
+    selectedProcedureKey: null,
+    ...overrides,
+  };
+}
+
+function getBundleProcedureSelectionMap(
+  selections: BundleProcedureSelection[],
+) {
+  return new Map(
+    selections.map(
+      (selection) =>
+        [selection.procedureId, selection.executionId ?? null] as const,
+    ),
+  );
+}
+
+function applyBundleProcedureSelections(
+  procedure: Procedure,
+  selections: BundleProcedureSelection[],
+): Procedure {
+  if (procedure.kind !== "bundle") {
+    return procedure;
+  }
+
+  const selectionMap = getBundleProcedureSelectionMap(selections);
+  const bundleItems = (procedure.bundleItems ?? []).map((item) => ({
+    executionId: selectionMap.get(item.procedureId) ?? item.executionId ?? null,
+    procedureId: item.procedureId,
+  }));
+  const bundleProcedureItems = (procedure.bundleProcedureItems ?? []).map(
+    (item) => {
+      const selectedExecutionId = selectionMap.get(item.procedureId) ?? null;
+      const selectedMasterOption =
+        item.masterOptions.find(
+          (option) => (option.executionId ?? null) === selectedExecutionId,
+        ) ?? null;
+
+      return {
+        ...item,
+        selectedMasterOption,
+      } satisfies BundleProcedureItem;
+    },
+  );
+  const totalDuration = bundleProcedureItems.reduce(
+    (total, item) =>
+      total + (item.selectedMasterOption?.duration ?? item.duration ?? 0),
+    0,
+  );
+
+  return {
+    ...procedure,
+    bundleItems,
+    bundleProcedureItems,
+    duration: totalDuration,
+    price: procedure.bundleDefinition
+      ? buildBundlePrice(procedure.bundleDefinition, bundleItems)
+      : procedure.price,
+  };
+}
+
+function buildBundleProcedureSelections(
+  procedure: Procedure | null,
+  selections: BundleProcedureSelection[],
+) {
+  if (procedure?.kind !== "bundle") {
+    return [];
+  }
+
+  const selectionMap = getBundleProcedureSelectionMap(selections);
+  return (procedure.bundleItems ?? []).map((item) => ({
+    executionId: selectionMap.get(item.procedureId) ?? item.executionId ?? null,
+    procedureId: item.procedureId,
+  }));
 }
 
 function isSlotInFuture(slot: SlotInterval, nowTimestamp: number): boolean {
   return new Date(slot.start).getTime() > nowTimestamp;
+}
+
+function buildSelectedServiceItem(
+  procedure: Procedure,
+): PublicBookingCreatePayload["selectedService"]["items"][number] {
+  if (procedure.kind === "bundle") {
+    return {
+      bundle: {
+        bundleId: procedure.id,
+        items: (procedure.bundleItems ?? []).map((item) => ({
+          ...(item.executionId ? { executionId: item.executionId } : {}),
+          procedureId: item.procedureId,
+        })),
+      },
+    };
+  }
+
+  return {
+    procedure: {
+      ...(procedure.executionId ? { executionId: procedure.executionId } : {}),
+      procedureId: procedure.id,
+    },
+  };
+}
+
+function buildSelectedServiceBody(
+  procedures: Procedure[],
+): PublicSearchSlotsBody {
+  return {
+    items: procedures.map((procedure) => buildSelectedServiceItem(procedure)),
+  };
+}
+
+function mapDraftSectionsToState(
+  sections: BookingDraftServiceSection[],
+): BookingServiceSectionState[] {
+  if (!sections.length) {
+    return [createEmptySection()];
+  }
+
+  return sections.map((section) =>
+    createEmptySection({
+      selectedBundleProcedureSelections:
+        section.selectedBundleProcedureSelections?.map((selection) => ({
+          executionId: selection.executionId ?? null,
+          procedureId: selection.procedureId,
+        })) ?? [],
+      selectedGroupId: section.selectedGroupId,
+      selectedProcedureKey: section.selectedProcedureKey,
+    }),
+  );
+}
+
+function normalizeSections(
+  sections: BookingServiceSectionState[],
+): BookingServiceSectionState[] {
+  return sections.length > 0 ? sections : [createEmptySection()];
 }
 
 export function useBookingFlow({
@@ -247,12 +441,28 @@ export function useBookingFlow({
   const isLeavingBookingFlowRef = useRef(false);
   const [submitErrorNonce, setSubmitErrorNonce] = useState(0);
   const [nowTimestamp, setNowTimestamp] = useState(() => Date.now());
+  const [timeZoneId, setTimeZoneId] = useState("UTC");
+  const [serviceSections, setServiceSections] = useState<
+    BookingServiceSectionState[]
+  >([createEmptySection()]);
+  const [selectedDateKeyState, setSelectedDateKeyState] = useState<
+    string | null
+  >(null);
+  const [selectedSlotState, setSelectedSlotState] =
+    useState<SlotInterval | null>(null);
+  const [clientName, setClientNameState] = useState("");
+  const [clientPhone, setClientPhoneState] = useState("");
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<string[]>([]);
+  const [formErrors, setFormErrorsState] = useState<{
+    name?: string;
+    phone?: string;
+  }>({});
+  const [globalError, setGlobalError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const apiMessageTemplate = useCallback(
     (message: string) => t("errors.apiMessage", { message }),
     [t],
   );
-  const [timeZoneId, setTimeZoneId] = useState("UTC");
-  const [state, send] = useMachine(bookingFlowMachine);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -263,19 +473,6 @@ export function useBookingFlow({
       window.clearInterval(intervalId);
     };
   }, []);
-
-  const {
-    clientName,
-    clientPhone,
-    expandedCategoryIds,
-    formErrors,
-    globalError,
-    selectedDateKey,
-    selectedGroupId,
-    selectedProcedureKey,
-    selectedSlot,
-  } = state.context;
-  const isSubmitting = state.matches("submitting");
 
   const profileQuery = useQuery(
     publicSalonProfileQueryOptions(salonId, locale),
@@ -320,7 +517,6 @@ export function useBookingFlow({
     }
   }, [profileQuery.data?.timeZoneId]);
 
-  // Группировка процедур
   const procedureGroups: ProcedureGroup[] = useMemo(() => {
     if (!procedures.length) return [];
 
@@ -330,7 +526,7 @@ export function useBookingFlow({
       const baseTitle =
         procedure.title?.trim() ?? procedure.alias?.trim() ?? procedure.id;
 
-      const key = baseTitle.toLowerCase();
+      const key = `${procedure.kind}:${baseTitle.toLowerCase()}`;
       const existing = groupsMap.get(key);
       const priceCandidate = procedure.price?.amount ?? null;
       const currencyCandidate = procedure.price?.currency ?? null;
@@ -382,7 +578,6 @@ export function useBookingFlow({
     return Array.from(groupsMap.values());
   }, [procedures]);
 
-  // Категории процедур: теги API → префикс в названии → общий список
   const procedureCategories = useMemo<ProcedureCategoryGroup[]>(() => {
     const grouped = new Map<string, ProcedureCategoryGroup>();
 
@@ -426,34 +621,6 @@ export function useBookingFlow({
     return Array.from(grouped.values());
   }, [procedureGroups, t]);
 
-  const selectedGroup = useMemo(
-    () => procedureGroups.find((group) => group.id === selectedGroupId) ?? null,
-    [procedureGroups, selectedGroupId],
-  );
-
-  const selectedProcedure = useMemo(() => {
-    if (!selectedProcedureKey) return null;
-
-    return (
-      procedures.find(
-        (procedure) =>
-          getProcedureSelectionKey(procedure) === selectedProcedureKey,
-      ) ?? null
-    );
-  }, [procedures, selectedProcedureKey]);
-
-  useEffect(() => {
-    if (selectedGroupId && !selectedGroup) {
-      send({ type: "SET_GROUP_ID", value: null });
-    }
-  }, [selectedGroup, selectedGroupId, send]);
-
-  useEffect(() => {
-    if (selectedProcedureKey && !selectedProcedure) {
-      send({ type: "SET_PROCEDURE_KEY", value: null });
-    }
-  }, [selectedProcedure, selectedProcedureKey, send]);
-
   useEffect(() => {
     if (!hasHydratedDraft) {
       return;
@@ -461,7 +628,7 @@ export function useBookingFlow({
 
     if (!procedureCategories.length) {
       if (expandedCategoryIds.length > 0) {
-        send({ type: "SET_EXPANDED_CATEGORY", value: [] });
+        setExpandedCategoryIds([]);
       }
       return;
     }
@@ -471,30 +638,78 @@ export function useBookingFlow({
     );
     const next = expandedCategoryIds.filter((id) => validIds.has(id));
     if (next.length !== expandedCategoryIds.length) {
-      send({ type: "SET_EXPANDED_CATEGORY", value: next });
+      setExpandedCategoryIds(next);
     }
-  }, [expandedCategoryIds, hasHydratedDraft, procedureCategories, send]);
+  }, [expandedCategoryIds, hasHydratedDraft, procedureCategories]);
 
-  // Хэндлеры выбора
-  const handleSelectGroup = (group: ProcedureGroup) => {
-    send({
-      type: "SELECT_GROUP",
-      autoProcedureKey:
-        group.procedures.length === 1
-          ? getProcedureSelectionKey(group.procedures[0]!)
-          : null,
-      groupId: group.id,
+  const sections = useMemo<BookingServiceSection[]>(() => {
+    return normalizeSections(serviceSections).map((section) => {
+      const selectedGroup =
+        procedureGroups.find((group) => group.id === section.selectedGroupId) ??
+        null;
+      const baseSelectedProcedure = section.selectedProcedureKey
+        ? (procedures.find(
+            (procedure) =>
+              getProcedureSelectionKey(procedure) ===
+              section.selectedProcedureKey,
+          ) ?? null)
+        : null;
+      const selectedProcedure =
+        baseSelectedProcedure?.kind === "bundle"
+          ? applyBundleProcedureSelections(
+              baseSelectedProcedure,
+              buildBundleProcedureSelections(
+                baseSelectedProcedure,
+                section.selectedBundleProcedureSelections,
+              ),
+            )
+          : baseSelectedProcedure;
+      const isBundleComplete = Boolean(
+        selectedGroup?.procedures[0]?.kind === "bundle" &&
+          selectedProcedure?.kind === "bundle",
+      );
+
+      return {
+        ...section,
+        footerDuration: formatDuration(
+          selectedProcedure?.duration ?? selectedGroup?.duration ?? null,
+          locale,
+        ),
+        footerPrice: formatCurrency(
+          selectedProcedure?.price?.amount ?? selectedGroup?.minPrice ?? null,
+          selectedProcedure?.price?.currency ?? selectedGroup?.currency ?? null,
+          locale,
+        ),
+        isComplete: selectedProcedure !== null || isBundleComplete,
+        selectedGroup,
+        selectedProcedure,
+      };
     });
-  };
+  }, [locale, procedureGroups, procedures, serviceSections]);
 
-  const handleSelectProcedure = (procedure: Procedure) => {
-    send({
-      type: "SELECT_PROCEDURE",
-      procedureKey: getProcedureSelectionKey(procedure),
-    });
-  };
+  const selectedProcedures = useMemo(
+    () =>
+      sections
+        .map((section) => section.selectedProcedure)
+        .filter((procedure): procedure is Procedure => procedure !== null),
+    [sections],
+  );
 
-  // Даты
+  const allSectionsComplete = useMemo(
+    () =>
+      sections.length > 0 &&
+      sections.every((section) => section.selectedProcedure !== null),
+    [sections],
+  );
+
+  const isReadyForTimeSelection =
+    allSectionsComplete && selectedProcedures.length > 0;
+
+  const selectedProcedure = selectedProcedures[0] ?? null;
+
+  const selectedDateKey = selectedDateKeyState;
+  const selectedSlot = selectedSlotState;
+
   const dateOptions = useMemo<DateOption[]>(() => {
     const todayKey = getDateKeyForTimeZone(new Date(), timeZoneId);
     return Array.from({ length: DAYS_AHEAD }, (_, index) => {
@@ -506,38 +721,26 @@ export function useBookingFlow({
     });
   }, [locale, timeZoneId]);
 
-  useEffect(() => {
-    if (!hasHydratedDraft) {
-      return;
-    }
+  const selectedServiceBody = useMemo(
+    () =>
+      isReadyForTimeSelection
+        ? buildSelectedServiceBody(selectedProcedures)
+        : null,
+    [isReadyForTimeSelection, selectedProcedures],
+  );
 
-    if (!dateOptions.length) return;
-    if (
-      !selectedDateKey ||
-      !dateOptions.some((option) => option.key === selectedDateKey)
-    ) {
-      send({ type: "SET_DATE", value: dateOptions[0]?.key ?? null });
-    }
-  }, [dateOptions, hasHydratedDraft, selectedDateKey, send]);
-
-  const selectedSlotsQueryParams = useMemo(() => {
-    if (!selectedProcedure || !selectedDateKey) {
-      return null;
-    }
-
-    return {
-      date: toTimeZoneIsoDate(selectedDateKey, timeZoneId),
-      masterId: selectedProcedure.masterId ?? null,
-      procedureIds:
-        selectedProcedure.kind === "complex"
-          ? (selectedProcedure.complexProcedureIds ?? [])
-          : undefined,
-      salonId,
-      selectionId: selectedProcedure.id,
-      selectionKind: selectedProcedure.kind,
-      timeZone: timeZoneId,
-    } as const;
-  }, [salonId, selectedDateKey, selectedProcedure, timeZoneId]);
+  const selectedSlotsQueryParams = useMemo(
+    () =>
+      selectedServiceBody && selectedDateKey
+        ? {
+            date: toTimeZoneIsoDate(selectedDateKey, timeZoneId),
+            salonId,
+            selectedService: selectedServiceBody,
+            timeZone: timeZoneId,
+          }
+        : null,
+    [salonId, selectedDateKey, selectedServiceBody, timeZoneId],
+  );
 
   const selectedSlotsQueryOptions = useMemo(
     () =>
@@ -556,17 +759,13 @@ export function useBookingFlow({
 
       return selectedSlotsQueryOptions.queryFn({ signal });
     },
-    queryKey:
-      selectedSlotsQueryOptions?.queryKey ??
-      publicBookingKeys.slots({
-        date: "idle",
-        masterId: null,
-        procedureIds: [],
-        salonId,
-        selectionId: "idle",
-        selectionKind: "procedure",
-        timeZone: timeZoneId,
-      }),
+    queryKey: selectedSlotsQueryOptions?.queryKey ?? [
+      "public-booking",
+      "slots",
+      "idle",
+      salonId,
+      timeZoneId,
+    ],
     enabled: Boolean(selectedSlotsQueryParams),
     staleTime: selectedSlotsQueryOptions?.staleTime ?? 60 * 1000,
   });
@@ -580,40 +779,24 @@ export function useBookingFlow({
     }
   }, [slotsQuery.data?.timeZoneId, timeZoneId]);
 
-  const fetchSlotsForProcedure = useCallback(
-    async (
-      procedure: Procedure,
-      dateKey: string,
-      options?: { force?: boolean },
-    ) => {
-      const queryOptions = publicBookingSlotsQueryOptions({
-        date: toTimeZoneIsoDate(dateKey, timeZoneId),
-        masterId: procedure.masterId ?? null,
-        procedureIds:
-          procedure.kind === "complex"
-            ? (procedure.complexProcedureIds ?? [])
-            : undefined,
-        salonId,
-        selectionId: procedure.id,
-        selectionKind: procedure.kind,
-        timeZone: timeZoneId,
-      });
+  const refetchSlots = useCallback(async () => {
+    if (!selectedSlotsQueryParams) {
+      return;
+    }
 
-      if (options?.force) {
-        await queryClient.invalidateQueries({
-          exact: true,
-          queryKey: queryOptions.queryKey,
-        });
-      }
+    const queryOptions = publicBookingSlotsQueryOptions(
+      selectedSlotsQueryParams,
+    );
+    await queryClient.invalidateQueries({
+      exact: true,
+      queryKey: queryOptions.queryKey,
+    });
+    const data = await queryClient.fetchQuery(queryOptions);
 
-      const data = await queryClient.fetchQuery(queryOptions);
-
-      if (data.timeZoneId && data.timeZoneId !== timeZoneId) {
-        setTimeZoneId(data.timeZoneId);
-      }
-    },
-    [queryClient, salonId, timeZoneId],
-  );
+    if (data.timeZoneId && data.timeZoneId !== timeZoneId) {
+      setTimeZoneId(data.timeZoneId);
+    }
+  }, [queryClient, selectedSlotsQueryParams, timeZoneId]);
 
   useEffect(() => {
     if (hasHydratedDraft || proceduresLoading || !dateOptions.length) {
@@ -627,55 +810,82 @@ export function useBookingFlow({
       const draftSnapshot = readBookingDraftSnapshot(scope);
       const urlState = readBookingDraftUrlState(searchParams);
 
-      const requestedProcedureKey =
-        urlState.selectedProcedureKey ??
-        draftSnapshot?.selectedProcedureKey ??
-        null;
-      const requestedGroupId =
-        urlState.selectedGroupId ?? draftSnapshot?.selectedGroupId ?? null;
+      const requestedSections = draftSnapshot?.serviceSections.length
+        ? draftSnapshot.serviceSections
+        : urlState.selectedGroupId || urlState.selectedProcedureKey
+          ? [
+              {
+                selectedBundleProcedureSelections: [],
+                selectedGroupId: urlState.selectedGroupId,
+                selectedProcedureKey: urlState.selectedProcedureKey,
+              },
+            ]
+          : [];
+
+      const nextSections = mapDraftSectionsToState(requestedSections).map(
+        (section) => {
+          const requestedProcedure = section.selectedProcedureKey
+            ? (procedures.find(
+                (procedure) =>
+                  getProcedureSelectionKey(procedure) ===
+                  section.selectedProcedureKey,
+              ) ?? null)
+            : null;
+
+          const requestedGroup = requestedProcedure
+            ? (procedureGroups.find((group) =>
+                group.procedures.some(
+                  (procedure) =>
+                    getProcedureSelectionKey(procedure) ===
+                    getProcedureSelectionKey(requestedProcedure),
+                ),
+              ) ?? null)
+            : section.selectedGroupId
+              ? (procedureGroups.find(
+                  (group) => group.id === section.selectedGroupId,
+                ) ?? null)
+              : null;
+
+          if (!requestedGroup) {
+            return createEmptySection({ id: section.id });
+          }
+
+          let selectedProcedureKey =
+            requestedProcedure &&
+            requestedGroup.procedures.some(
+              (procedure) =>
+                getProcedureSelectionKey(procedure) ===
+                getProcedureSelectionKey(requestedProcedure),
+            )
+              ? getProcedureSelectionKey(requestedProcedure)
+              : null;
+
+          if (!selectedProcedureKey && requestedGroup.procedures.length === 1) {
+            selectedProcedureKey = getProcedureSelectionKey(
+              requestedGroup.procedures[0]!,
+            );
+          }
+
+          return createEmptySection({
+            activeBundleProcedureId: null,
+            id: section.id,
+            selectedBundleProcedureSelections:
+              requestedProcedure?.kind === "bundle"
+                ? buildBundleProcedureSelections(
+                    requestedProcedure,
+                    section.selectedBundleProcedureSelections,
+                  )
+                : [],
+            selectedGroupId: requestedGroup.id,
+            selectedProcedureKey,
+          });
+        },
+      );
+
       const requestedDateKey =
         urlState.selectedDateKey ?? draftSnapshot?.selectedDateKey ?? null;
       const requestedSlotStart =
         urlState.selectedSlotStart ?? draftSnapshot?.selectedSlotStart ?? null;
-
-      let nextProcedure = requestedProcedureKey
-        ? (procedures.find(
-            (procedure) =>
-              getProcedureSelectionKey(procedure) === requestedProcedureKey,
-          ) ?? null)
-        : null;
-
-      const nextGroup = nextProcedure
-        ? (procedureGroups.find((group) =>
-            group.procedures.some(
-              (procedure) =>
-                getProcedureSelectionKey(procedure) ===
-                getProcedureSelectionKey(nextProcedure!),
-            ),
-          ) ?? null)
-        : requestedGroupId
-          ? (procedureGroups.find((group) => group.id === requestedGroupId) ??
-            null)
-          : null;
-
-      if (!nextProcedure && nextGroup?.procedures.length === 1) {
-        nextProcedure = nextGroup.procedures[0] ?? null;
-      }
-
-      if (
-        nextProcedure &&
-        nextGroup &&
-        !nextGroup.procedures.some(
-          (procedure) =>
-            getProcedureSelectionKey(procedure) ===
-            getProcedureSelectionKey(nextProcedure!),
-        )
-      ) {
-        nextProcedure =
-          nextGroup.procedures.length === 1
-            ? (nextGroup.procedures[0] ?? null)
-            : null;
-      }
 
       const nextDateKey =
         requestedDateKey &&
@@ -683,25 +893,51 @@ export function useBookingFlow({
           ? requestedDateKey
           : null;
 
+      const nextSelectedProcedures = nextSections
+        .map((section) =>
+          section.selectedProcedureKey
+            ? (() => {
+                const procedure =
+                  procedures.find(
+                    (candidate) =>
+                      getProcedureSelectionKey(candidate) ===
+                      section.selectedProcedureKey,
+                  ) ?? null;
+                return procedure?.kind === "bundle"
+                  ? applyBundleProcedureSelections(
+                      procedure,
+                      buildBundleProcedureSelections(
+                        procedure,
+                        section.selectedBundleProcedureSelections,
+                      ),
+                    )
+                  : procedure;
+              })()
+            : null,
+        )
+        .filter((procedure): procedure is Procedure => procedure !== null);
+
+      const restoredAllComplete =
+        nextSections.length > 0 &&
+        nextSections.every((section) => section.selectedProcedureKey !== null);
+
       let nextSlot: SlotInterval | null = null;
 
-      if (nextProcedure && nextDateKey && requestedSlotStart) {
+      if (
+        restoredAllComplete &&
+        nextSelectedProcedures.length > 0 &&
+        nextDateKey &&
+        requestedSlotStart
+      ) {
         try {
-          const data = await queryClient.fetchQuery(
-            publicBookingSlotsQueryOptions({
-              date: toTimeZoneIsoDate(nextDateKey, timeZoneId),
-              masterId: nextProcedure.masterId ?? null,
-              procedureIds:
-                nextProcedure.kind === "complex"
-                  ? (nextProcedure.complexProcedureIds ?? [])
-                  : undefined,
-              salonId,
-              selectionId: nextProcedure.id,
-              selectionKind: nextProcedure.kind,
-              timeZone: timeZoneId,
-            }),
-          );
+          const queryOptions = publicBookingSlotsQueryOptions({
+            date: toTimeZoneIsoDate(nextDateKey, timeZoneId),
+            salonId,
+            selectedService: buildSelectedServiceBody(nextSelectedProcedures),
+            timeZone: timeZoneId,
+          });
 
+          const data = await queryClient.fetchQuery(queryOptions);
           const draftSlots =
             "intervals" in data
               ? data.intervals
@@ -724,36 +960,28 @@ export function useBookingFlow({
 
       const maxAllowedStep = nextSlot
         ? "details"
-        : nextProcedure
+        : restoredAllComplete && nextSelectedProcedures.length > 0
           ? "time"
-          : nextGroup
+          : nextSections.some((section) => section.selectedGroupId)
             ? "master"
             : "service";
       const requestedStep = normalizeBookingDraftStep(
         draftSnapshot?.currentStep ?? maxAllowedStep,
       );
+      void clampBookingDraftStep(requestedStep, maxAllowedStep);
 
       if (cancelled) {
         return;
       }
 
-      send({
-        type: "HYDRATE",
-        step: clampBookingDraftStep(requestedStep, maxAllowedStep),
-        value: {
-          clientName: draftSnapshot?.clientName ?? "",
-          clientPhone: draftSnapshot?.clientPhone ?? "",
-          expandedCategoryIds: draftSnapshot?.expandedCategoryIds ?? [],
-          formErrors: {},
-          globalError: null,
-          selectedDateKey: nextDateKey,
-          selectedGroupId: nextGroup?.id ?? null,
-          selectedProcedureKey: nextProcedure
-            ? getProcedureSelectionKey(nextProcedure)
-            : null,
-          selectedSlot: nextSlot,
-        },
-      });
+      setClientNameState(draftSnapshot?.clientName ?? "");
+      setClientPhoneState(draftSnapshot?.clientPhone ?? "");
+      setExpandedCategoryIds(draftSnapshot?.expandedCategoryIds ?? []);
+      setFormErrorsState({});
+      setGlobalError(null);
+      setSelectedDateKeyState(nextDateKey);
+      setSelectedSlotState(nextSlot);
+      setServiceSections(normalizeSections(nextSections));
       setHasHydratedDraft(true);
     };
 
@@ -766,16 +994,92 @@ export function useBookingFlow({
     dateOptions,
     hasHydratedDraft,
     locale,
+    nowTimestamp,
     procedureGroups,
     procedures,
     proceduresLoading,
     queryClient,
     salonId,
     searchParams,
-    send,
-    nowTimestamp,
     timeZoneId,
   ]);
+
+  useEffect(() => {
+    if (!hasHydratedDraft) {
+      return;
+    }
+
+    if (!dateOptions.length) return;
+    if (
+      !selectedDateKey ||
+      !dateOptions.some((option) => option.key === selectedDateKey)
+    ) {
+      setSelectedDateKeyState(dateOptions[0]?.key ?? null);
+    }
+  }, [dateOptions, hasHydratedDraft, selectedDateKey]);
+
+  useEffect(() => {
+    if (!hasHydratedDraft) {
+      return;
+    }
+
+    const nextSections = sections.map((section) => {
+      if (!section.selectedGroup) {
+        return createEmptySection({
+          activeBundleProcedureId: null,
+          id: section.id,
+          isDescriptionExpanded: section.isDescriptionExpanded,
+        });
+      }
+
+      let nextProcedureKey = section.selectedProcedureKey;
+      if (
+        nextProcedureKey &&
+        !section.selectedGroup.procedures.some(
+          (procedure) =>
+            getProcedureSelectionKey(procedure) === nextProcedureKey,
+        )
+      ) {
+        nextProcedureKey =
+          section.selectedGroup.procedures.length === 1
+            ? getProcedureSelectionKey(section.selectedGroup.procedures[0]!)
+            : null;
+      }
+
+      return createEmptySection({
+        activeBundleProcedureId: section.activeBundleProcedureId,
+        id: section.id,
+        isDescriptionExpanded: section.isDescriptionExpanded,
+        selectedBundleProcedureSelections:
+          section.selectedProcedure?.kind === "bundle"
+            ? buildBundleProcedureSelections(
+                section.selectedProcedure,
+                section.selectedBundleProcedureSelections,
+              )
+            : [],
+        selectedGroupId: section.selectedGroup.id,
+        selectedProcedureKey: nextProcedureKey,
+      });
+    });
+
+    const changed =
+      nextSections.length !== serviceSections.length ||
+      nextSections.some((section, index) => {
+        const current = serviceSections[index];
+        return (
+          !current ||
+          current.activeBundleProcedureId !== section.activeBundleProcedureId ||
+          JSON.stringify(current.selectedBundleProcedureSelections) !==
+            JSON.stringify(section.selectedBundleProcedureSelections) ||
+          current.selectedGroupId !== section.selectedGroupId ||
+          current.selectedProcedureKey !== section.selectedProcedureKey
+        );
+      });
+
+    if (changed) {
+      setServiceSections(normalizeSections(nextSections));
+    }
+  }, [hasHydratedDraft, sections, serviceSections]);
 
   const slots = useMemo<SlotInterval[]>(() => {
     if (!slotsQuery.data) {
@@ -800,7 +1104,6 @@ export function useBookingFlow({
     );
   }, [apiMessageTemplate, slotsQuery.error, t]);
 
-  // Слоты
   const slotOptions = useMemo<SlotOption[]>(() => {
     const timeFormatter = new Intl.DateTimeFormat(locale, {
       hour: "numeric",
@@ -808,9 +1111,20 @@ export function useBookingFlow({
       timeZone: timeZoneId,
     });
 
+    const seenIntervals = new Set<string>();
+
     return [...slots]
       .filter((slot) => isSlotInFuture(slot, nowTimestamp))
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+      .filter((slot) => {
+        const intervalKey = `${slot.start}|${slot.end}`;
+        if (seenIntervals.has(intervalKey)) {
+          return false;
+        }
+
+        seenIntervals.add(intervalKey);
+        return true;
+      })
       .map((slot) => {
         const startDate = new Date(slot.start);
         const parts = getTimeZoneParts(startDate, timeZoneId);
@@ -829,8 +1143,8 @@ export function useBookingFlow({
       return;
     }
 
-    send({ type: "SET_SLOT", value: null });
-  }, [nowTimestamp, selectedSlot, send]);
+    setSelectedSlotState(null);
+  }, [nowTimestamp, selectedSlot]);
 
   const slotPeriods = useMemo<SlotPeriod[]>(() => {
     if (!slotOptions.length) return [];
@@ -873,11 +1187,262 @@ export function useBookingFlow({
       .filter((period) => period.slots.length > 0);
   }, [locale, slotOptions, t]);
 
-  const handleSelectSlot = (slot: SlotInterval) => {
-    send({ type: "SELECT_SLOT", slot });
-  };
+  const updateSections = useCallback(
+    (
+      updater: (
+        previous: BookingServiceSectionState[],
+      ) => BookingServiceSectionState[],
+    ) => {
+      setServiceSections((previous) => normalizeSections(updater(previous)));
+      setSelectedSlotState(null);
+      setGlobalError(null);
+    },
+    [],
+  );
 
-  // Форма
+  const handleSectionSelectGroup = useCallback(
+    (sectionId: string, group: ProcedureGroup) => {
+      updateSections((previous) =>
+        previous.map((section) => {
+          if (section.id !== sectionId) {
+            return {
+              ...section,
+              isActionMenuOpen: false,
+            };
+          }
+
+          return createEmptySection({
+            activeBundleProcedureId: null,
+            id: section.id,
+            isDescriptionExpanded: section.isDescriptionExpanded,
+            selectedBundleProcedureSelections:
+              group.procedures[0]?.kind === "bundle"
+                ? buildBundleProcedureSelections(
+                    group.procedures[0],
+                    group.procedures[0].bundleItems ?? [],
+                  )
+                : [],
+            selectedGroupId: group.id,
+            selectedProcedureKey:
+              group.procedures.length === 1
+                ? getProcedureSelectionKey(group.procedures[0]!)
+                : null,
+          });
+        }),
+      );
+    },
+    [updateSections],
+  );
+
+  const handleSectionSelectProcedure = useCallback(
+    (sectionId: string, procedure: Procedure) => {
+      updateSections((previous) =>
+        previous.map((section) =>
+          section.id === sectionId
+            ? {
+                ...section,
+                activeBundleProcedureId: null,
+                isActionMenuOpen: false,
+                selectedBundleProcedureSelections: [],
+                selectedProcedureKey: getProcedureSelectionKey(procedure),
+              }
+            : {
+                ...section,
+                isActionMenuOpen: false,
+              },
+        ),
+      );
+    },
+    [updateSections],
+  );
+
+  const handleToggleBundleProcedurePicker = useCallback(
+    (sectionId: string, procedureId: string) => {
+      updateSections((previous) =>
+        previous.map((section) => {
+          if (section.id !== sectionId) {
+            return {
+              ...section,
+              activeBundleProcedureId: null,
+              isActionMenuOpen: false,
+            };
+          }
+
+          return {
+            ...section,
+            activeBundleProcedureId:
+              section.activeBundleProcedureId === procedureId
+                ? null
+                : procedureId,
+            isActionMenuOpen: false,
+          };
+        }),
+      );
+    },
+    [updateSections],
+  );
+
+  const handleSectionSelectBundleProcedureMaster = useCallback(
+    (sectionId: string, procedureId: string, executionId: string | null) => {
+      updateSections((previous) =>
+        previous.map((section) => {
+          if (section.id !== sectionId) {
+            return {
+              ...section,
+              activeBundleProcedureId: null,
+              isActionMenuOpen: false,
+            };
+          }
+
+          const existingSelections = buildBundleProcedureSelections(
+            section.selectedProcedureKey
+              ? (procedures.find(
+                  (procedure) =>
+                    getProcedureSelectionKey(procedure) ===
+                    section.selectedProcedureKey,
+                ) ?? null)
+              : null,
+            section.selectedBundleProcedureSelections,
+          );
+          const nextSelections = existingSelections.map((selection) =>
+            selection.procedureId === procedureId
+              ? {
+                  ...selection,
+                  executionId,
+                }
+              : selection,
+          );
+
+          return {
+            ...section,
+            activeBundleProcedureId: null,
+            isActionMenuOpen: false,
+            selectedBundleProcedureSelections: nextSelections,
+          };
+        }),
+      );
+    },
+    [procedures, updateSections],
+  );
+
+  const handleSectionActionRequest = useCallback(
+    (sectionId: string) => {
+      updateSections((previous) => {
+        return previous.map((section) => {
+          if (section.id !== sectionId) {
+            return {
+              ...section,
+              isActionMenuOpen: false,
+            };
+          }
+
+          if (section.selectedProcedureKey) {
+            return {
+              ...section,
+              activeBundleProcedureId: null,
+              isActionMenuOpen: !section.isActionMenuOpen,
+            };
+          }
+
+          return createEmptySection({
+            id: section.id,
+            isDescriptionExpanded: section.isDescriptionExpanded,
+          });
+        });
+      });
+    },
+    [updateSections],
+  );
+
+  const handleSectionEditConfirm = useCallback(
+    (sectionId: string) => {
+      updateSections((previous) =>
+        previous.map((section) =>
+          section.id === sectionId
+            ? createEmptySection({
+                id: section.id,
+                isDescriptionExpanded: section.isDescriptionExpanded,
+              })
+            : {
+                ...section,
+                activeBundleProcedureId: null,
+                isActionMenuOpen: false,
+              },
+        ),
+      );
+    },
+    [updateSections],
+  );
+
+  const handleSectionDelete = useCallback(
+    (sectionId: string) => {
+      updateSections((previous) => {
+        const next = previous.filter((section) => section.id !== sectionId);
+        return next.length > 0 ? next : [createEmptySection()];
+      });
+    },
+    [updateSections],
+  );
+
+  const addServiceSection = useCallback(() => {
+    updateSections((previous) => [...previous, createEmptySection()]);
+  }, [updateSections]);
+
+  const handleToggleSectionDescription = useCallback((sectionId: string) => {
+    setServiceSections((previous) =>
+      previous.map((section) =>
+        section.id === sectionId
+          ? {
+              ...section,
+              activeBundleProcedureId: null,
+              isDescriptionExpanded: !section.isDescriptionExpanded,
+            }
+          : section,
+      ),
+    );
+  }, []);
+
+  const setSelectedDateKey: Dispatch<SetStateAction<string | null>> =
+    useCallback((value) => {
+      setSelectedDateKeyState((previous) =>
+        typeof value === "function" ? value(previous) : value,
+      );
+      setSelectedSlotState(null);
+    }, []);
+
+  const setSelectedSlot: Dispatch<SetStateAction<SlotInterval | null>> =
+    useCallback((value) => {
+      setSelectedSlotState((previous) =>
+        typeof value === "function" ? value(previous) : value,
+      );
+    }, []);
+
+  const setClientName: Dispatch<SetStateAction<string>> = useCallback(
+    (value) => {
+      setClientNameState((previous) =>
+        typeof value === "function" ? value(previous) : value,
+      );
+    },
+    [],
+  );
+
+  const setClientPhone: Dispatch<SetStateAction<string>> = useCallback(
+    (value) => {
+      setClientPhoneState((previous) =>
+        typeof value === "function" ? value(previous) : value,
+      );
+    },
+    [],
+  );
+
+  const setFormErrors: Dispatch<
+    SetStateAction<{ name?: string; phone?: string }>
+  > = useCallback((value) => {
+    setFormErrorsState((previous) =>
+      typeof value === "function" ? value(previous) : value,
+    );
+  }, []);
+
   const isFormValid =
     clientName.trim().length > 0 && validatePhone(normalizePhone(clientPhone));
 
@@ -897,42 +1462,33 @@ export function useBookingFlow({
     }
 
     if (Object.keys(nextErrors).length > 0) {
-      send({ type: "SET_FORM_ERRORS", value: nextErrors });
+      setFormErrorsState(nextErrors);
       setSubmitErrorNonce((current) => current + 1);
       return;
     }
 
-    if (!selectedProcedure || !selectedSlot) {
-      send({ type: "SET_GLOBAL_ERROR", value: t("errors.createAppointment") });
+    if (!selectedServiceBody || !selectedSlot) {
+      setGlobalError(t("errors.createAppointment"));
       setSubmitErrorNonce((current) => current + 1);
       return;
     }
 
     if (!isSlotInFuture(selectedSlot, Date.now())) {
-      send({ type: "SET_SLOT", value: null });
-      send({
-        type: "SET_GLOBAL_ERROR",
-        value: t("errors.slotExpired"),
-      });
+      setSelectedSlotState(null);
+      setGlobalError(t("errors.slotExpired"));
       setSubmitErrorNonce((current) => current + 1);
       return;
     }
 
-    send({ type: "SET_FORM_ERRORS", value: {} });
-    send({ type: "SET_GLOBAL_ERROR", value: null });
-    send({ type: "SUBMIT" });
+    setFormErrorsState({});
+    setGlobalError(null);
+    setIsSubmitting(true);
 
     try {
       const data = await createPublicBooking(salonId, {
         clientName: trimmedName,
         clientPhone: normalizedPhone,
-        // executorId только для одиночной процедуры (см. PublicBookingParametersCreate в SDK).
-        ...(selectedProcedure.kind === "procedure" && selectedProcedure.masterId
-          ? { executorId: selectedProcedure.masterId }
-          : {}),
-        ...(selectedProcedure.kind === "complex"
-          ? { complexId: selectedProcedure.id }
-          : { procedureId: selectedProcedure.id }),
+        selectedService: selectedServiceBody,
         time: {
           end: new Date(selectedSlot.end).toISOString(),
           start: new Date(selectedSlot.start).toISOString(),
@@ -944,10 +1500,8 @@ export function useBookingFlow({
 
       if (!appointmentId) {
         setSubmitErrorNonce((current) => current + 1);
-        send({
-          type: "SUBMIT_FAILURE",
-          error: t("errors.createAppointment"),
-        });
+        setGlobalError(t("errors.createAppointment"));
+        setIsSubmitting(false);
         return;
       }
 
@@ -958,29 +1512,25 @@ export function useBookingFlow({
 
       const visitUrl = buildVisitUrl(locale, appointmentId);
       if (typeof window !== "undefined") {
-        // Replace the current history entry so a reload cannot drop the user
-        // back into a half-cleared booking flow while the visit page is loading.
         window.location.replace(visitUrl);
         return;
       }
 
-      send({ type: "SUBMIT_SUCCESS" });
       router.push(`/${locale}/visits/${appointmentId}`);
     } catch (error) {
       isLeavingBookingFlowRef.current = false;
       setSubmitErrorNonce((current) => current + 1);
-      send({
-        type: "SUBMIT_FAILURE",
-        error: resolveApiMessage(
+      setGlobalError(
+        resolveApiMessage(
           error,
           t("errors.createAppointment"),
           apiMessageTemplate,
         ),
-      });
+      );
+      setIsSubmitting(false);
     }
   };
 
-  // Производные данные
   const salonName =
     salonProfile?.name?.trim() ||
     (proceduresLoading ? "" : t("salonFallbackName"));
@@ -990,9 +1540,43 @@ export function useBookingFlow({
   const mapAddressQuery =
     formatAddress(salonProfile?.address, { includeCountry: true }) || undefined;
 
+  const totalPrice = useMemo(() => {
+    if (!selectedProcedures.length) {
+      return null;
+    }
+
+    const currency = selectedProcedures[0]?.price?.currency ?? null;
+    if (!currency) {
+      return null;
+    }
+
+    if (
+      selectedProcedures.some(
+        (procedure) =>
+          procedure.price?.amount === undefined ||
+          procedure.price?.currency !== currency,
+      )
+    ) {
+      return null;
+    }
+
+    return selectedProcedures.reduce(
+      (total, procedure) => total + (procedure.price?.amount ?? 0),
+      0,
+    );
+  }, [selectedProcedures]);
+
   const selectedProcedurePrice = formatCurrency(
-    selectedProcedure?.price?.amount ?? selectedGroup?.minPrice ?? null,
-    selectedProcedure?.price?.currency ?? selectedGroup?.currency ?? null,
+    totalPrice,
+    selectedProcedures[0]?.price?.currency ?? null,
+    locale,
+  );
+
+  const totalDuration = formatDuration(
+    selectedProcedures.reduce(
+      (total, procedure) => total + (procedure.duration ?? 0),
+      0,
+    ),
     locale,
   );
 
@@ -1006,15 +1590,53 @@ export function useBookingFlow({
     : null;
 
   const selectedSlotDurationSubtitle =
-    selectedSlot && selectedProcedure
+    selectedSlot && selectedProcedures.length > 0
       ? t("summaryDurationLine", {
-          value:
-            formatDuration(
-              selectedProcedure.duration ?? selectedGroup?.duration ?? null,
-              locale,
-            ) ?? "—",
+          value: totalDuration ?? "—",
         })
       : null;
+
+  const bookingSummary = useMemo<BookingSummary>(
+    () => ({
+      services: sections
+        .filter((section) => section.isComplete)
+        .map((section) => ({
+          id: section.id,
+          items:
+            section.selectedProcedure?.kind === "bundle"
+              ? (section.selectedProcedure.bundleProcedureItems ?? []).map(
+                  (item) => ({
+                    id: item.procedureId,
+                    specialist:
+                      item.selectedMasterOption?.masterNickname ??
+                      t("masterAny"),
+                    title: item.title,
+                  }),
+                )
+              : undefined,
+          meta:
+            [section.footerPrice, section.footerDuration]
+              .filter(Boolean)
+              .join(" • ") || null,
+          specialist:
+            section.selectedProcedure?.masterNickname ??
+            section.selectedProcedure?.alias ??
+            t("masterAny"),
+          title: section.selectedGroup?.title ?? "—",
+        })),
+      slotSubtitle: null,
+      slotTitle: selectedSlotSummaryTitle,
+      totalDuration,
+      totalPrice: selectedProcedurePrice,
+    }),
+    [
+      sections,
+      selectedProcedurePrice,
+      selectedSlotSummaryTitle,
+      t,
+      totalDuration,
+    ],
+  );
 
   const mapAddressUrl = mapAddressQuery
     ? buildPlatformMapsUrl(platform === "ios" ? "apple" : "android", {
@@ -1051,14 +1673,13 @@ export function useBookingFlow({
     slotCalendarDays[0]?.monthLabel ??
     "";
 
-  const currentVisualStep: Step =
-    state.matches("details") || state.matches("submitting")
-      ? "details"
-      : state.matches("time")
-        ? "time"
-        : state.matches("master")
-          ? "master"
-          : "service";
+  const currentVisualStep: Step = selectedSlot
+    ? "details"
+    : isReadyForTimeSelection
+      ? "time"
+      : sections.some((section) => section.selectedGroup)
+        ? "master"
+        : "service";
 
   useEffect(() => {
     if (!hasHydratedDraft || isLeavingBookingFlowRef.current) {
@@ -1074,11 +1695,18 @@ export function useBookingFlow({
       locale,
       salonId,
       selectedDateKey,
-      selectedGroupId,
-      selectedProcedureKey,
       selectedSlotStart: selectedSlot?.start ?? null,
+      serviceSections: serviceSections.map((section) => ({
+        selectedBundleProcedureSelections:
+          section.selectedBundleProcedureSelections.map((selection) => ({
+            executionId: selection.executionId ?? null,
+            procedureId: selection.procedureId,
+          })),
+        selectedGroupId: section.selectedGroupId,
+        selectedProcedureKey: section.selectedProcedureKey,
+      })),
       updatedAt: Date.now(),
-      version: 1 as const,
+      version: 3 as const,
     };
 
     if (hasMeaningfulBookingDraft(draftSnapshot)) {
@@ -1087,10 +1715,11 @@ export function useBookingFlow({
       clearBookingDraftSnapshot(scope);
     }
 
+    const firstSection = serviceSections[0] ?? null;
     writeBookingDraftUrlState({
       selectedDateKey,
-      selectedGroupId,
-      selectedProcedureKey,
+      selectedGroupId: firstSection?.selectedGroupId ?? null,
+      selectedProcedureKey: firstSection?.selectedProcedureKey ?? null,
       selectedSlotStart: selectedSlot?.start ?? null,
     });
   }, [
@@ -1102,129 +1731,62 @@ export function useBookingFlow({
     locale,
     salonId,
     selectedDateKey,
-    selectedGroupId,
-    selectedProcedureKey,
     selectedSlot,
+    serviceSections,
   ]);
 
-  const setSelectedGroupId: Dispatch<SetStateAction<string | null>> = (
-    value,
-  ) => {
-    send({
-      type: "SET_GROUP_ID",
-      value: resolveSetterValue(value, selectedGroupId),
-    });
-  };
-
-  const setSelectedProcedureKey: Dispatch<SetStateAction<string | null>> = (
-    value,
-  ) => {
-    send({
-      type: "SET_PROCEDURE_KEY",
-      value: resolveSetterValue(value, selectedProcedureKey),
-    });
-  };
-
-  const setSelectedSlot: Dispatch<SetStateAction<SlotInterval | null>> = (
-    value,
-  ) => {
-    send({
-      type: "SET_SLOT",
-      value: resolveSetterValue(value, selectedSlot),
-    });
-  };
-
-  const setSelectedDateKey: Dispatch<SetStateAction<string | null>> = (
-    value,
-  ) => {
-    send({
-      type: "SET_DATE",
-      value: resolveSetterValue(value, selectedDateKey),
-    });
-  };
-
-  const setExpandedCategoryIds: Dispatch<SetStateAction<string[]>> = (
-    value,
-  ) => {
-    send({
-      type: "SET_EXPANDED_CATEGORY",
-      value: resolveSetterValue(value, expandedCategoryIds),
-    });
-  };
-
-  const setClientName: Dispatch<SetStateAction<string>> = (value) => {
-    send({
-      type: "SET_CLIENT_NAME",
-      value: resolveSetterValue(value, clientName),
-    });
-  };
-
-  const setClientPhone: Dispatch<SetStateAction<string>> = (value) => {
-    send({
-      type: "SET_CLIENT_PHONE",
-      value: resolveSetterValue(value, clientPhone),
-    });
-  };
-
-  const setFormErrors: Dispatch<
-    SetStateAction<{ name?: string; phone?: string }>
-  > = (value) => {
-    send({
-      type: "SET_FORM_ERRORS",
-      value: resolveSetterValue(value, formErrors),
-    });
-  };
+  const canAddAnotherService =
+    allSectionsComplete && procedureGroups.length > 0 && !isSubmitting;
 
   return {
-    platform,
-    locale,
-
-    salonProfile,
-    salonName,
-    salonAddress,
-    mapAddressUrl,
-
-    proceduresLoading,
-    proceduresError,
-    procedureGroups,
-    procedureCategories,
-    selectedGroup,
-    selectedProcedure,
-    expandedCategoryIds,
-
-    selectedSlot,
-    selectedDateKey,
-    slotsLoading,
-    slotsError,
-    slotPeriods,
-    slotCalendarDays,
-    slotMonthTitle,
-    selectedSlotSummaryTitle,
-    selectedSlotDurationSubtitle,
-    selectedProcedurePrice,
-
+    addServiceSection,
+    bookingSummary,
+    canAddAnotherService,
     clientName,
     clientPhone,
+    currentVisualStep,
     formErrors,
     globalError,
-    isSubmitting,
-    isFormValid,
-    submitErrorNonce,
-
-    currentVisualStep,
-
-    handleSelectGroup,
-    handleSelectProcedure,
-    handleSelectSlot,
+    handleSectionActionRequest,
+    handleSectionDelete,
+    handleSectionEditConfirm,
+    handleSectionSelectBundleProcedureMaster,
+    handleSectionSelectGroup,
+    handleSectionSelectProcedure,
     handleSubmitAppointment,
-    setSelectedGroupId,
-    setSelectedProcedureKey,
-    setSelectedSlot,
-    setSelectedDateKey,
-    setExpandedCategoryIds,
+    handleToggleBundleProcedurePicker,
+    handleToggleSectionDescription,
+    isFormValid,
+    isReadyForTimeSelection,
+    isSubmitting,
+    locale,
+    mapAddressUrl,
+    platform,
+    procedureCategories,
+    procedureGroups,
+    proceduresError,
+    proceduresLoading,
+    refetchSlots,
+    salonAddress,
+    salonName,
+    salonProfile,
+    sections,
+    selectedDateKey,
+    selectedProcedure,
+    selectedProcedurePrice,
+    selectedSlot,
+    selectedSlotDurationSubtitle,
+    selectedSlotSummaryTitle,
     setClientName,
     setClientPhone,
     setFormErrors,
-    fetchSlotsForProcedure,
+    setSelectedDateKey,
+    setSelectedSlot,
+    slotCalendarDays,
+    slotMonthTitle,
+    slotPeriods,
+    slotsError,
+    slotsLoading,
+    submitErrorNonce,
   };
 }

@@ -7,13 +7,19 @@ import type {
   PublicBookingCreatePayload,
   PublicClickMetadata,
   PublicClickResponse,
+  PublicComplexSlot,
+  PublicComplexSlotProcedure,
+  PublicComplexSlotsResponse,
   PublicDateInterval,
   PublicLinkKind,
   PublicSalonCatalog,
+  PublicSalonCatalogComplex,
+  PublicSalonCatalogComplexProcedure,
   PublicSalonMaster,
   PublicSalonProfile,
   PublicSearchComplexBody,
   PublicSearchProcedureBody,
+  PublicSearchSlotsBody,
   PublicSearchSlotsResponse,
   SharedPublicBookingVisit,
 } from "./maetry-contracts";
@@ -25,6 +31,9 @@ export type {
   PublicClickMetadata,
   PublicClickPayload,
   PublicClickResponse,
+  PublicBundleSlot,
+  PublicBundleSlotProcedure,
+  PublicBundleSlotsResponse,
   PublicComplexSlot,
   PublicComplexSlotProcedure,
   PublicComplexSlotsResponse,
@@ -33,6 +42,8 @@ export type {
   PublicPrice,
   PublicProcedureSlotsResponse,
   PublicSalonCatalog,
+  PublicSalonCatalogBundle,
+  PublicSalonCatalogBundleProcedure,
   PublicSalonCatalogComplex,
   PublicSalonCatalogComplexProcedure,
   PublicSalonCatalogProcedure,
@@ -40,6 +51,7 @@ export type {
   PublicSalonProfile,
   PublicSearchComplexBody,
   PublicSearchProcedureBody,
+  PublicSearchSlotsBody,
   PublicSearchSlotsResponse,
 } from "./maetry-contracts";
 
@@ -89,6 +101,23 @@ type RequestOptions = {
   locale?: string;
   signal?: AbortSignal;
 };
+
+type LegacyPublicBookingCreatePayload =
+  | ({
+      clientName: string;
+      clientPhone: string;
+      complexId: string;
+      time: PublicDateInterval;
+      trackingId?: string;
+    })
+  | ({
+      clientName: string;
+      clientPhone: string;
+      executorId?: string;
+      procedureId: string;
+      time: PublicDateInterval;
+      trackingId?: string;
+    });
 
 type WaitForPublicBookingOptions = RequestOptions & {
   retryDelaysMs?: number[];
@@ -156,12 +185,17 @@ function formatAddress(value?: PublicSalonProfile["address"]) {
 function adaptVisitToPublicBookingVisit(
   visit: SharedPublicBookingVisit,
 ): PublicBookingVisit {
+  const firstSelectedItem = visit.service.items[0];
   const procedure =
-    "procedure" in visit.service ? visit.service.procedure : undefined;
-  const complex =
-    "complex" in visit.service ? visit.service.complex : undefined;
-  const firstComplexProcedure = complex?.procedures[0];
-  const executor = procedure?.executor ?? firstComplexProcedure?.executor;
+    firstSelectedItem && "procedure" in firstSelectedItem
+      ? firstSelectedItem.procedure
+      : undefined;
+  const bundle =
+    firstSelectedItem && "bundle" in firstSelectedItem
+      ? firstSelectedItem.bundle
+      : undefined;
+  const firstBundleProcedure = bundle?.procedures[0];
+  const executor = procedure?.executor ?? firstBundleProcedure?.executor;
 
   return {
     appointmentId: visit.id,
@@ -171,8 +205,8 @@ function adaptVisitToPublicBookingVisit(
       amount: minorToMajor(visit.priceMinor),
       currency: visit.currency,
     },
-    procedureId: procedure?.id ?? firstComplexProcedure?.id,
-    procedureName: procedure?.title ?? complex?.title,
+    procedureId: procedure?.id ?? firstBundleProcedure?.id,
+    procedureName: procedure?.title ?? bundle?.title,
     salonAddress: formatAddress(visit.address),
     salonId: visit.salon.id,
     salonLogo: visit.salon.logoUrl,
@@ -364,7 +398,7 @@ export async function getPublicSalonMasters(
 
 export async function searchPublicBookingSlots(
   params: {
-    body: PublicSearchProcedureBody | PublicSearchComplexBody;
+    body: PublicSearchSlotsBody | PublicSearchProcedureBody | PublicSearchComplexBody;
     date: string;
     salonId: string;
   },
@@ -378,7 +412,33 @@ export async function searchPublicBookingSlots(
   return clientApiRequest<PublicSearchSlotsResponse>({
     endpoint: `/api/public-booking/search-slots?${query.toString()}`,
     method: "POST",
-    body: params.body,
+    body:
+      "items" in params.body
+        ? params.body
+        : "procedures" in params.body
+          ? {
+              items: [{
+                bundle: {
+                  bundleId: params.body.id,
+                  items: params.body.procedures.map((procedure) => ({
+                    ...(procedure.executorId
+                      ? { executionId: procedure.executorId }
+                      : {}),
+                    procedureId: procedure.id,
+                  })),
+                },
+              }],
+            }
+          : {
+              items: [{
+                procedure: {
+                  ...(params.body.executorId
+                    ? { executionId: params.body.executorId }
+                    : {}),
+                  procedureId: params.body.id,
+                },
+              }],
+            },
     headers: buildDeviceIdHeader(),
     signal,
   });
@@ -386,12 +446,45 @@ export async function searchPublicBookingSlots(
 
 export async function createPublicBooking(
   salonId: string,
-  payload: PublicBookingCreatePayload,
+  payload: PublicBookingCreatePayload | LegacyPublicBookingCreatePayload,
 ): Promise<PublicBookingVisit> {
   const response = await clientApiRequest<SharedPublicBookingVisit>({
     endpoint: `/api/public-booking/salon/${encodeURIComponent(salonId)}/bookings`,
     method: "POST",
-    body: payload,
+    body:
+      "selectedService" in payload
+        ? payload
+        : "complexId" in payload
+          ? {
+              clientName: payload.clientName,
+              clientPhone: payload.clientPhone,
+              selectedService: {
+                items: [{
+                  bundle: {
+                    bundleId: payload.complexId,
+                    items: [],
+                  },
+                }],
+              },
+              time: payload.time,
+              ...(payload.trackingId ? { trackingId: payload.trackingId } : {}),
+            }
+          : {
+              clientName: payload.clientName,
+              clientPhone: payload.clientPhone,
+              selectedService: {
+                items: [{
+                  procedure: {
+                    ...(payload.executorId
+                      ? { executionId: payload.executorId }
+                      : {}),
+                    procedureId: payload.procedureId,
+                  },
+                }],
+              },
+              time: payload.time,
+              ...(payload.trackingId ? { trackingId: payload.trackingId } : {}),
+            },
   });
 
   return adaptVisitToPublicBookingVisit(response);

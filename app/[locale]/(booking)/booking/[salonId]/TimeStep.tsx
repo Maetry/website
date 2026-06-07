@@ -37,6 +37,7 @@ type TimeStepProps = {
 };
 
 function TimePickerBody({
+  canJumpToToday,
   hasSlots,
   monthTitleDisplay,
   onSelectDate,
@@ -50,6 +51,7 @@ function TimePickerBody({
   t,
   timeCardInnerPadX,
 }: {
+  canJumpToToday: boolean;
   hasSlots: boolean;
   monthTitleDisplay: string;
   onSelectDate: (key: string) => void;
@@ -72,6 +74,7 @@ function TimePickerBody({
       <YStack gap={0}>
         <XStack
           alignItems="center"
+          height={44}
           justifyContent="space-between"
           style={{ fontSize: 0 }}
         >
@@ -83,18 +86,26 @@ function TimePickerBody({
           >
             {monthTitleDisplay}
           </Text>
-          <Button
-            chromeless
-            onPress={() => {
-              const today = slotCalendarDays.find((day) => day.isToday);
-              if (today) onSelectDate(today.key);
-            }}
-            padding={0}
+          <YStack
+            alignItems="flex-end"
+            justifyContent="center"
+            minHeight={28}
           >
-            <Text color="$primary" fontSize={13} fontWeight="600">
-              {t("timeToday")}
-            </Text>
-          </Button>
+            {canJumpToToday ? (
+              <Button
+                chromeless
+                onPress={() => {
+                  const today = slotCalendarDays.find((day) => day.isToday);
+                  if (today) onSelectDate(today.key);
+                }}
+                padding={0}
+              >
+                <Text color="$primary" fontSize={13} fontWeight="600">
+                  {t("timeToday")}
+                </Text>
+              </Button>
+            ) : null}
+          </YStack>
         </XStack>
 
         <div
@@ -220,7 +231,7 @@ function TimePickerBody({
 
                   return (
                     <Button
-                      key={slot.start}
+                      key={`${period.key}:${slot.start}:${slot.end}`}
                       backgroundColor={
                         isSelected ? "$primary" : "$bookingSlotIdleBg"
                       }
@@ -293,18 +304,43 @@ export function TimeStep({
       : slotMonthTitle;
 
   const hasSlots = slotPeriods.some((p) => p.slots.length > 0);
+  const canJumpToToday =
+    slotCalendarDays.some((day) => day.isToday) &&
+    !slotCalendarDays.some(
+      (day) => day.isToday && day.key === selectedDateKey,
+    );
 
   if (selectedSlot && currentVisualStep !== "time") {
     return (
       <YStack gap={0}>
         <BookingSection
-         
+          headerAction={
+            <Button
+              backgroundColor="transparent"
+              borderWidth={0}
+              chromeless
+              height="auto"
+              margin={0}
+              minHeight={0}
+              onPress={onDeselectSlot}
+              padding={0}
+              pressStyle={{ backgroundColor: "transparent", opacity: 1 }}
+              hoverStyle={{ backgroundColor: "transparent" }}
+              focusStyle={{ backgroundColor: "transparent" }}
+            >
+              <Text
+                color="$primary"
+                fontSize={surface.row.ctaFontSize}
+                fontWeight="600"
+              >
+                {t("editSelectionShort")}
+              </Text>
+            </Button>
+          }
           platform={platform}
           title={t("timeTitle")}
         >
           <BookingRow
-            ctaLabel={t("changeSelectionShort")}
-            onPress={onDeselectSlot}
             platform={platform}
             subtitle={selectedSlotDurationSubtitle ?? undefined}
             title={selectedSlotSummaryTitle ?? "—"}
@@ -355,6 +391,7 @@ export function TimeStep({
           />
         ) : (
           <TimePickerBody
+            canJumpToToday={canJumpToToday}
             hasSlots={hasSlots}
             monthTitleDisplay={monthTitleDisplay}
             onSelectDate={onSelectDate}

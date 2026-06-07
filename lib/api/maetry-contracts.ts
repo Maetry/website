@@ -12,24 +12,24 @@ import type {
   BillingSessionContext,
   BillingSeatTier,
   BillingSummary as SharedBillingSummary,
+  BundlesHelpersBundleResponse,
+  BundlesHelpersProcedureResponse,
   ClickParametersMagicLink,
   ClickResponsesMagicLink,
-  ComplexHelpersComplexResponse,
-  ComplexHelpersProcedureResponse,
   MagicLinkKind,
   MagicLinkPayload,
   Price,
+  ProcedureHelpersCatalogProcedureResponse,
   ProcedureHelpersProcedureResponse,
   PublicBookingParametersCreate,
   SafeDateInterval,
   SalonResponsesCatalog,
   SalonResponsesMaster,
   SalonResponsesProfile,
-  TimetableParametersSearchSlotComplex,
-  TimetableParametersSearchSlotProcedure,
-  TimetableResponsesComplexSlots,
-  TimetableResponsesComplexSlotsSlot,
-  TimetableResponsesComplexSlotsSlotProcedure,
+  TimetableParametersSearchSlotSelectedService,
+  TimetableResponsesBundleSlots,
+  TimetableResponsesBundleSlotsSlot,
+  TimetableResponsesBundleSlotsSlotProcedure,
   TimetableResponsesProcedureSlots,
   VisitResponsesFull,
 } from "@maetry/shared-dtos";
@@ -45,22 +45,51 @@ export type PublicPrice = Price;
 export type PublicAddress = Address;
 export type PublicSalonProfile = SalonResponsesProfile;
 export type PublicSalonMaster = SalonResponsesMaster;
-export type PublicSalonCatalogProcedure = ProcedureHelpersProcedureResponse;
-export type PublicSalonCatalogComplexProcedure = ComplexHelpersProcedureResponse;
-export type PublicSalonCatalogComplex = ComplexHelpersComplexResponse;
-export type PublicSalonCatalog = SalonResponsesCatalog;
+export type PublicSalonCatalogProcedure =
+  ProcedureHelpersCatalogProcedureResponse &
+  Partial<
+    Pick<
+      ProcedureHelpersProcedureResponse,
+      "archived" | "onlineBookingEnabled"
+    >
+  >;
+export type PublicSalonCatalogBundleProcedure = BundlesHelpersProcedureResponse;
+export type PublicSalonCatalogBundle = BundlesHelpersBundleResponse;
+export type PublicSalonCatalog = Omit<
+  SalonResponsesCatalog,
+  "bundles" | "procedures"
+> & {
+  bundles: PublicSalonCatalogBundle[];
+  complexes?: PublicSalonCatalogBundle[];
+  procedures: PublicSalonCatalogProcedure[];
+};
 export type PublicDateInterval = SafeDateInterval;
 export type PublicProcedureSlotsResponse = TimetableResponsesProcedureSlots;
-export type PublicComplexSlotProcedure = TimetableResponsesComplexSlotsSlotProcedure;
-export type PublicComplexSlot = TimetableResponsesComplexSlotsSlot;
-export type PublicComplexSlotsResponse = TimetableResponsesComplexSlots;
-export type PublicSearchProcedureBody = TimetableParametersSearchSlotProcedure;
-export type PublicSearchComplexBody = TimetableParametersSearchSlotComplex;
+export type PublicBundleSlotProcedure = TimetableResponsesBundleSlotsSlotProcedure;
+export type PublicBundleSlot = TimetableResponsesBundleSlotsSlot;
+export type PublicBundleSlotsResponse = TimetableResponsesBundleSlots;
+export type PublicSearchSlotsBody = TimetableParametersSearchSlotSelectedService;
+export type PublicSearchProcedureBody = {
+  executorId?: string;
+  id: string;
+};
+export type PublicSearchComplexBody = {
+  id: string;
+  procedures: Array<{
+    executorId?: string;
+    id: string;
+  }>;
+};
 export type PublicSearchSlotsResponse =
   | PublicProcedureSlotsResponse
-  | PublicComplexSlotsResponse;
+  | PublicBundleSlotsResponse;
 export type PublicBookingCreatePayload = PublicBookingParametersCreate;
 export type SharedPublicBookingVisit = VisitResponsesFull;
+export type PublicComplexSlotProcedure = PublicBundleSlotProcedure;
+export type PublicComplexSlot = PublicBundleSlot;
+export type PublicComplexSlotsResponse = PublicBundleSlotsResponse;
+export type PublicSalonCatalogComplexProcedure = PublicSalonCatalogBundleProcedure;
+export type PublicSalonCatalogComplex = PublicSalonCatalogBundle;
 
 export type BillingCatalog = BillingCatalogResponse;
 export type BillingCatalogPlanItem = BillingCatalogPlan;

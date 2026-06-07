@@ -8,7 +8,6 @@ import { Button, Paragraph, Spinner, Text, XStack, YStack } from "tamagui";
 
 import { ApiError } from "@/lib/api/error-handler";
 import { resolveShortLink, type PublicClickResponse } from "@/lib/api/public-booking";
-import type { LinkKind } from "@/lib/api/shortLink";
 import { detectPlatform } from "@/lib/userAgent/detectPlatform";
 import { usePlatform } from "@/lib/userAgent/PlatformProvider";
 import { getClientAppSurfaceStyle } from "@/src/shared/tamagui/clientAppTheme";
@@ -35,7 +34,9 @@ function resolveLinkError(error: unknown, fallbackMessage: string) {
   return fallbackMessage;
 }
 
-function isInviteKind(kind: LinkKind): kind is Exclude<LinkKind, "marketing"> {
+function isInviteKind(
+  kind: PublicClickResponse["kind"],
+): kind is "clientInvite" | "employeeInvite" {
   return kind === "clientInvite" || kind === "employeeInvite";
 }
 

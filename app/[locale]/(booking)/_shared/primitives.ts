@@ -61,17 +61,8 @@ export const SectionLabel = styled(Text, {
 
 /** Заголовок секции + карточка: вертикальный gap зависит от платформы. */
 export const BookingSectionBody = styled(YStack, {
+  gap: 0,
   width: "100%",
-  variants: {
-    platform: {
-      android: {
-        gap: androidSurface.section.bodyGapToken,
-      },
-      ios: {
-        gap: iosSurface.section.bodyGapToken,
-      },
-    },
-  } as const,
 });
 
 export const SectionCard = styled(YStack, {

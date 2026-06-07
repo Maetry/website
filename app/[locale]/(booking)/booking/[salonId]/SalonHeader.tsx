@@ -26,7 +26,7 @@ export function SalonHeaderSkeleton({ platform }: SalonHeaderSkeletonProps) {
 
   return (
     <XStack
-      alignItems="center"
+      alignItems="flex-start"
       aria-busy
       aria-label={t("loading.salon")}
       gap={rowGap}
@@ -76,10 +76,13 @@ export function SalonHeader({
 }: SalonHeaderProps) {
   const t = useTranslations("booking");
   const surface = getBookingSurfaceStyle(platform);
+  const titleTopOffset = Math.round(
+    (surface.header.titleFontSize - surface.header.titleLineHeight) / 2,
+  );
 
   return (
     <XStack
-      alignItems="center"
+      alignItems="flex-start"
       gap={surface.header.avatarToTextGap}
     >
       <Avatar
@@ -107,6 +110,7 @@ export function SalonHeader({
           fontSize={surface.header.titleFontSize}
           fontWeight={surface.header.titleFontWeight}
           lineHeight={surface.header.titleLineHeight}
+          marginTop={titleTopOffset}
         >
           {salonName}
         </Text>

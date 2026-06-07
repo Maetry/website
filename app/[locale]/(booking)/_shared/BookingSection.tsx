@@ -18,6 +18,7 @@ type BookingSectionSharedProps = {
   children: ReactNode;
   description?: string | null;
   footer?: ReactNode;
+  headerAction?: ReactNode;
   platform: BookingPlatformVariant;
   title: string;
 };
@@ -26,6 +27,7 @@ function BookingSectionLayout({
   children,
   description,
   footer,
+  headerAction,
   platform,
   title,
 }: BookingSectionSharedProps) {
@@ -44,11 +46,19 @@ function BookingSectionLayout({
     );
 
   return (
-    <BookingSectionBody platform={platform}>
-      <YStack gap="$1" paddingHorizontal={inset}>
-        <SectionLabel color="$textSecondary" platform={platform}>
-          {title}
-        </SectionLabel>
+    <BookingSectionBody>
+      <YStack gap={0} paddingHorizontal={inset}>
+        <YStack
+          alignItems="center"
+          flexDirection="row"
+          justifyContent="space-between"
+          minHeight={44}
+        >
+          <SectionLabel color="$textSecondary" platform={platform}>
+            {title}
+          </SectionLabel>
+          {headerAction}
+        </YStack>
         {description ? (
           <Paragraph
             color="$textSecondary"

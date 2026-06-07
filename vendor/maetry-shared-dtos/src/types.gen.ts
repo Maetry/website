@@ -152,6 +152,14 @@ export type ClientParametersCreate = {
      * Отображаемое имя клиента в интерфейсе мастера.
      */
     alias: string;
+    /**
+     * Пол клиента, если он известен сотруднику.
+     */
+    gender?: Gender;
+    /**
+     * Дата рождения клиента.
+     */
+    birthDate?: string;
     contact?: ContactPointInput;
 };
 
@@ -180,32 +188,47 @@ export type ClientResponsesClientInfo = {
      */
     inviteLink?: string;
     /**
+     * Пол клиента.
+     */
+    gender?: Gender;
+    /**
+     * Дата рождения клиента.
+     */
+    birthDate?: string;
+    /**
      * Имя клиента.
      */
     name: string;
 };
 
-export type ComplexHelpersComplexResponse = {
+/**
+ * Бандл в каталоге или workspace. В каталоге сервер возвращает только бандлы с `onlineBookingEnabled = true` и `archived = false`.
+ */
+export type BundlesHelpersBundleResponse = {
+    archived: boolean;
     description?: string;
     id: string;
-    isOnline?: boolean;
-    priceShift: ComplexHelpersPriceShift;
-    procedures: Array<ComplexHelpersProcedureResponse>;
+    accessType: CatalogItemAccessType;
+    onlineBookingEnabled: boolean;
+    price: BundlesHelpersPrice;
+    procedures: Array<BundlesHelpersProcedureResponse>;
     title: string;
 };
 
-export type ComplexHelpersCreateProcedureRequest = {
+export type BundlesHelpersCreateProcedureRequest = {
     alias?: string;
     description?: string;
+    /**
+     * Длительность в минутах. Допускается `0`.
+     */
     duration: number;
     employeeIds: Array<string>;
     order: number;
     price: Price;
     serviceId: string;
-    isOnline?: boolean;
 };
 
-export type ComplexHelpersExecutionResponse = {
+export type BundlesHelpersExecutionResponse = {
     currency: string;
     duration: number;
     id: string;
@@ -215,46 +238,95 @@ export type ComplexHelpersExecutionResponse = {
     price: number;
 };
 
-export type ComplexHelpersPriceShift = {
+/**
+ * Как бандл влияет на итоговую цену процедур.
+ */
+export type BundlesHelpersPrice = ({
+    kind: 'totalServices';
+} & BundlePriceTotalServices) | ({
+    kind: 'specialPrice';
+} & BundlePriceSpecialPrice) | ({
+    kind: 'percentDiscount';
+} & BundlePricePercentDiscount) | ({
+    kind: 'free';
+} & BundlePriceFree);
+
+export type BundlePriceTotalServices = {
+    /**
+     * Сумма цен всех процедур бандла без дополнительной скидки.
+     */
+    kind: 'totalServices';
+};
+
+export type BundlePriceSpecialPrice = {
+    kind: 'specialPrice';
+    /**
+     * Фиксированная цена бандла в минорных единицах валюты салона.
+     */
+    minor: number;
+};
+
+export type BundlePricePercentDiscount = {
+    kind: 'percentDiscount';
+    /**
+     * Скидка от суммы цен процедур бандла, в процентах.
+     */
     percent: number;
 };
 
-export type ComplexHelpersProcedureResponse = {
+export type BundlePriceFree = {
+    /**
+     * Бандл бесплатный для клиента.
+     */
+    kind: 'free';
+};
+
+/**
+ * Процедура внутри бандла. Доступность онлайн-записи определяется на уровне бандла, а не отдельной процедуры.
+ */
+export type BundlesHelpersProcedureResponse = {
     currency: string;
     description?: string;
-    executions: Array<ComplexHelpersExecutionResponse>;
+    executions: Array<BundlesHelpersExecutionResponse>;
     id: string;
     minDuration: number;
-    minPrice: Price;
+    /**
+     * Минимальная цена процедуры в минорных единицах валюты `currency`.
+     */
+    minor: number;
     serviceId: string;
     serviceTags: Array<TranslatedServiceTag>;
     serviceTitle: string;
     title: string;
-    isOnline?: boolean;
 };
 
-export type ComplexParametersCreate = {
+export type BundlesParametersCreate = {
     alias?: string;
     description?: string;
-    priceShift: ComplexHelpersPriceShift;
-    procedures: Array<ComplexHelpersCreateProcedureRequest>;
-    isOnline?: boolean;
+    price: BundlesHelpersPrice;
+    procedures: Array<BundlesHelpersCreateProcedureRequest>;
+    accessType?: CatalogItemAccessType;
+    onlineBookingEnabled?: boolean;
 };
 
-export type ComplexParametersUpdate = {
+/**
+ * Частичное обновление бандла. Все поля опциональны.
+ */
+export type BundlesParametersUpdate = {
     alias?: string;
     description?: string;
-    priceShift?: ComplexHelpersPriceShift;
-    isOnline?: boolean;
+    price?: BundlesHelpersPrice;
+    accessType?: CatalogItemAccessType;
+    onlineBookingEnabled?: boolean;
 };
 
-export type ComplexResponsesAll = Array<ComplexHelpersComplexResponse>;
+export type BundlesResponsesAll = Array<BundlesHelpersBundleResponse>;
 
-export type ComplexResponsesCreate = ComplexHelpersComplexResponse;
+export type BundlesResponsesCreate = BundlesHelpersBundleResponse;
 
-export type ComplexResponsesRetrieve = ComplexHelpersComplexResponse;
+export type BundlesResponsesRetrieve = BundlesHelpersBundleResponse;
 
-export type ComplexResponsesUpdate = ComplexHelpersComplexResponse;
+export type BundlesResponsesUpdate = BundlesHelpersBundleResponse;
 
 /**
  * Способ связи в communication context. Один и тот же channel/value может существовать в других контекстах, но этот DTO описывает только communication assignment конкретного владельца.
@@ -584,7 +656,7 @@ export type BookingResponsesBooking = {
     salonAvatar?: string;
     title: string;
     /**
-     * Основной заголовок процедуры/комплекса для компактной карточки.
+     * Основной заголовок процедуры/бандла для компактной карточки.
      */
     procedureTitle?: string;
     /**
@@ -623,17 +695,11 @@ export type InviteResponsesClientContacts = {
     clientId?: string;
 };
 
-export type MarketingResponsesDetails = MarketingCampaignResponsesDetails;
-
-export type MarketingResponsesCampaignByLink = MarketingCampaignResponsesFull;
-
-export type MarketingResponsesList = Array<MarketingCampaignResponsesFull>;
-
 export type PublicBookingResponsesAppointment = VisitResponsesFull;
 
 export type SalonResponsesCatalog = {
-    procedures: Array<ProcedureHelpersProcedureResponse>;
-    complexes: Array<ComplexHelpersComplexResponse>;
+    procedures: Array<ProcedureHelpersCatalogProcedureResponse>;
+    bundles: Array<BundlesHelpersBundleResponse>;
 };
 
 export type SalonResponsesMasters = Array<SalonResponsesMaster>;
@@ -891,6 +957,10 @@ export type BillingSummary = {
     currentSubscription?: BillingSubscriptionSnapshot | null;
     activeSeats: number;
     customerPortalAvailable: boolean;
+    /**
+     * Controls whether the console should render the Open Billing action in PlanWidget.
+     */
+    showOpenBillingButton: boolean;
     smsCreditBalance?: number | null;
     smsPacks: Array<BillingSmsCreditPack>;
 };
@@ -955,7 +1025,119 @@ export type InviteResponsesMerge = {
     alias?: string;
 };
 
-export type MarketingResponsesCampaign = MarketingCampaignResponsesFull;
+export type InviteResponsesSalonClaim = {
+    importedSalonId: string;
+    workspaceId: string;
+    createdWorkspace: boolean;
+    claimState: string;
+};
+
+export type ImportedSalonIngestBatchMetadata = {
+    runId: string;
+    city: string;
+    region?: string;
+    country?: string;
+    timeZoneId: string;
+    localeId: string;
+    salonType: SalonType;
+};
+
+export type ImportedSalonIngestFieldWarning = {
+    field: string;
+    severity: string;
+    message: string;
+};
+
+export type ImportedSalonIngestRecord = {
+    recordKey: string;
+    providerAdapterId: string;
+    providerFamily: string;
+    externalId: string;
+    sourceURL: string;
+    name: string;
+    ingestStatus: string;
+    mapperVersion: string;
+    schemaVersion: string;
+    rawPayload?: string;
+    payloadHash?: string;
+    description?: string;
+    addressLine?: string;
+    city?: string;
+    region?: string;
+    postalCode?: string;
+    country?: string;
+    latitude?: number;
+    longitude?: number;
+    phones?: Array<string>;
+    websiteURL?: string;
+    bookingURL?: string;
+    categories?: Array<string>;
+    hours?: {
+        [key: string]: string;
+    };
+    images?: Array<string>;
+    socialLinks?: Array<string>;
+    rating?: number;
+    reviewCount?: number;
+    completenessScore?: number;
+    warnings?: Array<ImportedSalonIngestFieldWarning>;
+};
+
+export type ImportedSalonPreviewItem = {
+    recordKey: string;
+    action: string;
+    reason: string;
+    confidence: number;
+    completenessScore: number;
+    importedSalonId?: string;
+    matchedSalonId?: string;
+};
+
+export type ImportedSalonPreviewSummary = {
+    autoCommitCount: number;
+    manualReviewCount: number;
+    skippedCount: number;
+    failedCount: number;
+};
+
+export type ImportedSalonPreviewResponse = {
+    items: Array<ImportedSalonPreviewItem>;
+    summary: ImportedSalonPreviewSummary;
+};
+
+export type ImportedSalonCommitItem = {
+    recordKey: string;
+    disposition: string;
+    importedSalonId?: string;
+    matchedSalonId?: string;
+    claimLink?: string;
+};
+
+export type ImportedSalonCommitSummary = {
+    createdCount: number;
+    updatedCount: number;
+    matchedExistingCount: number;
+    skippedCount: number;
+    failedCount: number;
+};
+
+export type ImportedSalonCommitResponse = {
+    items: Array<ImportedSalonCommitItem>;
+    summary: ImportedSalonCommitSummary;
+};
+
+export type ImportedSalonClaimLinkResponse = {
+    importedSalonId: string;
+    claimLink: string;
+    expiresAt?: string;
+};
+
+export type ImportedSalonClaimResponse = {
+    importedSalonId: string;
+    workspaceId: string;
+    createdWorkspace: boolean;
+    claimState: string;
+};
 
 export type ProductStockAdjustmentResponsesStockAdjustment = {
     id: string;
@@ -1032,17 +1214,34 @@ export type RecoveryParametersPatchMethod = {
 };
 
 export type ProcedureHelpersExecutionResponse = {
-    currency: string;
     duration: number;
     id: string;
-    procedureId?: string;
-    serviceId?: string;
     masterAvatar: string;
     masterId: string;
     masterName: string;
     price: number;
 };
 
+/**
+ * Процедура в каталоге для онлайн-записи. Сервер возвращает только процедуры с `onlineBookingEnabled = true` и `archived = false`.
+ */
+export type ProcedureHelpersCatalogProcedureResponse = {
+    currency: string;
+    description?: string;
+    executions: Array<ProcedureHelpersExecutionResponse>;
+    id: string;
+    minDuration: number;
+    minPrice: Price;
+    serviceId: string;
+    serviceTags: Array<TranslatedServiceTag>;
+    serviceTitle: string;
+    title: string;
+    accessType: CatalogItemAccessType;
+};
+
+/**
+ * Полная карточка процедуры для workspace.
+ */
 export type ProcedureHelpersProcedureResponse = {
     currency: string;
     description?: string;
@@ -1054,29 +1253,41 @@ export type ProcedureHelpersProcedureResponse = {
     serviceTags: Array<TranslatedServiceTag>;
     serviceTitle: string;
     title: string;
-    isOnline?: boolean;
-    onlineBookingEnabled?: boolean;
-    accessType?: ProcedureAccessType;
-    postServiceBreakDuration?: number | null;
-    archived?: boolean;
+    onlineBookingEnabled: boolean;
+    accessType: CatalogItemAccessType;
+    archived: boolean;
 };
 
 export type ProcedureParametersCreate = {
     alias?: string;
     description?: string;
+    /**
+     * Длительность в минутах. Допускается `0` (например, услуга без учёта времени).
+     */
     duration: number;
     employeeIds: Array<string>;
     price: Price;
     serviceId: string;
-    isOnline?: boolean;
+    onlineBookingEnabled?: boolean;
+    accessType?: CatalogItemAccessType;
 };
 
+/**
+ * Частичное обновление процедуры. Все поля опциональны.
+ */
 export type ProcedureParametersUpdate = {
     alias?: string;
     description?: string;
+    /**
+     * Длительность в минутах. Допускается `0`.
+     */
     duration?: number;
     price?: Price;
-    isOnline?: boolean;
+    /**
+     * Доступна ли процедура для онлайн-записи.
+     */
+    onlineBookingEnabled?: boolean;
+    accessType?: CatalogItemAccessType;
 };
 
 export type ProcedureResponsesAll = Array<ProcedureHelpersProcedureResponse>;
@@ -1263,27 +1474,76 @@ export type TimetableParametersCreatePattern = {
  */
 export type TimetableOwner = string;
 
-export type TimetableParametersSearchSlotComplex = {
-    id: string;
-    procedures: Array<TimetableParametersSearchSlotProcedure>;
+/**
+ * Выбор бандла для поиска слотов. Список `items[]` должен покрывать все процедуры бандла, а stage-порядок определяется по сохранённому в каталоге `order`.
+ */
+export type TimetableParametersSearchSlotSelectedBundle = {
+    bundleId: string;
+    items: Array<TimetableParametersSearchSlotSelectedBundleItem>;
 };
 
-export type TimetableParametersSearchSlotProcedure = {
-    executorId?: string;
-    id: string;
+/**
+ * Элемент бандла для поиска слотов. Указывает процедуру и, опционально, выбранное execution.
+ */
+export type TimetableParametersSearchSlotSelectedBundleItem = {
+    procedureId: string;
+    /**
+     * Предпочтительное execution/исполнение процедуры.
+     */
+    executionId?: string;
 };
 
-export type TimetableResponsesComplexSlots = {
-    slots: Array<TimetableResponsesComplexSlotsSlot>;
+/**
+ * Параметры выбранной процедуры, которые реально учитываются при поиске слотов.
+ */
+export type TimetableParametersSearchSlotSelectedProcedure = {
+    procedureId: string;
+    /**
+     * Предпочтительное execution/исполнение процедуры.
+     */
+    executionId?: string;
+};
+
+/**
+ * Упорядоченный набор выбранных услуг для поиска свободных слотов. Повторяет `selectedService` shape workspace booking, но содержит только поля, которые реально используются slot-search логикой.
+ */
+export type TimetableParametersSearchSlotSelectedService = {
+    /**
+     * Упорядоченный набор выбранных услуг. Каждый элемент — либо `procedure`, либо `bundle`.
+     */
+    items: Array<TimetableParametersSearchSlotSelectedServiceItem>;
+};
+
+/**
+ * Один элемент выбора услуги через бандл.
+ */
+export type TimetableParametersSearchSlotSelectedServiceBundle = {
+    bundle: TimetableParametersSearchSlotSelectedBundle;
+};
+
+/**
+ * Один выбранный элемент услуги — либо процедура, либо бандл.
+ */
+export type TimetableParametersSearchSlotSelectedServiceItem = TimetableParametersSearchSlotSelectedServiceProcedure | TimetableParametersSearchSlotSelectedServiceBundle;
+
+/**
+ * Один элемент выбора услуги через одиночную процедуру.
+ */
+export type TimetableParametersSearchSlotSelectedServiceProcedure = {
+    procedure: TimetableParametersSearchSlotSelectedProcedure;
+};
+
+export type TimetableResponsesBundleSlots = {
+    slots: Array<TimetableResponsesBundleSlotsSlot>;
     timeZoneId: string;
 };
 
-export type TimetableResponsesComplexSlotsSlot = {
-    procedures: Array<TimetableResponsesComplexSlotsSlotProcedure>;
+export type TimetableResponsesBundleSlotsSlot = {
+    procedures: Array<TimetableResponsesBundleSlotsSlotProcedure>;
     total: SafeDateInterval;
 };
 
-export type TimetableResponsesComplexSlotsSlotProcedure = {
+export type TimetableResponsesBundleSlotsSlotProcedure = {
     executorId: string;
     id: string;
     time: SafeDateInterval;
@@ -1348,6 +1608,10 @@ export type WorkspaceParametersCreate = {
     contact?: ContactPointInput;
     description?: string;
     localeId: string;
+    /**
+     * ISO 4217 currency code.
+     */
+    currencyCode?: string;
     logo?: string;
     name: string;
     timetable?: TimetableParametersCreatePattern;
@@ -1357,6 +1621,10 @@ export type WorkspaceParametersCreate = {
 export type WorkspaceParametersPatch = {
     address?: Address;
     description?: string;
+    /**
+     * ISO 4217 currency code.
+     */
+    currencyCode?: string;
     logo?: string;
     name?: string;
 };
@@ -1370,6 +1638,10 @@ export type WorkspaceResponsesFull = {
     inviteLink?: string;
     isActive: boolean;
     localeId: string;
+    /**
+     * ISO 4217 currency code.
+     */
+    currencyCode?: string;
     logo: string;
     name: string;
     timeZoneId: string;
@@ -1394,24 +1666,34 @@ export type CreateBookingSelectedServiceProcedure = {
     procedure: CreateBookingSelectedProcedure;
 };
 
-export type CreateBookingSelectedComplexItem = {
+export type CreateBookingSelectedBundleItem = {
     procedureId: string;
     executionId?: string;
 };
 
-export type CreateBookingSelectedComplex = {
-    complexId: string;
-    items: Array<CreateBookingSelectedComplexItem>;
+export type CreateBookingSelectedBundle = {
+    bundleId: string;
+    items: Array<CreateBookingSelectedBundleItem>;
 };
 
-export type CreateBookingSelectedServiceComplex = {
-    complex: CreateBookingSelectedComplex;
+export type CreateBookingSelectedServiceBundle = {
+    bundle: CreateBookingSelectedBundle;
 };
 
 /**
- * Однозначно выбранная услуга для создания booking (либо процедура, либо комплекс).
+ * Один выбранный элемент услуги — либо процедура, либо бандл.
  */
-export type CreateBookingSelectedService = CreateBookingSelectedServiceProcedure | CreateBookingSelectedServiceComplex;
+export type CreateBookingSelectedServiceItem = CreateBookingSelectedServiceProcedure | CreateBookingSelectedServiceBundle;
+
+/**
+ * Набор выбранных услуг для создания или редактирования booking. Поддерживает несколько процедур, несколько бандлов или их смешанный набор в заданном порядке.
+ */
+export type CreateBookingSelectedService = {
+    /**
+     * Упорядоченный набор выбранных услуг. Каждый элемент — либо процедура, либо бандл.
+     */
+    items: Array<CreateBookingSelectedServiceItem>;
+};
 
 export type VisitParametersCreateBooking = {
     salonId: string;
@@ -1448,14 +1730,14 @@ export type VisitProcedure = {
     title: string;
 };
 
-export type VisitComplex = {
+export type VisitBundle = {
     id: string;
     title: string;
     procedures: Array<VisitProcedure>;
 };
 
-export type VisitSelectedServiceComplex = {
-    complex: VisitComplex;
+export type VisitSelectedServiceBundle = {
+    bundle: VisitBundle;
 };
 
 export type VisitSelectedServiceProcedure = {
@@ -1463,9 +1745,19 @@ export type VisitSelectedServiceProcedure = {
 };
 
 /**
- * Выбранная услуга в визите (либо комплекс, либо одиночная процедура).
+ * Один выбранный элемент услуги — либо бандл, либо одиночная процедура.
  */
-export type VisitSelectedService = VisitSelectedServiceComplex | VisitSelectedServiceProcedure;
+export type VisitSelectedServiceItem = VisitSelectedServiceBundle | VisitSelectedServiceProcedure;
+
+/**
+ * Выбранные услуги в визите. Поддерживает несколько процедур, несколько бандлов или их смешанный набор в заданном порядке.
+ */
+export type VisitSelectedService = {
+    /**
+     * Упорядоченный набор выбранных услуг. Каждый элемент — либо процедура, либо бандл.
+     */
+    items: Array<VisitSelectedServiceItem>;
+};
 
 export type VisitResponsesFull = {
     id: string;
@@ -1530,15 +1822,16 @@ export type ClickParametersMagicLink = {
     timeZone: string;
 };
 
-export type MagicLinkKind = 'employeeInvite' | 'clientInvite' | 'marketing';
+export type MagicLinkKind = 'employeeInvite' | 'clientInvite' | 'marketing' | 'salonClaim';
 
 /**
- * Дополнительные данные ссылки для маршрутизации клиента. Поля заполняются в зависимости от kind: - clientInvite: clientId, salonId - employeeInvite: employeeId, salonId - marketing: campaignId, salonId
+ * Дополнительные данные ссылки для маршрутизации клиента. Поля заполняются в зависимости от kind: - clientInvite: clientId, salonId - employeeInvite: employeeId, salonId - marketing: leadSourceId, campaignId, salonId
  *
  */
 export type MagicLinkPayload = {
     clientId?: string;
     employeeId?: string;
+    leadSourceId?: string;
     campaignId?: string;
     salonId?: string;
 };
@@ -1637,56 +1930,228 @@ export type InviteClientParametersMerge = {
     contact: string;
 };
 
-export type CampaignType = 'share' | 'custom' | 'affiliate' | 'media';
+export type LeadSourceType = 'manual' | 'ads' | 'influencer' | 'shared' | 'marketplace';
 
-export type MarketingCampaignResponsesFull = {
+export type LeadSourceStatus = 'active' | 'disabled';
+
+export type LeadSourceResponsesFull = {
     id: string;
     salonId: string;
-    type: CampaignType;
+    type: LeadSourceType;
+    status: LeadSourceStatus;
     name: string;
     description?: string;
-    linkId?: string;
-    affiliateOfferId?: string;
-    influencerContactId?: string;
-    clicksCount?: number;
-    appointmentsCreated?: number;
+    visualIconName?: string;
+    visualColorHex?: string;
+    publicCode: string;
+    link: string;
+    clicksCount: number;
+    appointmentsCreated: number;
+    conversionRate?: number;
     createdAt?: string;
     updatedAt?: string;
 };
 
-export type MarketingCampaignParametersCreate = {
+export type LeadSourceResponsesList = Array<LeadSourceResponsesFull>;
+
+export type LeadSourceCreateBase = {
+    type: 'manual' | 'ads' | 'influencer';
     name: string;
     description?: string;
+    visualIconName?: string;
+    visualColorHex?: string;
 };
 
-export type MarketingDailyStats = {
+export type LeadSourceManualCreate = LeadSourceCreateBase & {
+    type?: 'manual';
+};
+
+export type AdIntegrationProvider = 'meta' | 'google' | 'tiktok' | 'snapchat';
+
+export type Money = {
+    /**
+     * Сумма в минорных единицах (центы).
+     */
+    amountMinor: number;
+    /**
+     * ISO 4217 currency code.
+     */
+    currency: string;
+};
+
+/**
+ * Inline campaign extension payload used when creating an ads lead source.
+ */
+export type LeadSourceCampaignParametersCreate = {
+    provider: AdIntegrationProvider;
+    adIntegrationId?: string;
+    budget?: Money;
+    spentBudget?: Money;
+};
+
+export type LeadSourceAdsCreate = LeadSourceCreateBase & {
+    type?: 'ads';
+    campaign: LeadSourceCampaignParametersCreate;
+};
+
+export type PromoterParametersCreate = {
+    userId?: string | null;
+    displayName: string;
+};
+
+export type LeadSourceInfluencerCreate = LeadSourceCreateBase & {
+    type?: 'influencer';
+    promoter: PromoterParametersCreate;
+};
+
+export type LeadSourceParametersCreate = LeadSourceManualCreate | LeadSourceAdsCreate | LeadSourceInfluencerCreate;
+
+export type LeadSourceDailyStats = {
     [key: string]: number;
 };
 
-export type MarketingCampaignResponsesDetails = {
-    campaignId: string;
+export type LeadSourceResponsesDetails = {
+    id: string;
+    salonId: string;
+    type: LeadSourceType;
+    status: LeadSourceStatus;
     name: string;
-    type: CampaignType;
-    linkId?: string;
+    description?: string;
+    visualIconName?: string;
+    visualColorHex?: string;
+    publicCode: string;
+    link: string;
     clicksCount: number;
     appointmentsCreated: number;
-    clicksByDay?: MarketingDailyStats;
-    appointmentsByDay?: MarketingDailyStats;
+    conversionRate?: number;
+    clicksByDay?: LeadSourceDailyStats;
+    appointmentsByDay?: LeadSourceDailyStats;
     createdAt?: string;
+    updatedAt?: string;
 };
 
-export type MarketingResponsesStats = Array<MarketingCampaignResponsesDetails>;
-
-export type MarketingCampaignParametersUpdate = {
+/**
+ * Updates editable lead source metadata maintained by the salon.
+ */
+export type LeadSourceParametersUpdate = {
     name?: string;
     description?: string;
+    visualIconName?: string;
+    visualColorHex?: string;
+};
+
+export type LeadSourceMonthlyStatsResponse = {
+    leadSourceId: string;
+    periodStart: string;
+    periodEnd: string;
+    clicksCount: number;
+    appointmentsCreated: number;
+    conversionRate?: number;
+    clicksByDay?: LeadSourceDailyStats;
+    appointmentsByDay?: LeadSourceDailyStats;
+};
+
+export type AcquisitionStatsResponse = Array<LeadSourceMonthlyStatsResponse>;
+
+export type AdIntegrationResponsesFull = {
+    id: string;
+    salonId: string;
+    provider: AdIntegrationProvider;
+    externalId: string;
+    displayName?: string;
+    isEnabled?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export type AdEventDestinationKind = 'pixel' | 'conversion_api';
+
+export type AcquisitionEventType = 'click' | 'signup' | 'booking_created' | 'booking_completed' | 'payment_received' | 'manual_adjustment';
+
+export type AdEventDestinationResponsesFull = {
+    id: string;
+    salonId: string;
+    adIntegrationId: string;
+    kind: AdEventDestinationKind;
+    eventKind: AcquisitionEventType;
+    externalId: string;
+    accessTokenRef?: string;
+    displayName?: string;
+    isEnabled?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export type CampaignResponsesFull = {
+    id: string;
+    salonId: string;
+    leadSourceId: string;
+    name: string;
+    description?: string;
+    adIntegrationId?: string;
+    adIntegration?: AdIntegrationResponsesFull;
+    adEventDestination?: AdEventDestinationResponsesFull;
+    budget?: Money;
+    spentBudget?: Money;
+    leadSourcePublicCode?: string;
+    leadSourceLink?: string;
+    clicksCount?: number;
+    appointmentsCreated?: number;
+    conversionRate?: number;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+/**
+ * Inline campaign extension update payload used when the campaign is managed through a LeadSource.
+ */
+export type LeadSourceCampaignParametersUpdate = {
+    name?: string;
+    description?: string;
+    adIntegrationId?: string;
+    budget?: Money;
+    clearBudget?: boolean;
+    spentBudget?: Money;
+    clearSpentBudget?: boolean;
+};
+
+export type ManualEventManagerConnectMetaParameters = {
+    metaPixelId: string;
+    testEventCode?: string;
+};
+
+export type ManualEventManagerConnectTikTokParameters = {
+    tiktokPixelId: string;
+    testEventCode?: string;
+    testMode?: boolean;
+};
+
+export type ManualEventManagerConnectSnapchatParameters = {
+    pixelId: string;
+};
+
+export type ManualEventManagerConnectParameters = ManualEventManagerConnectMetaParameters | ManualEventManagerConnectTikTokParameters | ManualEventManagerConnectSnapchatParameters;
+
+export type PromoterResponsesFull = {
+    id: string;
+    leadSourceId: string;
+    salonId: string;
+    userId?: string | null;
+    displayName: string;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export type PromoterParametersUpdate = {
+    userId?: string | null;
+    displayName?: string;
 };
 
 /**
  * Параметры создания public booking.
  * Используются только канонические поля `clientName` / `clientPhone`.
- * Ровно одно из `procedureId` или `complexId` должно быть передано.
- * `executorId` допустим только вместе с `procedureId`.
+ * `selectedService` повторяет shape create booking в visits и поддерживает
+ * несколько процедур, несколько бандлов или их смешанный набор в заданном порядке.
  */
 export type PublicBookingParametersCreate = {
     /**
@@ -1697,18 +2162,7 @@ export type PublicBookingParametersCreate = {
      * Телефон клиента.
      */
     clientPhone: string;
-    /**
-     * Идентификатор процедуры для одиночной записи. Должен быть передан, если не передан `complexId`.
-     */
-    procedureId?: string;
-    /**
-     * Идентификатор исполнителя. Допустим только вместе с `procedureId`.
-     */
-    executorId?: string;
-    /**
-     * Идентификатор комплекса. Должен быть передан, если не передан `procedureId`.
-     */
-    complexId?: string;
+    selectedService: CreateBookingSelectedService;
     time: SafeDateInterval;
     /**
      * Идентификатор маркетинговой ссылки/кампании.
@@ -1716,7 +2170,10 @@ export type PublicBookingParametersCreate = {
     trackingId?: string;
 };
 
-export type ProcedureAccessType = 'independentFromGender' | 'menOnly' | 'womenOnly';
+/**
+ * Для кого подходит элемент каталога — все (forAll), только мужчины (menOnly) или только женщины (womenOnly).
+ */
+export type CatalogItemAccessType = 'forAll' | 'menOnly' | 'womenOnly';
 
 export type SalonResponsesMaster = {
     id: string;
@@ -1804,23 +2261,23 @@ export type WorkspaceSelectedProcedure = {
 };
 
 /**
- * Вариант выбора услуги через одиночную процедуру.
+ * Один элемент выбора услуги через одиночную процедуру.
  */
 export type WorkspaceSelectedServiceProcedure = {
     procedure: WorkspaceSelectedProcedure;
 };
 
 /**
- * Элемент комплекса (подпроцедура).
+ * Элемент бандла (подпроцедура).
  */
-export type WorkspaceSelectedComplexItem = {
+export type WorkspaceSelectedBundleItem = {
     procedureId: string;
     /**
      * Вариация/исполнение процедуры.
      */
     executionId?: string;
     /**
-     * Предпочтительный сотрудник для элемента комплекса.
+     * Предпочтительный сотрудник для элемента бандла.
      */
     staffId?: string;
     /**
@@ -1834,34 +2291,33 @@ export type WorkspaceSelectedComplexItem = {
 };
 
 /**
- * Параметры выбранного комплекса.
+ * Параметры выбранного бандла.
  */
-export type WorkspaceSelectedComplex = {
-    complexId: string;
-    items: Array<WorkspaceSelectedComplexItem>;
+export type WorkspaceSelectedBundle = {
+    bundleId: string;
+    items: Array<WorkspaceSelectedBundleItem>;
 };
 
 /**
- * Вариант выбора услуги через комплекс.
+ * Один элемент выбора услуги через бандл.
  */
-export type WorkspaceSelectedServiceComplex = {
-    complex: WorkspaceSelectedComplex;
+export type WorkspaceSelectedServiceBundle = {
+    bundle: WorkspaceSelectedBundle;
 };
 
 /**
- * Однозначно выбранная услуга для workspace booking (либо процедура, либо комплекс).
+ * Один выбранный элемент услуги — либо процедура, либо бандл.
  */
-export type WorkspaceSelectedService = WorkspaceSelectedServiceProcedure | WorkspaceSelectedServiceComplex;
+export type WorkspaceSelectedServiceItem = WorkspaceSelectedServiceProcedure | WorkspaceSelectedServiceBundle;
 
-export type Money = {
+/**
+ * Набор выбранных услуг для workspace booking. Поддерживает несколько процедур, несколько бандлов или их смешанный набор в заданном порядке.
+ */
+export type WorkspaceSelectedService = {
     /**
-     * Сумма в минорных единицах (центы).
+     * Упорядоченный набор выбранных услуг. Каждый элемент — либо процедура, либо бандл.
      */
-    amountMinor: number;
-    /**
-     * ISO 4217 currency code.
-     */
-    currency: string;
+    items: Array<WorkspaceSelectedServiceItem>;
 };
 
 /**
@@ -2184,12 +2640,27 @@ export type WorkspaceResponsesClientsSync = {
  */
 export type ClientParametersPatch = {
     alias?: string;
+    gender?: Gender;
+    birthDate?: string;
 };
 
-export type ComplexParametersAll = {
-    salonFilter?: string;
+export type BundlesParametersAll = {
     employeeFilter?: string;
-    pagination?: Pagination;
+};
+
+export type ImportedSalonPreviewRequest = {
+    metadata: ImportedSalonIngestBatchMetadata;
+    records: Array<ImportedSalonIngestRecord>;
+};
+
+export type ImportedSalonCommitRequest = {
+    metadata: ImportedSalonIngestBatchMetadata;
+    records: Array<ImportedSalonIngestRecord>;
+    approvedManualRecordKeys?: Array<string>;
+};
+
+export type ImportedSalonClaimLinkRequest = {
+    expiresInHours?: number;
 };
 
 /**
@@ -2248,23 +2719,27 @@ export type StatisticCreds = number;
 export type WorktimeCreds = number;
 
 export type ProcedureParametersAll = {
-    salonFilter?: string;
     employeeFilter?: string;
-    pagination?: Pagination;
 };
 
-export type ProcedureParametersPatchSettings = {
-    onlineBookingEnabled?: boolean;
-    accessType?: ProcedureAccessType;
+/**
+ * Создание связки процедуры с мастером.
+ */
+export type ProcedureExecutionParametersCreate = {
     /**
-     * Буфер после записи в минутах.
+     * Идентификатор мастера (сотрудника), для которого создаётся execution.
      */
-    postServiceBreakDuration?: number | null;
+    employeeId: string;
+    /**
+     * Длительность в минутах. Допускается `0`.
+     */
+    duration: number;
+    price: Price;
 };
 
 export type ProcedureExecutionParametersPatch = {
     /**
-     * Длительность в минутах.
+     * Длительность в минутах. Допускается `0`.
      */
     duration?: number;
     price?: Price;
@@ -2404,6 +2879,26 @@ export type BookingResponsesList = Array<BookingResponsesBooking>;
  * Список bookings салона (пагинация опциональна)
  */
 export type WorkspaceBookingResponsesList = Array<WorkspaceBookingResponsesBooking>;
+
+export type ManualEventManagerConnectMetaParametersWritable = {
+    metaPixelId: string;
+    capiAccessToken: string;
+    testEventCode?: string;
+};
+
+export type ManualEventManagerConnectTikTokParametersWritable = {
+    tiktokPixelId: string;
+    eventsApiAccessToken: string;
+    testEventCode?: string;
+    testMode?: boolean;
+};
+
+export type ManualEventManagerConnectSnapchatParametersWritable = {
+    pixelId: string;
+    conversionsApiAccessToken: string;
+};
+
+export type ManualEventManagerConnectParametersWritable = ManualEventManagerConnectMetaParametersWritable | ManualEventManagerConnectTikTokParametersWritable | ManualEventManagerConnectSnapchatParametersWritable;
 
 /**
  * Opaque cursor for the next slice.
@@ -4133,172 +4628,7 @@ export type PutInvitesEmployeeBylinkIdByResponses = {
 
 export type PutInvitesEmployeeBylinkIdByResponse = PutInvitesEmployeeBylinkIdByResponses[keyof PutInvitesEmployeeBylinkIdByResponses];
 
-export type GetMarketingCampaignsData = {
-    body?: never;
-    headers: {
-        /**
-         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
-         */
-        'Device-ID': string;
-    };
-    path?: never;
-    query?: never;
-    url: '/v1/marketing/campaigns';
-};
-
-export type GetMarketingCampaignsErrors = {
-    /**
-     * Bad request
-     */
-    400: ApiError;
-    /**
-     * Unauthorized
-     */
-    401: ApiError;
-    /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
-     * Not found
-     */
-    404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
-    /**
-     * Internal server error
-     */
-    default: ApiError;
-};
-
-export type GetMarketingCampaignsError = GetMarketingCampaignsErrors[keyof GetMarketingCampaignsErrors];
-
-export type GetMarketingCampaignsResponses = {
-    /**
-     * OK
-     */
-    200: MarketingResponsesList;
-};
-
-export type GetMarketingCampaignsResponse = GetMarketingCampaignsResponses[keyof GetMarketingCampaignsResponses];
-
-export type PostMarketingCampaignsData = {
-    body: MarketingCampaignParametersCreate;
-    headers: {
-        /**
-         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
-         */
-        'Device-ID': string;
-    };
-    path?: never;
-    query?: never;
-    url: '/v1/marketing/campaigns';
-};
-
-export type PostMarketingCampaignsErrors = {
-    /**
-     * Bad request
-     */
-    400: ApiError;
-    /**
-     * Unauthorized
-     */
-    401: ApiError;
-    /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
-     * Not found
-     */
-    404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
-    /**
-     * Internal server error
-     */
-    default: ApiError;
-};
-
-export type PostMarketingCampaignsError = PostMarketingCampaignsErrors[keyof PostMarketingCampaignsErrors];
-
-export type PostMarketingCampaignsResponses = {
-    /**
-     * OK
-     */
-    200: MarketingCampaignResponsesFull;
-};
-
-export type PostMarketingCampaignsResponse = PostMarketingCampaignsResponses[keyof PostMarketingCampaignsResponses];
-
-export type PostMarketingCampaignsStatsData = {
-    body: Array<string>;
-    headers: {
-        /**
-         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
-         */
-        'Device-ID': string;
-    };
-    path?: never;
-    query?: never;
-    url: '/v1/marketing/campaigns/stats';
-};
-
-export type PostMarketingCampaignsStatsErrors = {
-    /**
-     * Bad request
-     */
-    400: ApiError;
-    /**
-     * Unauthorized
-     */
-    401: ApiError;
-    /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
-     * Not found
-     */
-    404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
-    /**
-     * Internal server error
-     */
-    default: ApiError;
-};
-
-export type PostMarketingCampaignsStatsError = PostMarketingCampaignsStatsErrors[keyof PostMarketingCampaignsStatsErrors];
-
-export type PostMarketingCampaignsStatsResponses = {
-    /**
-     * OK
-     */
-    200: MarketingResponsesStats;
-};
-
-export type PostMarketingCampaignsStatsResponse = PostMarketingCampaignsStatsResponses[keyof PostMarketingCampaignsStatsResponses];
-
-export type DeleteMarketingCampaignsByidByData = {
+export type PutInvitesSalonBylinkIdByData = {
     body?: never;
     headers: {
         /**
@@ -4307,181 +4637,16 @@ export type DeleteMarketingCampaignsByidByData = {
         'Device-ID': string;
     };
     path: {
-        id: string;
-    };
-    query?: never;
-    url: '/v1/marketing/campaigns/{id}';
-};
-
-export type DeleteMarketingCampaignsByidByErrors = {
-    /**
-     * Bad request
-     */
-    400: ApiError;
-    /**
-     * Unauthorized
-     */
-    401: ApiError;
-    /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
-     * Not found
-     */
-    404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
-    /**
-     * Internal server error
-     */
-    default: ApiError;
-};
-
-export type DeleteMarketingCampaignsByidByError = DeleteMarketingCampaignsByidByErrors[keyof DeleteMarketingCampaignsByidByErrors];
-
-export type DeleteMarketingCampaignsByidByResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteMarketingCampaignsByidByResponse = DeleteMarketingCampaignsByidByResponses[keyof DeleteMarketingCampaignsByidByResponses];
-
-export type GetMarketingCampaignsByidByData = {
-    body?: never;
-    headers: {
         /**
-         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
-         */
-        'Device-ID': string;
-    };
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/v1/marketing/campaigns/{id}';
-};
-
-export type GetMarketingCampaignsByidByErrors = {
-    /**
-     * Bad request
-     */
-    400: ApiError;
-    /**
-     * Unauthorized
-     */
-    401: ApiError;
-    /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
-     * Not found
-     */
-    404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
-    /**
-     * Internal server error
-     */
-    default: ApiError;
-};
-
-export type GetMarketingCampaignsByidByError = GetMarketingCampaignsByidByErrors[keyof GetMarketingCampaignsByidByErrors];
-
-export type GetMarketingCampaignsByidByResponses = {
-    /**
-     * OK
-     */
-    200: MarketingCampaignResponsesDetails;
-};
-
-export type GetMarketingCampaignsByidByResponse = GetMarketingCampaignsByidByResponses[keyof GetMarketingCampaignsByidByResponses];
-
-export type PutMarketingCampaignsByidByData = {
-    body: MarketingCampaignParametersUpdate;
-    headers: {
-        /**
-         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
-         */
-        'Device-ID': string;
-    };
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/v1/marketing/campaigns/{id}';
-};
-
-export type PutMarketingCampaignsByidByErrors = {
-    /**
-     * Bad request
-     */
-    400: ApiError;
-    /**
-     * Unauthorized
-     */
-    401: ApiError;
-    /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
-     * Not found
-     */
-    404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
-    /**
-     * Internal server error
-     */
-    default: ApiError;
-};
-
-export type PutMarketingCampaignsByidByError = PutMarketingCampaignsByidByErrors[keyof PutMarketingCampaignsByidByErrors];
-
-export type PutMarketingCampaignsByidByResponses = {
-    /**
-     * OK
-     */
-    200: MarketingCampaignResponsesFull;
-};
-
-export type PutMarketingCampaignsByidByResponse = PutMarketingCampaignsByidByResponses[keyof PutMarketingCampaignsByidByResponses];
-
-export type GetMarketingCampaignsByLinkBylinkIdByData = {
-    body?: never;
-    path: {
-        /**
-         * Идентификатор ссылки кампании (nanoId).
+         * Идентификатор salon claim ссылки (nanoId).
          */
         linkId: string;
     };
     query?: never;
-    url: '/v1/marketing/campaigns/by-link/{linkId}';
+    url: '/v1/invites/salon/{linkId}';
 };
 
-export type GetMarketingCampaignsByLinkBylinkIdByErrors = {
+export type PutInvitesSalonBylinkIdByErrors = {
     /**
      * Bad request
      */
@@ -4512,16 +4677,712 @@ export type GetMarketingCampaignsByLinkBylinkIdByErrors = {
     default: ApiError;
 };
 
-export type GetMarketingCampaignsByLinkBylinkIdByError = GetMarketingCampaignsByLinkBylinkIdByErrors[keyof GetMarketingCampaignsByLinkBylinkIdByErrors];
+export type PutInvitesSalonBylinkIdByError = PutInvitesSalonBylinkIdByErrors[keyof PutInvitesSalonBylinkIdByErrors];
 
-export type GetMarketingCampaignsByLinkBylinkIdByResponses = {
+export type PutInvitesSalonBylinkIdByResponses = {
     /**
      * OK
      */
-    200: MarketingCampaignResponsesFull;
+    200: InviteResponsesSalonClaim;
 };
 
-export type GetMarketingCampaignsByLinkBylinkIdByResponse = GetMarketingCampaignsByLinkBylinkIdByResponses[keyof GetMarketingCampaignsByLinkBylinkIdByResponses];
+export type PutInvitesSalonBylinkIdByResponse = PutInvitesSalonBylinkIdByResponses[keyof PutInvitesSalonBylinkIdByResponses];
+
+export type GetAcquisitionLeadSourcesData = {
+    body?: never;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/acquisition/lead-sources';
+};
+
+export type GetAcquisitionLeadSourcesErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type GetAcquisitionLeadSourcesError = GetAcquisitionLeadSourcesErrors[keyof GetAcquisitionLeadSourcesErrors];
+
+export type GetAcquisitionLeadSourcesResponses = {
+    /**
+     * OK
+     */
+    200: LeadSourceResponsesList;
+};
+
+export type GetAcquisitionLeadSourcesResponse = GetAcquisitionLeadSourcesResponses[keyof GetAcquisitionLeadSourcesResponses];
+
+export type PostAcquisitionLeadSourcesData = {
+    body: LeadSourceParametersCreate;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/acquisition/lead-sources';
+};
+
+export type PostAcquisitionLeadSourcesErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PostAcquisitionLeadSourcesError = PostAcquisitionLeadSourcesErrors[keyof PostAcquisitionLeadSourcesErrors];
+
+export type PostAcquisitionLeadSourcesResponses = {
+    /**
+     * OK
+     */
+    200: LeadSourceResponsesFull;
+};
+
+export type PostAcquisitionLeadSourcesResponse = PostAcquisitionLeadSourcesResponses[keyof PostAcquisitionLeadSourcesResponses];
+
+export type DeleteAcquisitionLeadSourcesByidByData = {
+    body?: never;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/acquisition/lead-sources/{id}';
+};
+
+export type DeleteAcquisitionLeadSourcesByidByErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type DeleteAcquisitionLeadSourcesByidByError = DeleteAcquisitionLeadSourcesByidByErrors[keyof DeleteAcquisitionLeadSourcesByidByErrors];
+
+export type DeleteAcquisitionLeadSourcesByidByResponses = {
+    /**
+     * No content
+     */
+    204: void;
+};
+
+export type DeleteAcquisitionLeadSourcesByidByResponse = DeleteAcquisitionLeadSourcesByidByResponses[keyof DeleteAcquisitionLeadSourcesByidByResponses];
+
+export type GetAcquisitionLeadSourcesByidByData = {
+    body?: never;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/acquisition/lead-sources/{id}';
+};
+
+export type GetAcquisitionLeadSourcesByidByErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type GetAcquisitionLeadSourcesByidByError = GetAcquisitionLeadSourcesByidByErrors[keyof GetAcquisitionLeadSourcesByidByErrors];
+
+export type GetAcquisitionLeadSourcesByidByResponses = {
+    /**
+     * OK
+     */
+    200: LeadSourceResponsesDetails;
+};
+
+export type GetAcquisitionLeadSourcesByidByResponse = GetAcquisitionLeadSourcesByidByResponses[keyof GetAcquisitionLeadSourcesByidByResponses];
+
+export type PutAcquisitionLeadSourcesByidByData = {
+    body: LeadSourceParametersUpdate;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/acquisition/lead-sources/{id}';
+};
+
+export type PutAcquisitionLeadSourcesByidByErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PutAcquisitionLeadSourcesByidByError = PutAcquisitionLeadSourcesByidByErrors[keyof PutAcquisitionLeadSourcesByidByErrors];
+
+export type PutAcquisitionLeadSourcesByidByResponses = {
+    /**
+     * OK
+     */
+    200: LeadSourceResponsesFull;
+};
+
+export type PutAcquisitionLeadSourcesByidByResponse = PutAcquisitionLeadSourcesByidByResponses[keyof PutAcquisitionLeadSourcesByidByResponses];
+
+export type GetAcquisitionLeadSourcesByidByStatsData = {
+    body?: never;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query: {
+        /**
+         * Начало месячного периода в UTC, соответствующее полуночи первого дня месяца в timezone салона.
+         */
+        start: string;
+        /**
+         * Конец месячного периода в UTC, соответствующий полуночи первого дня следующего месяца в timezone салона.
+         */
+        end: string;
+    };
+    url: '/v1/acquisition/lead-sources/{id}/stats';
+};
+
+export type GetAcquisitionLeadSourcesByidByStatsErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type GetAcquisitionLeadSourcesByidByStatsError = GetAcquisitionLeadSourcesByidByStatsErrors[keyof GetAcquisitionLeadSourcesByidByStatsErrors];
+
+export type GetAcquisitionLeadSourcesByidByStatsResponses = {
+    /**
+     * OK
+     */
+    200: LeadSourceMonthlyStatsResponse;
+};
+
+export type GetAcquisitionLeadSourcesByidByStatsResponse = GetAcquisitionLeadSourcesByidByStatsResponses[keyof GetAcquisitionLeadSourcesByidByStatsResponses];
+
+export type GetAcquisitionStatsData = {
+    body?: never;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path?: never;
+    query: {
+        /**
+         * Начало месячного периода в UTC, соответствующее полуночи первого дня месяца в timezone салона.
+         */
+        start: string;
+        /**
+         * Конец месячного периода в UTC, соответствующий полуночи первого дня следующего месяца в timezone салона.
+         */
+        end: string;
+    };
+    url: '/v1/acquisition/stats';
+};
+
+export type GetAcquisitionStatsErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type GetAcquisitionStatsError = GetAcquisitionStatsErrors[keyof GetAcquisitionStatsErrors];
+
+export type GetAcquisitionStatsResponses = {
+    /**
+     * OK
+     */
+    200: AcquisitionStatsResponse;
+};
+
+export type GetAcquisitionStatsResponse = GetAcquisitionStatsResponses[keyof GetAcquisitionStatsResponses];
+
+export type GetAcquisitionLeadSourcesByidByCampaignData = {
+    body?: never;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/acquisition/lead-sources/{id}/campaign';
+};
+
+export type GetAcquisitionLeadSourcesByidByCampaignErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type GetAcquisitionLeadSourcesByidByCampaignError = GetAcquisitionLeadSourcesByidByCampaignErrors[keyof GetAcquisitionLeadSourcesByidByCampaignErrors];
+
+export type GetAcquisitionLeadSourcesByidByCampaignResponses = {
+    /**
+     * OK
+     */
+    200: CampaignResponsesFull;
+};
+
+export type GetAcquisitionLeadSourcesByidByCampaignResponse = GetAcquisitionLeadSourcesByidByCampaignResponses[keyof GetAcquisitionLeadSourcesByidByCampaignResponses];
+
+export type PutAcquisitionLeadSourcesByidByCampaignData = {
+    body: LeadSourceCampaignParametersUpdate;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/acquisition/lead-sources/{id}/campaign';
+};
+
+export type PutAcquisitionLeadSourcesByidByCampaignErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PutAcquisitionLeadSourcesByidByCampaignError = PutAcquisitionLeadSourcesByidByCampaignErrors[keyof PutAcquisitionLeadSourcesByidByCampaignErrors];
+
+export type PutAcquisitionLeadSourcesByidByCampaignResponses = {
+    /**
+     * OK
+     */
+    200: CampaignResponsesFull;
+};
+
+export type PutAcquisitionLeadSourcesByidByCampaignResponse = PutAcquisitionLeadSourcesByidByCampaignResponses[keyof PutAcquisitionLeadSourcesByidByCampaignResponses];
+
+export type PostAcquisitionLeadSourcesByidByCampaignByEventManagerByManualData = {
+    body: ManualEventManagerConnectParametersWritable;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/acquisition/lead-sources/{id}/campaign/event-manager/manual';
+};
+
+export type PostAcquisitionLeadSourcesByidByCampaignByEventManagerByManualErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PostAcquisitionLeadSourcesByidByCampaignByEventManagerByManualError = PostAcquisitionLeadSourcesByidByCampaignByEventManagerByManualErrors[keyof PostAcquisitionLeadSourcesByidByCampaignByEventManagerByManualErrors];
+
+export type PostAcquisitionLeadSourcesByidByCampaignByEventManagerByManualResponses = {
+    /**
+     * OK
+     */
+    200: CampaignResponsesFull;
+};
+
+export type PostAcquisitionLeadSourcesByidByCampaignByEventManagerByManualResponse = PostAcquisitionLeadSourcesByidByCampaignByEventManagerByManualResponses[keyof PostAcquisitionLeadSourcesByidByCampaignByEventManagerByManualResponses];
+
+export type GetAcquisitionLeadSourcesByidByPromoterData = {
+    body?: never;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/acquisition/lead-sources/{id}/promoter';
+};
+
+export type GetAcquisitionLeadSourcesByidByPromoterErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type GetAcquisitionLeadSourcesByidByPromoterError = GetAcquisitionLeadSourcesByidByPromoterErrors[keyof GetAcquisitionLeadSourcesByidByPromoterErrors];
+
+export type GetAcquisitionLeadSourcesByidByPromoterResponses = {
+    /**
+     * OK
+     */
+    200: PromoterResponsesFull;
+};
+
+export type GetAcquisitionLeadSourcesByidByPromoterResponse = GetAcquisitionLeadSourcesByidByPromoterResponses[keyof GetAcquisitionLeadSourcesByidByPromoterResponses];
+
+export type PutAcquisitionLeadSourcesByidByPromoterData = {
+    body: PromoterParametersUpdate;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/acquisition/lead-sources/{id}/promoter';
+};
+
+export type PutAcquisitionLeadSourcesByidByPromoterErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PutAcquisitionLeadSourcesByidByPromoterError = PutAcquisitionLeadSourcesByidByPromoterErrors[keyof PutAcquisitionLeadSourcesByidByPromoterErrors];
+
+export type PutAcquisitionLeadSourcesByidByPromoterResponses = {
+    /**
+     * OK
+     */
+    200: PromoterResponsesFull;
+};
+
+export type PutAcquisitionLeadSourcesByidByPromoterResponse = PutAcquisitionLeadSourcesByidByPromoterResponses[keyof PutAcquisitionLeadSourcesByidByPromoterResponses];
 
 export type GetNotificationsData = {
     body?: never;
@@ -5947,7 +6808,7 @@ export type GetTimetablesSchedulesResponses = {
 export type GetTimetablesSchedulesResponse = GetTimetablesSchedulesResponses[keyof GetTimetablesSchedulesResponses];
 
 export type PostTimetablesSearchSlotsData = {
-    body: TimetableParametersSearchSlotComplex | TimetableParametersSearchSlotProcedure;
+    body: TimetableParametersSearchSlotSelectedService;
     headers: {
         /**
          * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
@@ -6001,7 +6862,7 @@ export type PostTimetablesSearchSlotsResponses = {
     /**
      * OK
      */
-    200: TimetableResponsesProcedureSlots | TimetableResponsesComplexSlots;
+    200: TimetableResponsesProcedureSlots | TimetableResponsesBundleSlots;
 };
 
 export type PostTimetablesSearchSlotsResponse = PostTimetablesSearchSlotsResponses[keyof PostTimetablesSearchSlotsResponses];
@@ -8241,7 +9102,7 @@ export type PostWorkspaceClientsByIdByLinksResponses = {
 
 export type PostWorkspaceClientsByIdByLinksResponse = PostWorkspaceClientsByIdByLinksResponses[keyof PostWorkspaceClientsByIdByLinksResponses];
 
-export type GetWorkspaceComplexData = {
+export type GetWorkspaceBundlesData = {
     body?: never;
     headers: {
         /**
@@ -8252,14 +9113,14 @@ export type GetWorkspaceComplexData = {
     path?: never;
     query?: {
         /**
-         * Параметры фильтрации и пагинации списка комплексов.
+         * Параметры фильтрации списка бандлов.
          */
-        parameters?: ComplexParametersAll;
+        parameters?: BundlesParametersAll;
     };
-    url: '/v1/workspace/complex';
+    url: '/v1/workspace/bundles';
 };
 
-export type GetWorkspaceComplexErrors = {
+export type GetWorkspaceBundlesErrors = {
     /**
      * Bad request
      */
@@ -8290,19 +9151,19 @@ export type GetWorkspaceComplexErrors = {
     default: ApiError;
 };
 
-export type GetWorkspaceComplexError = GetWorkspaceComplexErrors[keyof GetWorkspaceComplexErrors];
+export type GetWorkspaceBundlesError = GetWorkspaceBundlesErrors[keyof GetWorkspaceBundlesErrors];
 
-export type GetWorkspaceComplexResponses = {
+export type GetWorkspaceBundlesResponses = {
     /**
      * OK
      */
-    200: ComplexResponsesAll;
+    200: BundlesResponsesAll;
 };
 
-export type GetWorkspaceComplexResponse = GetWorkspaceComplexResponses[keyof GetWorkspaceComplexResponses];
+export type GetWorkspaceBundlesResponse = GetWorkspaceBundlesResponses[keyof GetWorkspaceBundlesResponses];
 
-export type PostWorkspaceComplexData = {
-    body: ComplexParametersCreate;
+export type PostWorkspaceBundlesData = {
+    body: BundlesParametersCreate;
     headers: {
         /**
          * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
@@ -8311,10 +9172,10 @@ export type PostWorkspaceComplexData = {
     };
     path?: never;
     query?: never;
-    url: '/v1/workspace/complex';
+    url: '/v1/workspace/bundles';
 };
 
-export type PostWorkspaceComplexErrors = {
+export type PostWorkspaceBundlesErrors = {
     /**
      * Bad request
      */
@@ -8345,18 +9206,18 @@ export type PostWorkspaceComplexErrors = {
     default: ApiError;
 };
 
-export type PostWorkspaceComplexError = PostWorkspaceComplexErrors[keyof PostWorkspaceComplexErrors];
+export type PostWorkspaceBundlesError = PostWorkspaceBundlesErrors[keyof PostWorkspaceBundlesErrors];
 
-export type PostWorkspaceComplexResponses = {
+export type PostWorkspaceBundlesResponses = {
     /**
      * OK
      */
-    200: ComplexHelpersComplexResponse;
+    200: BundlesHelpersBundleResponse;
 };
 
-export type PostWorkspaceComplexResponse = PostWorkspaceComplexResponses[keyof PostWorkspaceComplexResponses];
+export type PostWorkspaceBundlesResponse = PostWorkspaceBundlesResponses[keyof PostWorkspaceBundlesResponses];
 
-export type DeleteWorkspaceComplexByIdData = {
+export type GetWorkspaceBundleByIdData = {
     body?: never;
     headers: {
         /**
@@ -8368,10 +9229,10 @@ export type DeleteWorkspaceComplexByIdData = {
         id: string;
     };
     query?: never;
-    url: '/v1/workspace/complex/{id}';
+    url: '/v1/workspace/bundles/{id}';
 };
 
-export type DeleteWorkspaceComplexByIdErrors = {
+export type GetWorkspaceBundleByIdErrors = {
     /**
      * Bad request
      */
@@ -8402,18 +9263,132 @@ export type DeleteWorkspaceComplexByIdErrors = {
     default: ApiError;
 };
 
-export type DeleteWorkspaceComplexByIdError = DeleteWorkspaceComplexByIdErrors[keyof DeleteWorkspaceComplexByIdErrors];
+export type GetWorkspaceBundleByIdError = GetWorkspaceBundleByIdErrors[keyof GetWorkspaceBundleByIdErrors];
 
-export type DeleteWorkspaceComplexByIdResponses = {
+export type GetWorkspaceBundleByIdResponses = {
+    /**
+     * OK
+     */
+    200: BundlesHelpersBundleResponse;
+};
+
+export type GetWorkspaceBundleByIdResponse = GetWorkspaceBundleByIdResponses[keyof GetWorkspaceBundleByIdResponses];
+
+export type PutWorkspaceBundleByIdData = {
+    body: BundlesParametersUpdate;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/workspace/bundles/{id}';
+};
+
+export type PutWorkspaceBundleByIdErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PutWorkspaceBundleByIdError = PutWorkspaceBundleByIdErrors[keyof PutWorkspaceBundleByIdErrors];
+
+export type PutWorkspaceBundleByIdResponses = {
+    /**
+     * OK
+     */
+    200: BundlesHelpersBundleResponse;
+};
+
+export type PutWorkspaceBundleByIdResponse = PutWorkspaceBundleByIdResponses[keyof PutWorkspaceBundleByIdResponses];
+
+export type PostWorkspaceBundlesByIdArchiveData = {
+    body?: never;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/workspace/bundles/{id}/archive';
+};
+
+export type PostWorkspaceBundlesByIdArchiveErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PostWorkspaceBundlesByIdArchiveError = PostWorkspaceBundlesByIdArchiveErrors[keyof PostWorkspaceBundlesByIdArchiveErrors];
+
+export type PostWorkspaceBundlesByIdArchiveResponses = {
     /**
      * No Content
      */
     204: void;
 };
 
-export type DeleteWorkspaceComplexByIdResponse = DeleteWorkspaceComplexByIdResponses[keyof DeleteWorkspaceComplexByIdResponses];
+export type PostWorkspaceBundlesByIdArchiveResponse = PostWorkspaceBundlesByIdArchiveResponses[keyof PostWorkspaceBundlesByIdArchiveResponses];
 
-export type GetWorkspaceComplexByIdData = {
+export type PostWorkspaceBundlesByIdRestoreData = {
     body?: never;
     headers: {
         /**
@@ -8425,10 +9400,10 @@ export type GetWorkspaceComplexByIdData = {
         id: string;
     };
     query?: never;
-    url: '/v1/workspace/complex/{id}';
+    url: '/v1/workspace/bundles/{id}/restore';
 };
 
-export type GetWorkspaceComplexByIdErrors = {
+export type PostWorkspaceBundlesByIdRestoreErrors = {
     /**
      * Bad request
      */
@@ -8459,19 +9434,97 @@ export type GetWorkspaceComplexByIdErrors = {
     default: ApiError;
 };
 
-export type GetWorkspaceComplexByIdError = GetWorkspaceComplexByIdErrors[keyof GetWorkspaceComplexByIdErrors];
+export type PostWorkspaceBundlesByIdRestoreError = PostWorkspaceBundlesByIdRestoreErrors[keyof PostWorkspaceBundlesByIdRestoreErrors];
 
-export type GetWorkspaceComplexByIdResponses = {
+export type PostWorkspaceBundlesByIdRestoreResponses = {
     /**
      * OK
      */
-    200: ComplexHelpersComplexResponse;
+    200: BundlesHelpersBundleResponse;
 };
 
-export type GetWorkspaceComplexByIdResponse = GetWorkspaceComplexByIdResponses[keyof GetWorkspaceComplexByIdResponses];
+export type PostWorkspaceBundlesByIdRestoreResponse = PostWorkspaceBundlesByIdRestoreResponses[keyof PostWorkspaceBundlesByIdRestoreResponses];
 
-export type PutWorkspaceComplexByIdData = {
-    body: ComplexParametersUpdate;
+export type PostWorkspaceImportedSalonsPreviewData = {
+    body: ImportedSalonPreviewRequest;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/workspace/imported-salons/preview';
+};
+
+export type PostWorkspaceImportedSalonsPreviewErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PostWorkspaceImportedSalonsPreviewError = PostWorkspaceImportedSalonsPreviewErrors[keyof PostWorkspaceImportedSalonsPreviewErrors];
+
+export type PostWorkspaceImportedSalonsPreviewResponses = {
+    /**
+     * OK
+     */
+    200: ImportedSalonPreviewResponse;
+};
+
+export type PostWorkspaceImportedSalonsPreviewResponse = PostWorkspaceImportedSalonsPreviewResponses[keyof PostWorkspaceImportedSalonsPreviewResponses];
+
+export type PostWorkspaceImportedSalonsCommitData = {
+    body: ImportedSalonCommitRequest;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/workspace/imported-salons/commit';
+};
+
+export type PostWorkspaceImportedSalonsCommitErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PostWorkspaceImportedSalonsCommitError = PostWorkspaceImportedSalonsCommitErrors[keyof PostWorkspaceImportedSalonsCommitErrors];
+
+export type PostWorkspaceImportedSalonsCommitResponses = {
+    /**
+     * OK
+     */
+    200: ImportedSalonCommitResponse;
+};
+
+export type PostWorkspaceImportedSalonsCommitResponse = PostWorkspaceImportedSalonsCommitResponses[keyof PostWorkspaceImportedSalonsCommitResponses];
+
+export type PostWorkspaceImportedSalonsClaimLinkData = {
+    body?: ImportedSalonClaimLinkRequest;
     headers: {
         /**
          * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
@@ -8482,10 +9535,10 @@ export type PutWorkspaceComplexByIdData = {
         id: string;
     };
     query?: never;
-    url: '/v1/workspace/complex/{id}';
+    url: '/v1/workspace/imported-salons/{id}/claim-link';
 };
 
-export type PutWorkspaceComplexByIdErrors = {
+export type PostWorkspaceImportedSalonsClaimLinkErrors = {
     /**
      * Bad request
      */
@@ -8495,37 +9548,25 @@ export type PutWorkspaceComplexByIdErrors = {
      */
     401: ApiError;
     /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
      * Not found
      */
     404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
     /**
      * Internal server error
      */
     default: ApiError;
 };
 
-export type PutWorkspaceComplexByIdError = PutWorkspaceComplexByIdErrors[keyof PutWorkspaceComplexByIdErrors];
+export type PostWorkspaceImportedSalonsClaimLinkError = PostWorkspaceImportedSalonsClaimLinkErrors[keyof PostWorkspaceImportedSalonsClaimLinkErrors];
 
-export type PutWorkspaceComplexByIdResponses = {
+export type PostWorkspaceImportedSalonsClaimLinkResponses = {
     /**
      * OK
      */
-    200: ComplexHelpersComplexResponse;
+    200: ImportedSalonClaimLinkResponse;
 };
 
-export type PutWorkspaceComplexByIdResponse = PutWorkspaceComplexByIdResponses[keyof PutWorkspaceComplexByIdResponses];
+export type PostWorkspaceImportedSalonsClaimLinkResponse = PostWorkspaceImportedSalonsClaimLinkResponses[keyof PostWorkspaceImportedSalonsClaimLinkResponses];
 
 export type PutWorkspaceDeactivateData = {
     body?: never;
@@ -10024,7 +11065,7 @@ export type GetWorkspaceProceduresData = {
     path?: never;
     query?: {
         /**
-         * Параметры фильтрации и пагинации списка процедур.
+         * Параметры фильтрации списка процедур.
          */
         parameters?: ProcedureParametersAll;
     };
@@ -10127,63 +11168,6 @@ export type PostWorkspaceProceduresResponses = {
 };
 
 export type PostWorkspaceProceduresResponse = PostWorkspaceProceduresResponses[keyof PostWorkspaceProceduresResponses];
-
-export type DeleteWorkspaceProceduresByIdData = {
-    body?: never;
-    headers: {
-        /**
-         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
-         */
-        'Device-ID': string;
-    };
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/v1/workspace/procedures/{id}';
-};
-
-export type DeleteWorkspaceProceduresByIdErrors = {
-    /**
-     * Bad request
-     */
-    400: ApiError;
-    /**
-     * Unauthorized
-     */
-    401: ApiError;
-    /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
-     * Not found
-     */
-    404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
-    /**
-     * Internal server error
-     */
-    default: ApiError;
-};
-
-export type DeleteWorkspaceProceduresByIdError = DeleteWorkspaceProceduresByIdErrors[keyof DeleteWorkspaceProceduresByIdErrors];
-
-export type DeleteWorkspaceProceduresByIdResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteWorkspaceProceduresByIdResponse = DeleteWorkspaceProceduresByIdResponses[keyof DeleteWorkspaceProceduresByIdResponses];
 
 export type GetWorkspaceProceduresByIdData = {
     body?: never;
@@ -10299,63 +11283,6 @@ export type PutWorkspaceProceduresByIdResponses = {
 
 export type PutWorkspaceProceduresByIdResponse = PutWorkspaceProceduresByIdResponses[keyof PutWorkspaceProceduresByIdResponses];
 
-export type PatchWorkspaceProceduresByIdSettingsData = {
-    body: ProcedureParametersPatchSettings;
-    headers: {
-        /**
-         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
-         */
-        'Device-ID': string;
-    };
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/v1/workspace/procedures/{id}/settings';
-};
-
-export type PatchWorkspaceProceduresByIdSettingsErrors = {
-    /**
-     * Bad request
-     */
-    400: ApiError;
-    /**
-     * Unauthorized
-     */
-    401: ApiError;
-    /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
-     * Not found
-     */
-    404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
-    /**
-     * Internal server error
-     */
-    default: ApiError;
-};
-
-export type PatchWorkspaceProceduresByIdSettingsError = PatchWorkspaceProceduresByIdSettingsErrors[keyof PatchWorkspaceProceduresByIdSettingsErrors];
-
-export type PatchWorkspaceProceduresByIdSettingsResponses = {
-    /**
-     * OK
-     */
-    200: ProcedureHelpersProcedureResponse;
-};
-
-export type PatchWorkspaceProceduresByIdSettingsResponse = PatchWorkspaceProceduresByIdSettingsResponses[keyof PatchWorkspaceProceduresByIdSettingsResponses];
-
 export type PostWorkspaceProceduresByIdArchiveData = {
     body?: never;
     headers: {
@@ -10469,6 +11396,63 @@ export type PostWorkspaceProceduresByIdRestoreResponses = {
 };
 
 export type PostWorkspaceProceduresByIdRestoreResponse = PostWorkspaceProceduresByIdRestoreResponses[keyof PostWorkspaceProceduresByIdRestoreResponses];
+
+export type PostWorkspaceProceduresByIdExecutionsData = {
+    body: ProcedureExecutionParametersCreate;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/workspace/procedures/{id}/executions';
+};
+
+export type PostWorkspaceProceduresByIdExecutionsErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type PostWorkspaceProceduresByIdExecutionsError = PostWorkspaceProceduresByIdExecutionsErrors[keyof PostWorkspaceProceduresByIdExecutionsErrors];
+
+export type PostWorkspaceProceduresByIdExecutionsResponses = {
+    /**
+     * OK
+     */
+    200: ProcedureHelpersExecutionResponse;
+};
+
+export type PostWorkspaceProceduresByIdExecutionsResponse = PostWorkspaceProceduresByIdExecutionsResponses[keyof PostWorkspaceProceduresByIdExecutionsResponses];
 
 export type DeleteWorkspaceProceduresByIdExecutionsByExecutionIdData = {
     body?: never;

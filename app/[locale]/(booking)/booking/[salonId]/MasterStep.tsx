@@ -50,7 +50,7 @@ export function MasterStep({
         title={t("masterTitle")}
       >
         <BookingRow
-          ctaLabel={t("changeSelectionShort")}
+          ctaLabel={t("editSelectionShort")}
           onPress={onDeselectProcedure}
           platform={platform}
           subtitle={

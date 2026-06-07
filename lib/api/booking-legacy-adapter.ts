@@ -60,7 +60,7 @@ export function adaptCatalogToLegacyProcedures(
           execution.price !== undefined && execution.price !== null
             ? {
                 amount: execution.price,
-                currency: execution.currency,
+                currency: procedure.currency,
               }
             : toLegacyPrice(procedure.minPrice),
         serviceTitle: procedure.serviceTitle,
@@ -79,11 +79,16 @@ export function adaptCatalogToLegacyProcedures(
 export function adaptVisitToLegacyAppointment(
   visit: SharedPublicBookingVisit,
 ): AppointmentResponse {
+  const firstSelectedItem = visit.service.items[0];
   const procedure =
-    "procedure" in visit.service ? visit.service.procedure : undefined;
-  const complex =
-    "complex" in visit.service ? visit.service.complex : undefined;
-  const selectedProcedure = procedure ?? complex?.procedures[0];
+    firstSelectedItem && "procedure" in firstSelectedItem
+      ? firstSelectedItem.procedure
+      : undefined;
+  const bundle =
+    firstSelectedItem && "bundle" in firstSelectedItem
+      ? firstSelectedItem.bundle
+      : undefined;
+  const selectedProcedure = procedure ?? bundle?.procedures[0];
   const executor = selectedProcedure?.executor;
 
   return {
