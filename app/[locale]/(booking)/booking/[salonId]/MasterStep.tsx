@@ -10,9 +10,9 @@ import { BookingRow } from "../../_shared/BookingRow";
 import { BookingRowMeta } from "../../_shared/BookingRowMeta";
 import { BookingSection } from "../../_shared/BookingSection";
 import {
-  formatCurrency,
   formatDuration,
   getInitials,
+  toCurrencyValue,
 } from "../../_shared/formatting";
 import { BOOKING_MASTER_AVATAR_PX } from "../../_shared/primitives";
 import { SectionSeparator } from "../../_shared/SectionSeparator";
@@ -71,10 +71,9 @@ export function MasterStep({
   return (
     <BookingSection platform={platform} title={t("masterTitle")}>
       {selectedGroup.procedures.map((procedure) => {
-        const priceLabel = formatCurrency(
+        const priceValue = toCurrencyValue(
           procedure.price?.amount ?? selectedGroup.minPrice,
           procedure.price?.currency ?? selectedGroup.currency,
-          locale,
         );
         const durationLabel = formatDuration(procedure.duration, locale);
         const subtitle =
@@ -107,8 +106,9 @@ export function MasterStep({
               indicator={
                 <BookingRowMeta
                   duration={durationLabel}
+                  locale={locale}
                   platform={platform}
-                  price={priceLabel}
+                  priceValue={priceValue}
                 />
               }
               onPress={() => onSelectProcedure(procedure)}

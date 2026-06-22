@@ -1,6 +1,6 @@
 import type { Step } from "@/lib/public-booking-screen";
 
-const BOOKING_DRAFT_VERSION = 3;
+const BOOKING_DRAFT_VERSION = 4;
 const BOOKING_DRAFT_STORAGE_PREFIX = "booking-draft";
 
 type BookingDraftScope = {
@@ -28,6 +28,7 @@ export type BookingDraftSnapshot = {
   expandedCategoryIds: string[];
   locale: string;
   salonId: string;
+  selectedPhoneCountry?: string | null;
   selectedDateKey: string | null;
   selectedSlotStart: string | null;
   serviceSections: BookingDraftServiceSection[];
@@ -184,6 +185,7 @@ export function readBookingDraftSnapshot(
       expandedCategoryIds?: string[];
       locale?: string;
       salonId?: string;
+      selectedPhoneCountry?: string | null;
       selectedDateKey?: string | null;
       selectedGroupId?: string | null;
       selectedProcedureKey?: string | null;
@@ -201,6 +203,7 @@ export function readBookingDraftSnapshot(
       parsed.version !== undefined &&
       parsed.version !== 1 &&
       parsed.version !== 2 &&
+      parsed.version !== 3 &&
       parsed.version !== BOOKING_DRAFT_VERSION
     ) {
       return null;
@@ -228,6 +231,10 @@ export function readBookingDraftSnapshot(
       expandedCategoryIds,
       locale: scope.locale,
       salonId: scope.salonId,
+      selectedPhoneCountry:
+        typeof parsed.selectedPhoneCountry === "string"
+          ? parsed.selectedPhoneCountry
+          : null,
       selectedDateKey: parsed.selectedDateKey ?? null,
       selectedSlotStart: parsed.selectedSlotStart ?? null,
       serviceSections: normalizeServiceSections(parsed),

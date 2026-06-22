@@ -7,6 +7,8 @@ import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
 import type { BookingPlatformVariant } from "@/src/features/booking/utils/platform";
 
 import { BookingSection } from "../../_shared/BookingSection";
+import { CurrencyDisplay } from "../../_shared/CurrencyDisplay";
+import type { CurrencyValue } from "../../_shared/formatting";
 import {
   SheetRoot,
   bookingSectionHeaderPaddingX,
@@ -26,12 +28,14 @@ type BookingScreenProps = {
 
 function SummaryTotalRow({
   label,
+  locale,
   platform,
   price,
 }: {
   label: string;
+  locale: string;
   platform: BookingPlatformVariant;
-  price: string;
+  price: CurrencyValue;
 }) {
   const surface = getBookingSurfaceStyle(platform);
 
@@ -50,14 +54,14 @@ function SummaryTotalRow({
       >
         {label}
       </Text>
-      <Text
+      <CurrencyDisplay
         color="$textPrimary"
         fontSize={surface.summary.totalFontSize}
         fontWeight="500"
         lineHeight={surface.summary.totalLineHeight}
-      >
-        {price}
-      </Text>
+        locale={locale}
+        value={price}
+      />
     </XStack>
   );
 }
@@ -150,6 +154,7 @@ const BookingScreen = ({ salonId, locale, trackingId }: BookingScreenProps) => {
           >
             <SummaryTotalRow
               label={`${t("paywall.estimatedTotal")}:`}
+              locale={locale}
               platform={flow.platform}
               price={flow.selectedProcedurePrice}
             />
@@ -166,10 +171,12 @@ const BookingScreen = ({ salonId, locale, trackingId }: BookingScreenProps) => {
             isSubmitting={flow.isSubmitting}
             onSubmit={flow.handleSubmitAppointment}
             platform={flow.platform}
+            selectedPhoneCountry={flow.selectedPhoneCountry}
             submitErrorNonce={flow.submitErrorNonce}
             setClientName={flow.setClientName}
             setClientPhone={flow.setClientPhone}
             setFormErrors={flow.setFormErrors}
+            setSelectedPhoneCountry={flow.setSelectedPhoneCountry}
           />
         ) : null}
 

@@ -129,6 +129,7 @@
 
 .booking-no-select input,
 .booking-no-select textarea,
+.booking-no-select select,
 .booking-no-select [contenteditable="true"],
 .booking-no-select [contenteditable="plaintext-only"] {
   -webkit-user-select: text;

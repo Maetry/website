@@ -45,7 +45,7 @@ function shouldAllowNativeSelection(target: EventTarget | null) {
 
   return Boolean(
     target.closest(
-      'input, textarea, [contenteditable="true"], [contenteditable="plaintext-only"]',
+      'input, textarea, select, [contenteditable="true"], [contenteditable="plaintext-only"]',
     ),
   );
 }

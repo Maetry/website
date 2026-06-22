@@ -24,10 +24,13 @@ import { BookingRow } from "../../_shared/BookingRow";
 import { BookingRowMeta } from "../../_shared/BookingRowMeta";
 import { BookingSection } from "../../_shared/BookingSection";
 import { BookingState } from "../../_shared/BookingState";
+import { CurrencyDisplay } from "../../_shared/CurrencyDisplay";
 import {
   formatCurrency,
   formatDuration,
   getInitials,
+  toCurrencyValue,
+  type CurrencyValue,
 } from "../../_shared/formatting";
 import { BOOKING_MASTER_AVATAR_PX } from "../../_shared/primitives";
 import { SectionSeparator } from "../../_shared/SectionSeparator";
@@ -127,20 +130,20 @@ function ServiceSummaryMeta({
 }: {
   duration: string | null;
   locale: string;
-  price: string | null;
+  price: CurrencyValue | null;
 }) {
   return (
     <YStack alignItems="flex-end" flexShrink={0} gap="$1">
       {price ? (
-        <Text
+        <CurrencyDisplay
           color="$textPrimary"
           fontSize={16}
           fontWeight="600"
           lineHeight={20}
+          locale={locale}
           textAlign="right"
-        >
-          {price}
-        </Text>
+          value={price}
+        />
       ) : null}
       {duration ? (
         <Text
@@ -517,10 +520,9 @@ export function ServiceSelectionsStep({
                               title={t("masterAny")}
                             />
                             {bundleProcedure.masterOptions.map((option) => {
-                              const optionPrice = formatCurrency(
+                              const optionPriceValue = toCurrencyValue(
                                 option.price?.amount ?? null,
                                 option.price?.currency ?? null,
-                                locale,
                               );
                               const optionDuration = formatDuration(
                                 option.duration ?? null,
@@ -557,8 +559,9 @@ export function ServiceSelectionsStep({
                                   indicator={
                                     <BookingRowMeta
                                       duration={optionDuration}
+                                      locale={locale}
                                       platform={platform}
-                                      price={optionPrice}
+                                      priceValue={optionPriceValue}
                                     />
                                   }
                                   key={
@@ -611,14 +614,13 @@ export function ServiceSelectionsStep({
                 />
                 <SectionSeparator platform={platform} />
                 {section.selectedGroup.procedures.map((procedure, index) => {
-                  const priceLabel = formatCurrency(
+                  const priceValue = toCurrencyValue(
                     procedure.price?.amount ??
                       section.selectedGroup?.minPrice ??
                       null,
                     procedure.price?.currency ??
                       section.selectedGroup?.currency ??
                       null,
-                    locale,
                   );
                   const durationLabel = formatDuration(
                     procedure.duration,
@@ -654,8 +656,9 @@ export function ServiceSelectionsStep({
                         indicator={
                           <BookingRowMeta
                             duration={durationLabel}
+                            locale={locale}
                             platform={platform}
-                            price={priceLabel}
+                            priceValue={priceValue}
                           />
                         }
                         onPress={() => onSelectProcedure(section.id, procedure)}

@@ -14,6 +14,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { CountryCode } from "libphonenumber-js";
 import { useTranslations } from "next-intl";
 
 import {
@@ -25,7 +26,6 @@ import {
   type PublicSalonProfile,
 } from "@/lib/api/public-booking";
 import {
-  publicBookingKeys,
   publicBookingSlotsQueryOptions,
   publicSalonCatalogQueryOptions,
   publicSalonMastersQueryOptions,
@@ -52,10 +52,16 @@ import {
   formatAddress,
   formatCurrency,
   formatDuration,
-  normalizePhone,
   resolveApiMessage,
-  validatePhone,
+  toCurrencyValue,
+  type CurrencyValue,
 } from "../../_shared/formatting";
+import {
+  getPhoneCountryFromValue,
+  normalizePhoneToE164,
+  resolvePhoneCountry,
+  validatePhoneForCountry,
+} from "../../_shared/phone";
 
 import {
   clampBookingDraftStep,
@@ -124,7 +130,7 @@ type BookingServiceSectionState = {
 
 export type BookingServiceSection = BookingServiceSectionState & {
   footerDuration: string | null;
-  footerPrice: string | null;
+  footerPrice: CurrencyValue | null;
   isComplete: boolean;
   selectedGroup: ProcedureGroup | null;
   selectedProcedure: Procedure | null;
@@ -239,14 +245,16 @@ export type BookingFlow = {
   salonProfile: PublicSalonProfile | null;
   sections: BookingServiceSection[];
   selectedDateKey: string | null;
+  selectedPhoneCountry?: CountryCode;
   selectedProcedure: Procedure | null;
-  selectedProcedurePrice: string | null;
+  selectedProcedurePrice: CurrencyValue | null;
   selectedSlot: SlotInterval | null;
   selectedSlotDurationSubtitle: string | null;
   selectedSlotSummaryTitle: string | null;
   setClientName: Dispatch<SetStateAction<string>>;
   setClientPhone: Dispatch<SetStateAction<string>>;
   setFormErrors: Dispatch<SetStateAction<{ name?: string; phone?: string }>>;
+  setSelectedPhoneCountry: Dispatch<SetStateAction<CountryCode | undefined>>;
   setSelectedDateKey: Dispatch<SetStateAction<string | null>>;
   setSelectedSlot: Dispatch<SetStateAction<SlotInterval | null>>;
   slotCalendarDays: CalendarDay[];
@@ -452,6 +460,11 @@ export function useBookingFlow({
     useState<SlotInterval | null>(null);
   const [clientName, setClientNameState] = useState("");
   const [clientPhone, setClientPhoneState] = useState("");
+  const [selectedPhoneCountry, setSelectedPhoneCountryState] = useState<
+    CountryCode | undefined
+  >(() => resolvePhoneCountry({ locale }));
+  const [hasUserSelectedPhoneCountry, setHasUserSelectedPhoneCountry] =
+    useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<string[]>([]);
   const [formErrors, setFormErrorsState] = useState<{
     name?: string;
@@ -485,6 +498,15 @@ export function useBookingFlow({
   );
 
   const salonProfile = profileQuery.data ?? null;
+  const defaultPhoneCountry = useMemo(
+    () =>
+      resolvePhoneCountry({
+        locale,
+        salonCountry: salonProfile?.address?.country,
+        salonLocale: salonProfile?.localeId,
+      }),
+    [locale, salonProfile?.address?.country, salonProfile?.localeId],
+  );
   const procedures = useMemo<Procedure[]>(
     () =>
       catalogQuery.data
@@ -516,6 +538,15 @@ export function useBookingFlow({
       setTimeZoneId(profileQuery.data.timeZoneId);
     }
   }, [profileQuery.data?.timeZoneId]);
+
+  useEffect(() => {
+    if (hasUserSelectedPhoneCountry) {
+      return;
+    }
+
+    const phoneCountry = getPhoneCountryFromValue(clientPhone);
+    setSelectedPhoneCountryState(phoneCountry ?? defaultPhoneCountry);
+  }, [clientPhone, defaultPhoneCountry, hasUserSelectedPhoneCountry]);
 
   const procedureGroups: ProcedureGroup[] = useMemo(() => {
     if (!procedures.length) return [];
@@ -675,10 +706,9 @@ export function useBookingFlow({
           selectedProcedure?.duration ?? selectedGroup?.duration ?? null,
           locale,
         ),
-        footerPrice: formatCurrency(
+        footerPrice: toCurrencyValue(
           selectedProcedure?.price?.amount ?? selectedGroup?.minPrice ?? null,
           selectedProcedure?.price?.currency ?? selectedGroup?.currency ?? null,
-          locale,
         ),
         isComplete: selectedProcedure !== null || isBundleComplete,
         selectedGroup,
@@ -974,8 +1004,24 @@ export function useBookingFlow({
         return;
       }
 
+      const restoredPhoneCountry =
+        typeof draftSnapshot?.selectedPhoneCountry === "string"
+          ? (draftSnapshot.selectedPhoneCountry as CountryCode)
+          : undefined;
+      const nextPhoneCountry =
+        restoredPhoneCountry ??
+        getPhoneCountryFromValue(draftSnapshot?.clientPhone) ??
+        defaultPhoneCountry;
+
       setClientNameState(draftSnapshot?.clientName ?? "");
-      setClientPhoneState(draftSnapshot?.clientPhone ?? "");
+      setClientPhoneState(
+        normalizePhoneToE164(
+          draftSnapshot?.clientPhone ?? "",
+          nextPhoneCountry ?? defaultPhoneCountry,
+        ),
+      );
+      setSelectedPhoneCountryState(nextPhoneCountry);
+      setHasUserSelectedPhoneCountry(Boolean(restoredPhoneCountry));
       setExpandedCategoryIds(draftSnapshot?.expandedCategoryIds ?? []);
       setFormErrorsState({});
       setGlobalError(null);
@@ -992,6 +1038,7 @@ export function useBookingFlow({
     };
   }, [
     dateOptions,
+    defaultPhoneCountry,
     hasHydratedDraft,
     locale,
     nowTimestamp,
@@ -1435,6 +1482,15 @@ export function useBookingFlow({
     [],
   );
 
+  const setSelectedPhoneCountry: Dispatch<
+    SetStateAction<CountryCode | undefined>
+  > = useCallback((value) => {
+    setHasUserSelectedPhoneCountry(true);
+    setSelectedPhoneCountryState((previous) =>
+      typeof value === "function" ? value(previous) : value,
+    );
+  }, []);
+
   const setFormErrors: Dispatch<
     SetStateAction<{ name?: string; phone?: string }>
   > = useCallback((value) => {
@@ -1444,20 +1500,24 @@ export function useBookingFlow({
   }, []);
 
   const isFormValid =
-    clientName.trim().length > 0 && validatePhone(normalizePhone(clientPhone));
+    clientName.trim().length > 0 &&
+    validatePhoneForCountry(clientPhone, selectedPhoneCountry);
 
   const handleSubmitAppointment = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const trimmedName = clientName.trim();
-    const normalizedPhone = normalizePhone(clientPhone);
+    const normalizedPhone = normalizePhoneToE164(
+      clientPhone,
+      selectedPhoneCountry,
+    );
     const nextErrors: { name?: string; phone?: string } = {};
 
     if (!trimmedName) {
       nextErrors.name = t("errors.validationName");
     }
 
-    if (!validatePhone(normalizedPhone)) {
+    if (!validatePhoneForCountry(normalizedPhone, selectedPhoneCountry)) {
       nextErrors.phone = t("errors.validationPhone");
     }
 
@@ -1566,10 +1626,9 @@ export function useBookingFlow({
     );
   }, [selectedProcedures]);
 
-  const selectedProcedurePrice = formatCurrency(
+  const selectedProcedurePrice = toCurrencyValue(
     totalPrice,
     selectedProcedures[0]?.price?.currency ?? null,
-    locale,
   );
 
   const totalDuration = formatDuration(
@@ -1615,7 +1674,16 @@ export function useBookingFlow({
                 )
               : undefined,
           meta:
-            [section.footerPrice, section.footerDuration]
+            [
+              section.footerPrice
+                ? formatCurrency(
+                    section.footerPrice.amount,
+                    section.footerPrice.currency,
+                    locale,
+                  )
+                : null,
+              section.footerDuration,
+            ]
               .filter(Boolean)
               .join(" • ") || null,
           specialist:
@@ -1627,7 +1695,13 @@ export function useBookingFlow({
       slotSubtitle: null,
       slotTitle: selectedSlotSummaryTitle,
       totalDuration,
-      totalPrice: selectedProcedurePrice,
+      totalPrice: selectedProcedurePrice
+        ? formatCurrency(
+            selectedProcedurePrice.amount,
+            selectedProcedurePrice.currency,
+            locale,
+          )
+        : null,
     }),
     [
       sections,
@@ -1694,6 +1768,7 @@ export function useBookingFlow({
       expandedCategoryIds,
       locale,
       salonId,
+      selectedPhoneCountry: selectedPhoneCountry ?? null,
       selectedDateKey,
       selectedSlotStart: selectedSlot?.start ?? null,
       serviceSections: serviceSections.map((section) => ({
@@ -1706,7 +1781,7 @@ export function useBookingFlow({
         selectedProcedureKey: section.selectedProcedureKey,
       })),
       updatedAt: Date.now(),
-      version: 3 as const,
+      version: 4 as const,
     };
 
     if (hasMeaningfulBookingDraft(draftSnapshot)) {
@@ -1730,6 +1805,7 @@ export function useBookingFlow({
     hasHydratedDraft,
     locale,
     salonId,
+    selectedPhoneCountry,
     selectedDateKey,
     selectedSlot,
     serviceSections,
@@ -1772,6 +1848,7 @@ export function useBookingFlow({
     salonProfile,
     sections,
     selectedDateKey,
+    selectedPhoneCountry,
     selectedProcedure,
     selectedProcedurePrice,
     selectedSlot,
@@ -1780,6 +1857,7 @@ export function useBookingFlow({
     setClientName,
     setClientPhone,
     setFormErrors,
+    setSelectedPhoneCountry,
     setSelectedDateKey,
     setSelectedSlot,
     slotCalendarDays,

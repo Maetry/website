@@ -9,13 +9,16 @@ import {
   type SetStateAction,
 } from "react";
 
-import { useTranslations } from "next-intl";
+import type { CountryCode } from "libphonenumber-js";
+import { useLocale, useTranslations } from "next-intl";
 import { Input, Text, XStack, YStack } from "tamagui";
 
 import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
 import type { BookingPlatformVariant } from "@/src/features/booking/utils/platform";
 
 import { BookingSection } from "../../_shared/BookingSection";
+import { PhoneField } from "../../_shared/PhoneField";
+import { validatePhoneForCountry } from "../../_shared/phone";
 import { PrimaryAction } from "../../_shared/primitives";
 import { SectionSeparator } from "../../_shared/SectionSeparator";
 
@@ -46,29 +49,37 @@ type DetailsStepProps = {
   isSubmitting: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   platform: BookingPlatformVariant;
+  selectedPhoneCountry?: CountryCode;
   submitErrorNonce: number;
   setClientName: Dispatch<SetStateAction<string>>;
   setClientPhone: Dispatch<SetStateAction<string>>;
   setFormErrors: Dispatch<SetStateAction<{ name?: string; phone?: string }>>;
+  setSelectedPhoneCountry: Dispatch<SetStateAction<CountryCode | undefined>>;
 };
 
 function DetailsNamePhoneFields({
   clientName,
   clientPhone,
   formErrors,
+  locale,
   platform,
+  selectedPhoneCountry,
   setClientName,
   setClientPhone,
   setFormErrors,
+  setSelectedPhoneCountry,
   t,
 }: {
   clientName: string;
   clientPhone: string;
   formErrors: { name?: string; phone?: string };
+  locale: string;
   platform: BookingPlatformVariant;
+  selectedPhoneCountry?: CountryCode;
   setClientName: Dispatch<SetStateAction<string>>;
   setClientPhone: Dispatch<SetStateAction<string>>;
   setFormErrors: Dispatch<SetStateAction<{ name?: string; phone?: string }>>;
+  setSelectedPhoneCountry: Dispatch<SetStateAction<CountryCode | undefined>>;
   t: (key: string) => string;
 }) {
   const surface = getBookingSurfaceStyle(platform);
@@ -104,18 +115,25 @@ function DetailsNamePhoneFields({
       <SectionSeparator marginTop={0} platform={platform} variant="form" />
 
       <YStack paddingHorizontal={0} paddingVertical={0} width="100%">
-        <Input
-          aria-label={t("fieldPhoneLabel")}
-          autoComplete="tel"
-          backgroundColor="$chromeBackground"
-          borderRadius={0}
-          color="$textPrimary"
-          fontSize={17}
-          inputMode="tel"
+        <PhoneField
+          country={selectedPhoneCountry}
+          fieldProps={bookingDetailsFieldProps}
+          label={t("fieldPhoneLabel")}
+          locale={locale}
           minHeight={surface.details.inputMinHeight}
-          {...bookingDetailsFieldProps}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            setClientPhone(event.target.value);
+          onBlur={(country) => {
+            if (
+              clientPhone &&
+              !validatePhoneForCountry(clientPhone, country)
+            ) {
+              setFormErrors((current) => ({
+                ...current,
+                phone: t("errors.validationPhone"),
+              }));
+            }
+          }}
+          onChange={(value) => {
+            setClientPhone(value);
             if (formErrors.phone) {
               setFormErrors((current) => ({
                 ...current,
@@ -123,10 +141,17 @@ function DetailsNamePhoneFields({
               }));
             }
           }}
-          placeholder={t("fieldPhonePlaceholder")}
-          placeholderTextColor="$textSecondary"
+          onCountryChange={(nextCountry) => {
+            setSelectedPhoneCountry(nextCountry);
+            if (formErrors.phone) {
+              setFormErrors((current) => ({
+                ...current,
+                phone: undefined,
+              }));
+            }
+          }}
+          placeholderFallback={t("fieldPhonePlaceholder")}
           value={clientPhone}
-          width="100%"
         />
       </YStack>
     </YStack>
@@ -142,12 +167,15 @@ export function DetailsStep({
   isSubmitting,
   onSubmit,
   platform,
+  selectedPhoneCountry,
   submitErrorNonce,
   setClientName,
   setClientPhone,
   setFormErrors,
+  setSelectedPhoneCountry,
 }: DetailsStepProps) {
   const t = useTranslations("booking");
+  const locale = useLocale();
   const surface = getBookingSurfaceStyle(platform);
   const [isShaking, setIsShaking] = useState(false);
   const footerMessage =
@@ -190,10 +218,13 @@ export function DetailsStep({
             clientName={clientName}
             clientPhone={clientPhone}
             formErrors={formErrors}
+            locale={locale}
             platform={platform}
+            selectedPhoneCountry={selectedPhoneCountry}
             setClientName={setClientName}
             setClientPhone={setClientPhone}
             setFormErrors={setFormErrors}
+            setSelectedPhoneCountry={setSelectedPhoneCountry}
             t={t}
           />
         </BookingSection>

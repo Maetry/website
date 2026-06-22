@@ -96,6 +96,25 @@ function pickInitialPlanCode(
   return anchorPlan?.code ?? "grow";
 }
 
+function pickInitialInterval(
+  catalog: BillingCatalog,
+  summary: BillingSummary,
+): BillingPlanIntervalValue {
+  const initialPlanCode = pickInitialPlanCode(catalog, summary);
+  const initialPlan =
+    catalog.plans.find((plan) => plan.code === initialPlanCode) ?? null;
+
+  if (initialPlan?.monthly) {
+    return "monthly";
+  }
+
+  if (initialPlan?.yearly) {
+    return "yearly";
+  }
+
+  return "monthly";
+}
+
 function planRank(code?: string | null) {
   switch (code) {
     case "free":
@@ -399,9 +418,7 @@ export default function BillingPage({
   const pagePaddingX = "$2";
   const [billingSummary, setBillingSummary] = useState(summary);
   const [selectedInterval, setSelectedInterval] =
-    useState<BillingPlanIntervalValue>(
-      summary.currentSubscription?.interval ?? "monthly",
-    );
+    useState<BillingPlanIntervalValue>(pickInitialInterval(catalog, summary));
   const [selectedPlanCode, setSelectedPlanCode] = useState<
     BillingCatalogPlanItem["code"]
   >(pickInitialPlanCode(catalog, summary));
