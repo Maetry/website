@@ -569,6 +569,59 @@ function buildSelectedService(
   };
 }
 
+function buildCreateSelectedService(
+  selection: SelectionOption,
+  selectedMasterId: string | null,
+  selectedSlot: SelectedSlot,
+): PublicBookingCreatePayload["selectedService"] {
+  const normalizedInterval = {
+    end: new Date(selectedSlot.interval.end).toISOString(),
+    start: new Date(selectedSlot.interval.start).toISOString(),
+  };
+
+  if (selection.kind === "procedure") {
+    return {
+      items: [{
+        procedure: {
+          ...(selectedMasterId ? { executionId: selectedMasterId } : {}),
+          procedureId: selection.id,
+          time: selectedSlot.slot?.procedures[0]?.time ?? normalizedInterval,
+        },
+      }],
+    };
+  }
+
+  const slotProcedureTimeByKey = new Map<string, PublicDateInterval>();
+  const slotProcedureTimeByProcedureId = new Map<string, PublicDateInterval>();
+
+  for (const item of selectedSlot.slot?.procedures ?? []) {
+    slotProcedureTimeByKey.set(`${item.id}:${item.executorId}`, item.time);
+    if (!slotProcedureTimeByProcedureId.has(item.id)) {
+      slotProcedureTimeByProcedureId.set(item.id, item.time);
+    }
+  }
+
+  return {
+    items: [{
+      bundle: {
+        bundleId: selection.id,
+        items: selection.procedures.map((procedure) => {
+          const time =
+            slotProcedureTimeByKey.get(`${procedure.id}:${selectedMasterId ?? ""}`) ??
+            slotProcedureTimeByProcedureId.get(procedure.id) ??
+            undefined;
+
+          return {
+            ...(selectedMasterId ? { executionId: selectedMasterId } : {}),
+            procedureId: procedure.id,
+            ...(time ? { time } : {}),
+          };
+        }),
+      },
+    }],
+  };
+}
+
 function Avatar({
   imageUrl,
   name,
@@ -1133,9 +1186,10 @@ export function PublicBookingFlow({
       return;
     }
 
-    const selectedService = buildSelectedService(
+    const selectedService = buildCreateSelectedService(
       selectedSelection,
       selectedMasterId,
+      selectedSlot,
     );
 
     if (submitGuardRef.current) {
@@ -1152,7 +1206,10 @@ export function PublicBookingFlow({
         clientName: clientName.trim(),
         clientPhone: normalizedPhone,
         selectedService,
-        time: selectedSlot.interval,
+        time: {
+          end: new Date(selectedSlot.interval.end).toISOString(),
+          start: new Date(selectedSlot.interval.start).toISOString(),
+        },
       };
       const createdBooking = await createPublicBooking(salonId, payload);
 

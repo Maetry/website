@@ -41,11 +41,6 @@ export type ApiError = {
     status: number;
 };
 
-/**
- * Статус записи (appointment)
- */
-export type AppointmentStatus = 'confirmed' | 'paid' | 'arrived' | 'inProgress' | 'completed' | 'noShow' | 'cancelled';
-
 export type AuthInternalUserInfo = {
     avatar?: string;
     haveRecoveryMethod: boolean;
@@ -455,49 +450,6 @@ export type CursorPageMeta = {
     nextCursor?: string;
 };
 
-/**
- * Запись (appointment) с точки зрения клиента — салон, адрес, назначения.
- */
-export type CustomerAppointmentResponsesAppointment = {
-    address: Address;
-    assignments: Array<CustomerAppointmentResponsesAssignment>;
-    bookingId: string;
-    currency: string;
-    description?: string;
-    discountPrice?: number;
-    endTime: string;
-    finalPrice: number;
-    id: string;
-    salonId: string;
-    salonLogo: string;
-    salonName: string;
-    startTime: string;
-    status: AppointmentStatus;
-    timezoneId: string;
-    title: string;
-};
-
-/**
- * Назначение в рамках записи (процедура, сотрудник, время) — вид клиента.
- */
-export type CustomerAppointmentResponsesAssignment = {
-    discountPrice?: number;
-    employeeAvatar?: string;
-    employeeId: string;
-    employeeName: string;
-    endTime: string;
-    id: string;
-    price: number;
-    procedureId?: string;
-    startTime: string;
-    title: string;
-};
-
-/**
- * Список записей клиента (массив CustomerAppointment).
- */
-export type CustomerAppointmentResponsesList = Array<CustomerAppointmentResponsesAppointment>;
-
 export type CustomerInternalContact = ContactPointInput;
 
 export type CustomerParametersRegistration = {
@@ -521,61 +473,6 @@ export type DeviceResponsesFull = {
     id: string;
     version?: VersionType;
 };
-
-/**
- * Тело PATCH — либо status, либо оба startTime и endTime для обновления времени записи.
- */
-export type EmployeeAppointmentParametersUpdate = {
-    endTime?: string;
-    startTime?: string;
-    status?: AppointmentStatus;
-};
-
-/**
- * Запись (appointment) с точки зрения работника — клиент, контакты, назначения.
- */
-export type EmployeeAppointmentResponsesAppointment = {
-    address: Address;
-    assignments: Array<EmployeeAppointmentResponsesAssignment>;
-    bookingId: string;
-    clientAvatar: string;
-    clientContacts: Array<CommunicationContact>;
-    clientId: string;
-    clientName: string;
-    currency: string;
-    description?: string;
-    discountPrice?: number;
-    endTime: string;
-    finalPrice: number;
-    id: string;
-    salonId: string;
-    startTime: string;
-    status: AppointmentStatus;
-    timezoneId: string;
-    title: string;
-};
-
-/**
- * Назначение в рамках записи (процедура, сотрудник, контакты) — вид работника.
- */
-export type EmployeeAppointmentResponsesAssignment = {
-    discountPrice?: number;
-    employeeAvatar: string;
-    employeeContacts: Array<CommunicationContact>;
-    employeeId: string;
-    employeeName: string;
-    endTime: string;
-    id: string;
-    price: number;
-    procedureId?: string;
-    startTime: string;
-    title: string;
-};
-
-/**
- * Список записей салона для работника (массив EmployeeAppointment).
- */
-export type EmployeeAppointmentResponsesList = Array<EmployeeAppointmentResponsesAppointment>;
 
 export type EmployeeInternalContact = ContactPointInput;
 
@@ -643,44 +540,6 @@ export type FavoriteResponsesSalon = {
     type: SalonType;
 };
 
-export type BookingResponsesBooking = {
-    id: string;
-    createdAt: string;
-    status: BookingStatus;
-    salonId: string;
-    salonName: string;
-    salonLogo: string;
-    /**
-     * Алиас для аватара салона в карточках списка (может совпадать с salonLogo).
-     */
-    salonAvatar?: string;
-    title: string;
-    /**
-     * Основной заголовок процедуры/бандла для компактной карточки.
-     */
-    procedureTitle?: string;
-    /**
-     * Краткая строка исполнителей для отображения в списке.
-     */
-    executorsSummary?: string;
-    description?: string;
-    items: Array<CustomerBookingItem>;
-    address?: Address;
-    startTime?: string;
-    endTime?: string;
-    timezoneId: string;
-    finalPrice: number;
-    discountPrice?: number;
-    currency: string;
-};
-
-export type BookingResponsesCursorPage = {
-    data: Array<BookingResponsesBooking>;
-    meta: CursorPageMeta;
-};
-
-export type BookingResponsesOpen = Array<BookingResponsesBooking>;
-
 export type GetClientModelProfileResponse = ModelProfileResponsesFull;
 
 /**
@@ -709,6 +568,22 @@ export type SalonResponsesProfile = {
     name: string;
     type: SalonType;
     description?: string;
+    /**
+     * Минимальный срок до начала онлайн-записи в минутах.
+     */
+    onlineBookingMinAdvanceMinutes?: number;
+    /**
+     * Максимальный срок до начала онлайн-записи в минутах.
+     */
+    onlineBookingMaxAdvanceMinutes?: number;
+    /**
+     * Текст политики отмены для онлайн-записи.
+     */
+    cancellationPolicy?: string;
+    /**
+     * Дополнительный текст для новых клиентов.
+     */
+    newClientWelcomeText?: string;
     logo: string;
     isActive: boolean;
     isFavorite: boolean;
@@ -727,33 +602,6 @@ export type SearchResponsesFull = {
  * Бинарное содержимое .pkpass файла (Apple Wallet)
  */
 export type AppleWalletPassBinary = Blob | File;
-
-export type WorkspaceBookingResponsesBooking = {
-    id: string;
-    createdAt: string;
-    status: BookingStatus;
-    salonId: string;
-    salonName: string;
-    salonLogo: string;
-    clientId?: string;
-    clientName?: string;
-    title: string;
-    description?: string;
-    address?: Address;
-    startTime?: string;
-    endTime?: string;
-    currency: string;
-    timezoneId: string;
-    finalPrice: number;
-    discountPrice?: number;
-    items: Array<EmployeeBookingItem>;
-    updatedAt?: string;
-};
-
-export type WorkspaceBookingResponsesCursorPage = {
-    data: Array<WorkspaceBookingResponsesBooking>;
-    meta: CursorPageMeta;
-};
 
 export type ProductResponsesProduct = {
     id: string;
@@ -809,12 +657,22 @@ export type OfftimeParametersCreate = {
     reason?: string;
 };
 
+export type OfftimeParametersRetrieve = {
+    owners: Array<TimetableOwner>;
+    period: SafeDateInterval;
+};
+
 export type OfftimeResponsesFull = {
     coefficient: number;
     id: string;
     interval: SafeDateInterval;
     reason?: string;
     timeZoneId: string;
+};
+
+export type OfftimeResponsesOwner = {
+    owner: TimetableOwner;
+    offtimes: Array<OfftimeResponsesFull>;
 };
 
 export type Pagination = {
@@ -1601,12 +1459,32 @@ export type Wage = {
     price: Price;
 };
 
+export type WorkspaceBookingParametersRetrieve = {
+    period: SafeDateInterval;
+};
+
 export type WorkspaceInternalContact = ContactPointInput;
 
 export type WorkspaceParametersCreate = {
     address: Address;
     contact?: ContactPointInput;
     description?: string;
+    /**
+     * Минимальный срок до начала записи в минутах.
+     */
+    onlineBookingMinAdvanceMinutes?: number;
+    /**
+     * Максимальный срок до начала записи в минутах.
+     */
+    onlineBookingMaxAdvanceMinutes?: number;
+    /**
+     * Текст политики отмены для онлайн-записи.
+     */
+    cancellationPolicy?: string;
+    /**
+     * Дополнительный текст для новых клиентов.
+     */
+    newClientWelcomeText?: string;
     localeId: string;
     /**
      * ISO 4217 currency code.
@@ -1622,9 +1500,21 @@ export type WorkspaceParametersPatch = {
     address?: Address;
     description?: string;
     /**
-     * ISO 4217 currency code.
+     * Минимальный срок до начала записи в минутах. Например, `300` означает "не раньше чем за 5 часов".
      */
-    currencyCode?: string;
+    onlineBookingMinAdvanceMinutes?: number;
+    /**
+     * Максимальный срок до начала записи в минутах. Например, `43200` означает "не позднее чем за 30 дней".
+     */
+    onlineBookingMaxAdvanceMinutes?: number;
+    /**
+     * Текст политики отмены, который показывается клиенту во время онлайн-записи.
+     */
+    cancellationPolicy?: string;
+    /**
+     * Дополнительный текст, который показывается новым клиентам при онлайн-записи.
+     */
+    newClientWelcomeText?: string;
     logo?: string;
     name?: string;
 };
@@ -1633,6 +1523,22 @@ export type WorkspaceResponsesFull = {
     address: Address;
     createdAt: string;
     description?: string;
+    /**
+     * Минимальный срок до начала записи в минутах.
+     */
+    onlineBookingMinAdvanceMinutes?: number;
+    /**
+     * Максимальный срок до начала записи в минутах.
+     */
+    onlineBookingMaxAdvanceMinutes?: number;
+    /**
+     * Текст политики отмены для онлайн-записи.
+     */
+    cancellationPolicy?: string;
+    /**
+     * Дополнительный текст для новых клиентов.
+     */
+    newClientWelcomeText?: string;
     employeeToken: Token;
     id: string;
     inviteLink?: string;
@@ -1660,6 +1566,10 @@ export type WorkspaceResponsesPartial = {
 export type CreateBookingSelectedProcedure = {
     procedureId: string;
     executionId?: string;
+    /**
+     * Необязательно. Явные начало и конец услуги (как в ответе search-slots). Если время выбрано клиентом — запись может быть авто-подтверждена; если опущено (заявка без точного времени) — согласуется вручную, без auto-confirm.
+     */
+    time?: SafeDateInterval;
 };
 
 export type CreateBookingSelectedServiceProcedure = {
@@ -1669,6 +1579,10 @@ export type CreateBookingSelectedServiceProcedure = {
 export type CreateBookingSelectedBundleItem = {
     procedureId: string;
     executionId?: string;
+    /**
+     * Необязательно. Явные начало и конец подпроцедуры (как в ответе search-slots). Если опущено — согласуется вручную, без auto-confirm.
+     */
+    time?: SafeDateInterval;
 };
 
 export type CreateBookingSelectedBundle = {
@@ -2234,7 +2148,7 @@ export type WorkspaceBookingClosedReason = 'completed' | 'abandoned' | 'rejected
 export type WorkspacePendingActor = 'client' | 'staff';
 
 /**
- * Полная карточка клиента в контексте booking.
+ * Полная карточка клиента в контексте workspace booking.
  */
 export type WorkspaceClientFull = {
     id: string;
@@ -2258,6 +2172,10 @@ export type WorkspaceSelectedProcedure = {
      * Предпочтительный сотрудник для процедуры.
      */
     staffId?: string;
+    /**
+     * Явные начало и конец услуги (как в ответе search-slots). Если задано — используется напрямую при подтверждении; общее окно booking вычисляется как min(start)…max(end) по всем услугам. Если опущено — auto-confirm недоступен, запись остаётся pending до ручного согласования.
+     */
+    time?: SafeDateInterval;
 };
 
 /**
@@ -2281,13 +2199,9 @@ export type WorkspaceSelectedBundleItem = {
      */
     staffId?: string;
     /**
-     * Смещение от начала booking в минутах.
+     * Явные начало и конец подпроцедуры (как в ответе search-slots). Параллельные подпроцедуры разных мастеров имеют пересекающиеся интервалы — это допустимо. Если задано — используется напрямую.
      */
-    offsetMinutes?: number;
-    /**
-     * Длительность элемента в минутах.
-     */
-    durationMinutes?: number;
+    time?: SafeDateInterval;
 };
 
 /**
@@ -2460,12 +2374,7 @@ export type WorkspaceAppointmentParametersNoShow = {
 };
 
 /**
- * Срез списка booking для экрана workspace.
- */
-export type WorkspaceBookingListState = 'active' | 'history' | 'all';
-
-/**
- * Короткая карточка клиента для списков workspace.
+ * Короткая карточка клиента для списков workspace booking.
  */
 export type WorkspaceClientShort = {
     id: string;
@@ -2489,19 +2398,6 @@ export type WorkspaceClientShort = {
 };
 
 /**
- * Краткая информация о текущем appointment для списков.
- */
-export type WorkspaceAppointmentSummary = {
-    id: string;
-    status: WorkspaceAppointmentStatus;
-    startTime: string;
-    endTime: string;
-    assignments?: Array<WorkspaceAssignment>;
-    price?: Money;
-    paymentStatus: WorkspacePaymentStatus;
-};
-
-/**
  * Элемент списка bookings в workspace.
  */
 export type WorkspaceBookingListItem = {
@@ -2510,7 +2406,7 @@ export type WorkspaceBookingListItem = {
      * Ревизия booking для optimistic locking.
      */
     revision: number;
-    status: WorkspaceBookingStatus;
+    bookingStatus: WorkspaceBookingStatus;
     closedReason?: WorkspaceBookingClosedReason;
     pendingActor?: WorkspacePendingActor;
     /**
@@ -2529,7 +2425,18 @@ export type WorkspaceBookingListItem = {
     displayTitle: string;
     totalPrice?: Money;
     paymentStatus: WorkspacePaymentStatus;
-    currentAppointment?: WorkspaceAppointmentSummary;
+    /**
+     * Идентификатор текущего appointment. Отсутствует, если appointment ещё не создан.
+     */
+    appointmentId?: string;
+    /**
+     * Статус текущего appointment. Отсутствует, если appointment ещё не создан.
+     */
+    appointmentStatus?: WorkspaceAppointmentStatus;
+    /**
+     * Сегменты выполнения услуг. Заполняются из appointment или из данных booking, если appointment ещё нет.
+     */
+    assignments?: Array<WorkspaceAssignment>;
     allowedActions: Array<WorkspaceAllowedAction>;
 };
 
@@ -2550,13 +2457,13 @@ export type WorkspaceBookingParametersCreate = {
     clientId: string;
     selectedService: WorkspaceSelectedService;
     /**
-     * Запрошенное время начала записи.
+     * Необязательно. Общее начало записи. Если опущено — вычисляется как минимальный start среди времён выбранных услуг.
      */
-    requestedStartTime: string;
+    requestedStartTime?: string;
     /**
-     * Запрошенное время окончания записи.
+     * Необязательно. Общий конец записи. Если опущено — вычисляется как максимальный end среди времён выбранных услуг.
      */
-    requestedEndTime: string;
+    requestedEndTime?: string;
     /**
      * Если true, booking сразу подтверждается.
      */
@@ -2838,47 +2745,6 @@ export type ServiceParametersUpdate = {
     tags?: Array<ServiceTags>;
     title?: string;
 };
-
-/**
- * Статус запроса на запись (booking)
- */
-export type BookingStatus = 'pendingClient' | 'pendingMaster' | 'confirmed' | 'cancelled';
-
-export type CustomerBookingExecutor = {
-    id: string;
-    name: string;
-    avatar: string;
-};
-
-export type CustomerBookingItem = {
-    id: string;
-    procedureId: string;
-    procedureName: string;
-    executor?: CustomerBookingExecutor;
-};
-
-export type EmployeeBookingExecutor = {
-    id: string;
-    name: string;
-    avatar: string;
-};
-
-export type EmployeeBookingItem = {
-    id: string;
-    procedureId: string;
-    procedureName: string;
-    executor?: EmployeeBookingExecutor;
-};
-
-/**
- * Список bookings клиента (пагинация через page/per)
- */
-export type BookingResponsesList = Array<BookingResponsesBooking>;
-
-/**
- * Список bookings салона (пагинация опциональна)
- */
-export type WorkspaceBookingResponsesList = Array<WorkspaceBookingResponsesBooking>;
 
 export type ManualEventManagerConnectMetaParametersWritable = {
     metaPixelId: string;
@@ -7966,10 +7832,9 @@ export type GetWorkspaceBookingsData = {
     path?: never;
     query: {
         /**
-         * Состояние выборки для списка. `active` — актуальные/рабочие записи, `history` — завершённые и закрытые.
-         *
+         * Параметры выборки bookings (период).
          */
-        state: WorkspaceBookingListState;
+        parameters: WorkspaceBookingParametersRetrieve;
     };
     url: '/v1/workspace/bookings';
 };
@@ -7997,7 +7862,7 @@ export type GetWorkspaceBookingsError = GetWorkspaceBookingsErrors[keyof GetWork
 
 export type GetWorkspaceBookingsResponses = {
     /**
-     * Список bookings для заданного состояния.
+     * Список bookings за указанный период.
      */
     200: WorkspaceBookingListResponse;
 };
@@ -10596,6 +10461,66 @@ export type PutWorkspaceNotificationsReadedByIdResponses = {
     200: unknown;
 };
 
+export type GetWorkspaceOfftimeData = {
+    body?: never;
+    headers: {
+        /**
+         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
+         */
+        'Device-ID': string;
+    };
+    path?: never;
+    query: {
+        /**
+         * Параметры выборки offtime (владельцы и период).
+         */
+        parameters: OfftimeParametersRetrieve;
+    };
+    url: '/v1/workspace/offtime';
+};
+
+export type GetWorkspaceOfftimeErrors = {
+    /**
+     * Bad request
+     */
+    400: ApiError;
+    /**
+     * Unauthorized
+     */
+    401: ApiError;
+    /**
+     * Forbidden
+     */
+    403: ApiError;
+    /**
+     * Not found
+     */
+    404: ApiError;
+    /**
+     * Conflict
+     */
+    409: ApiError;
+    /**
+     * Validation failed
+     */
+    422: ApiError;
+    /**
+     * Internal server error
+     */
+    default: ApiError;
+};
+
+export type GetWorkspaceOfftimeError = GetWorkspaceOfftimeErrors[keyof GetWorkspaceOfftimeErrors];
+
+export type GetWorkspaceOfftimeResponses = {
+    /**
+     * OK
+     */
+    200: Array<OfftimeResponsesOwner>;
+};
+
+export type GetWorkspaceOfftimeResponse = GetWorkspaceOfftimeResponses[keyof GetWorkspaceOfftimeResponses];
+
 export type DeleteWorkspaceOfftimeByIdData = {
     body?: never;
     headers: {
@@ -10652,66 +10577,6 @@ export type DeleteWorkspaceOfftimeByIdResponses = {
 };
 
 export type DeleteWorkspaceOfftimeByIdResponse = DeleteWorkspaceOfftimeByIdResponses[keyof DeleteWorkspaceOfftimeByIdResponses];
-
-export type GetWorkspaceOfftimeByOwnerData = {
-    body?: never;
-    headers: {
-        /**
-         * Идентификатор устройства (UUID). Обязателен для авторизованных запросов.
-         */
-        'Device-ID': string;
-    };
-    path: {
-        /**
-         * Владелец расписания (employee:uuid или salon:uuid).
-         */
-        owner: TimetableOwner;
-    };
-    query?: never;
-    url: '/v1/workspace/offtime/owner/{owner}';
-};
-
-export type GetWorkspaceOfftimeByOwnerErrors = {
-    /**
-     * Bad request
-     */
-    400: ApiError;
-    /**
-     * Unauthorized
-     */
-    401: ApiError;
-    /**
-     * Forbidden
-     */
-    403: ApiError;
-    /**
-     * Not found
-     */
-    404: ApiError;
-    /**
-     * Conflict
-     */
-    409: ApiError;
-    /**
-     * Validation failed
-     */
-    422: ApiError;
-    /**
-     * Internal server error
-     */
-    default: ApiError;
-};
-
-export type GetWorkspaceOfftimeByOwnerError = GetWorkspaceOfftimeByOwnerErrors[keyof GetWorkspaceOfftimeByOwnerErrors];
-
-export type GetWorkspaceOfftimeByOwnerResponses = {
-    /**
-     * OK
-     */
-    200: Array<OfftimeResponsesFull>;
-};
-
-export type GetWorkspaceOfftimeByOwnerResponse = GetWorkspaceOfftimeByOwnerResponses[keyof GetWorkspaceOfftimeByOwnerResponses];
 
 export type PostWorkspaceOfftimeByOwnerData = {
     body: OfftimeParametersCreate;

@@ -371,9 +371,9 @@ function isSlotInFuture(slot: SlotInterval, nowTimestamp: number): boolean {
   return new Date(slot.start).getTime() > nowTimestamp;
 }
 
-function buildSelectedServiceItem(
+function buildSelectedServiceSearchItem(
   procedure: Procedure,
-): PublicBookingCreatePayload["selectedService"]["items"][number] {
+): PublicSearchSlotsBody["items"][number] {
   if (procedure.kind === "bundle") {
     return {
       bundle: {
@@ -398,7 +398,95 @@ function buildSelectedServiceBody(
   procedures: Procedure[],
 ): PublicSearchSlotsBody {
   return {
-    items: procedures.map((procedure) => buildSelectedServiceItem(procedure)),
+    items: procedures.map((procedure) => buildSelectedServiceSearchItem(procedure)),
+  };
+}
+
+function normalizeSlotInterval(slot: SlotInterval): SlotInterval {
+  return {
+    end: new Date(slot.end).toISOString(),
+    start: new Date(slot.start).toISOString(),
+  };
+}
+
+function findMatchingDetailedSlot(
+  slotsResponse: PublicSearchSlotsResponse | undefined,
+  selectedSlot: SlotInterval,
+) {
+  if (!slotsResponse || "intervals" in slotsResponse) {
+    return null;
+  }
+
+  return (
+    slotsResponse.slots.find(
+      (slot) =>
+        slot.total.start === selectedSlot.start && slot.total.end === selectedSlot.end,
+    ) ?? null
+  );
+}
+
+function buildCreateSelectedServiceItem(
+  procedure: Procedure,
+  selectedSlot: SlotInterval,
+  slotsResponse: PublicSearchSlotsResponse | undefined,
+): PublicBookingCreatePayload["selectedService"]["items"][number] {
+  const normalizedSelectedSlot = normalizeSlotInterval(selectedSlot);
+  const detailedSlot = findMatchingDetailedSlot(slotsResponse, selectedSlot);
+  const slotProcedureTimeByKey = new Map<string, SlotInterval>();
+  const slotProcedureTimeByProcedureId = new Map<string, SlotInterval>();
+
+  for (const item of detailedSlot?.procedures ?? []) {
+    slotProcedureTimeByKey.set(`${item.id}:${item.executorId}`, item.time);
+    if (!slotProcedureTimeByProcedureId.has(item.id)) {
+      slotProcedureTimeByProcedureId.set(item.id, item.time);
+    }
+  }
+
+  if (procedure.kind === "bundle") {
+    return {
+      bundle: {
+        bundleId: procedure.id,
+        items: (procedure.bundleItems ?? []).map((item) => {
+          const time =
+            slotProcedureTimeByKey.get(
+              `${item.procedureId}:${item.executionId ?? ""}`,
+            ) ??
+            slotProcedureTimeByProcedureId.get(item.procedureId) ??
+            undefined;
+
+          return {
+            ...(item.executionId ? { executionId: item.executionId } : {}),
+            procedureId: item.procedureId,
+            ...(time ? { time } : {}),
+          };
+        }),
+      },
+    };
+  }
+
+  const procedureTime =
+    slotProcedureTimeByKey.get(`${procedure.id}:${procedure.executionId ?? ""}`) ??
+    slotProcedureTimeByProcedureId.get(procedure.id) ??
+    normalizedSelectedSlot;
+
+  return {
+    procedure: {
+      ...(procedure.executionId ? { executionId: procedure.executionId } : {}),
+      procedureId: procedure.id,
+      time: procedureTime,
+    },
+  };
+}
+
+function buildCreateSelectedServiceBody(
+  procedures: Procedure[],
+  selectedSlot: SlotInterval,
+  slotsResponse: PublicSearchSlotsResponse | undefined,
+): PublicBookingCreatePayload["selectedService"] {
+  return {
+    items: procedures.map((procedure) =>
+      buildCreateSelectedServiceItem(procedure, selectedSlot, slotsResponse),
+    ),
   };
 }
 
@@ -1545,14 +1633,17 @@ export function useBookingFlow({
     setIsSubmitting(true);
 
     try {
+      const createSelectedServiceBody = buildCreateSelectedServiceBody(
+        selectedProcedures,
+        selectedSlot,
+        slotsQuery.data,
+      );
+
       const data = await createPublicBooking(salonId, {
         clientName: trimmedName,
         clientPhone: normalizedPhone,
-        selectedService: selectedServiceBody,
-        time: {
-          end: new Date(selectedSlot.end).toISOString(),
-          start: new Date(selectedSlot.start).toISOString(),
-        },
+        selectedService: createSelectedServiceBody,
+        time: normalizeSlotInterval(selectedSlot),
         ...(trackingId ? { trackingId } : {}),
       });
 
