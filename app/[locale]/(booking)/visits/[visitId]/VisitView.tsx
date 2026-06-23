@@ -266,7 +266,31 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
     appointment?.price?.currency,
     locale,
   );
-  const appointmentTitle = appointment?.procedureName ?? t("headline");
+  const appointmentProcedureNames =
+    appointment?.procedureNames?.length
+      ? appointment.procedureNames
+      : appointment?.procedureName
+        ? [appointment.procedureName]
+        : [];
+  const appointmentMasterNicknames =
+    appointment?.masterNicknames?.length
+      ? appointment.masterNicknames
+      : appointment?.masterNickname
+        ? [appointment.masterNickname]
+        : [];
+  const appointmentTitle = appointmentProcedureNames.length
+    ? new Intl.ListFormat(locale, {
+        style: "long",
+        type: "conjunction",
+      }).format(appointmentProcedureNames)
+    : t("headline");
+  const appointmentServices = appointmentProcedureNames.join("\n");
+  const appointmentSpecialists = appointmentMasterNicknames.length
+    ? new Intl.ListFormat(locale, {
+        style: "long",
+        type: "conjunction",
+      }).format(appointmentMasterNicknames)
+    : t("masterAny");
   const appointmentSalonName = salonName ?? t("salonFallbackName");
   const appointmentDateTime =
     appointmentDate && appointmentTime
@@ -511,19 +535,27 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
             padding="$4"
           >
             <YStack gap="$4">
-              {appointment.procedureName ? (
+              {appointmentProcedureNames.length ? (
                 <YStack gap="$3">
                   <VisitInfoRow
                     icon={<WalletCards size={18} />}
-                    label={t("summaryService")}
+                    label={t(
+                      appointmentProcedureNames.length > 1
+                        ? "summaryServices"
+                        : "summaryService",
+                    )}
                     platform={platform}
-                    value={appointment.procedureName}
+                    value={appointmentServices}
                   />
                   <VisitInfoRow
                     icon={<CheckCircle2 size={18} />}
-                    label={t("summarySpecialist")}
+                    label={t(
+                      appointmentMasterNicknames.length > 1
+                        ? "summarySpecialists"
+                        : "summarySpecialist",
+                    )}
                     platform={platform}
-                    value={appointment.masterNickname ?? t("masterAny")}
+                    value={appointmentSpecialists}
                   />
                   {appointmentPrice ? (
                     <VisitInfoRow
@@ -536,7 +568,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
                 </YStack>
               ) : null}
 
-              {appointment.procedureName ? <Separator /> : null}
+              {appointmentProcedureNames.length ? <Separator /> : null}
 
               {appointmentDate ? (
                 <YStack gap="$3">

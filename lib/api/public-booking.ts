@@ -7,14 +7,9 @@ import type {
   PublicBookingCreatePayload,
   PublicClickMetadata,
   PublicClickResponse,
-  PublicComplexSlot,
-  PublicComplexSlotProcedure,
-  PublicComplexSlotsResponse,
   PublicDateInterval,
   PublicLinkKind,
   PublicSalonCatalog,
-  PublicSalonCatalogComplex,
-  PublicSalonCatalogComplexProcedure,
   PublicSalonMaster,
   PublicSalonProfile,
   PublicSearchComplexBody,
@@ -74,12 +69,14 @@ export type PublicBookingVisit = {
   appointmentId?: string;
   masterId?: string;
   masterNickname?: string;
+  masterNicknames?: string[];
   price?: {
     amount?: number | null;
     currency?: string | null;
   };
   procedureId?: string;
   procedureName?: string;
+  procedureNames?: string[];
   salonAddress?: string;
   salonId?: string;
   salonLogo?: string;
@@ -185,28 +182,34 @@ function formatAddress(value?: PublicSalonProfile["address"]) {
 function adaptVisitToPublicBookingVisit(
   visit: SharedPublicBookingVisit,
 ): PublicBookingVisit {
-  const firstSelectedItem = visit.service.items[0];
-  const procedure =
-    firstSelectedItem && "procedure" in firstSelectedItem
-      ? firstSelectedItem.procedure
-      : undefined;
-  const bundle =
-    firstSelectedItem && "bundle" in firstSelectedItem
-      ? firstSelectedItem.bundle
-      : undefined;
-  const firstBundleProcedure = bundle?.procedures[0];
-  const executor = procedure?.executor ?? firstBundleProcedure?.executor;
+  const selectedProcedures = visit.service.items.flatMap((item) =>
+    "procedure" in item ? [item.procedure] : item.bundle.procedures,
+  );
+  const procedureNames = visit.service.items.map((item) =>
+    "procedure" in item ? item.procedure.title : item.bundle.title,
+  );
+  const masterNicknames = Array.from(
+    new Set(
+      selectedProcedures.flatMap((procedure) =>
+        procedure.executor?.name ? [procedure.executor.name] : [],
+      ),
+    ),
+  );
+  const firstProcedure = selectedProcedures[0];
+  const firstExecutor = firstProcedure?.executor;
 
   return {
     appointmentId: visit.id,
-    masterId: executor?.masterId,
-    masterNickname: executor?.name,
+    masterId: firstExecutor?.masterId,
+    masterNickname: masterNicknames[0],
+    masterNicknames,
     price: {
       amount: minorToMajor(visit.priceMinor),
       currency: visit.currency,
     },
-    procedureId: procedure?.id ?? firstBundleProcedure?.id,
-    procedureName: procedure?.title ?? bundle?.title,
+    procedureId: firstProcedure?.id,
+    procedureName: procedureNames[0],
+    procedureNames,
     salonAddress: formatAddress(visit.address),
     salonId: visit.salon.id,
     salonLogo: visit.salon.logoUrl,
