@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { AlertCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button, Paragraph, Spinner, Text, XStack, YStack } from "tamagui";
+import { Button, Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { ApiError } from "@/lib/api/error-handler";
 import { resolveShortLink, type PublicClickResponse } from "@/lib/api/public-booking";
@@ -21,6 +21,59 @@ type LinkState =
   | { status: "error"; message: string };
 
 const CANONICAL_CONSUMER_ORIGIN = "https://maetry.com";
+const SHORT_LINK_SPINNER_SIZE = 36;
+
+function ShortLinkSpinner() {
+  const radius = 14;
+  const circumference = 2 * Math.PI * radius;
+
+  return (
+    <svg
+      aria-label="Loading"
+      height={SHORT_LINK_SPINNER_SIZE}
+      role="progressbar"
+      style={{
+        color: "#007AFF",
+        display: "block",
+        flex: `0 0 ${SHORT_LINK_SPINNER_SIZE}px`,
+        height: SHORT_LINK_SPINNER_SIZE,
+        width: SHORT_LINK_SPINNER_SIZE,
+      }}
+      viewBox="0 0 32 32"
+      width={SHORT_LINK_SPINNER_SIZE}
+    >
+      <circle
+        cx="16"
+        cy="16"
+        fill="none"
+        opacity="0.2"
+        r={radius}
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <circle
+        cx="16"
+        cy="16"
+        fill="none"
+        r={radius}
+        stroke="currentColor"
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference * 0.75}
+        strokeLinecap="round"
+        strokeWidth="4"
+      >
+        <animateTransform
+          attributeName="transform"
+          dur="0.75s"
+          from="0 16 16"
+          repeatCount="indefinite"
+          to="360 16 16"
+          type="rotate"
+        />
+      </circle>
+    </svg>
+  );
+}
 
 function resolveLinkError(error: unknown, fallbackMessage: string) {
   if (error instanceof ApiError && error.message) {
@@ -320,7 +373,7 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
   if (state.status === "loading") {
     return (
       <LinkStatusScreen
-        icon={<Spinner size="large" color="$primary" />}
+        icon={<ShortLinkSpinner />}
         plain
         title=""
         description=""
