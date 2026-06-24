@@ -39,6 +39,8 @@
     "servicePriceExact": "{value}",
     "serviceValueFrom": "desde {value}",
     "serviceSpecialistsCount": "{count, plural, one {# especialista} other {# especialistas}}",
+    "serviceAccessMenOnly": "Solo para hombres",
+    "serviceAccessWomenOnly": "Solo para mujeres",
     "serviceSingleMaster": "Este servicio lo realiza {name}.",
     "masterTitle": "Elige un especialista",
     "masterHint": "Los especialistas se muestran según disponibilidad.",

@@ -30,6 +30,8 @@ import {
 } from "@/lib/api/error-handler";
 import {
   waitForPublicBooking,
+  getPublicSalonCatalog,
+  type PublicCatalogItemAccessType,
   type PublicBookingVisit,
 } from "@/lib/api/public-booking";
 import { isAbortError } from "@/lib/api/utils";
@@ -54,6 +56,20 @@ type VisitViewProps = {
   visitId: string;
   locale: string;
 };
+
+function getAccessTypeLabel(
+  accessType: PublicCatalogItemAccessType | undefined,
+  labels: { menOnly: string; womenOnly: string },
+) {
+  switch (accessType) {
+    case "menOnly":
+      return labels.menOnly;
+    case "womenOnly":
+      return labels.womenOnly;
+    default:
+      return null;
+  }
+}
 
 function parseValidDate(value?: string | null) {
   if (!value) {
@@ -191,6 +207,9 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
   const [error, setError] = useState<string | null>(null);
   const [salonName, setSalonName] = useState<string | null>(null);
   const [timeZoneId, setTimeZoneId] = useState<string>("UTC");
+  const [serviceAccessTypes, setServiceAccessTypes] = useState<
+    Record<string, PublicCatalogItemAccessType>
+  >({});
 
   useEffect(() => {
     const controller = new AbortController();
@@ -214,6 +233,36 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
 
         if (appointmentData.salonName) {
           setSalonName(appointmentData.salonName);
+        }
+
+        if (appointmentData.salonId) {
+          try {
+            const catalog = await getPublicSalonCatalog(
+              appointmentData.salonId,
+              {
+                locale,
+                signal: controller.signal,
+              },
+            );
+            const accessTypes = Object.fromEntries([
+              ...catalog.procedures.map((procedure) => [
+                `procedure:${procedure.id}`,
+                procedure.accessType,
+              ]),
+              ...catalog.bundles.map((bundle) => [
+                `bundle:${bundle.id}`,
+                bundle.accessType,
+              ]),
+            ]);
+
+            if (!controller.signal.aborted) {
+              setServiceAccessTypes(accessTypes);
+            }
+          } catch (catalogError) {
+            if (controller.signal.aborted || isAbortError(catalogError)) {
+              return;
+            }
+          }
         }
       } catch (err) {
         if (controller.signal.aborted || isAbortError(err)) {
@@ -243,7 +292,7 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
     return () => {
       controller.abort();
     };
-  }, [visitId, t]);
+  }, [locale, visitId, t]);
 
   const appointmentStartDate = parseValidDate(appointment?.time?.start);
   const appointmentEndDate = parseValidDate(appointment?.time?.end);
@@ -284,7 +333,21 @@ export function VisitView({ visitId, locale }: VisitViewProps) {
         type: "conjunction",
       }).format(appointmentProcedureNames)
     : t("headline");
-  const appointmentServices = appointmentProcedureNames.join("\n");
+  const appointmentServices = (
+    appointment?.serviceItems?.length
+      ? appointment.serviceItems.map((item) => {
+          const accessTypeLabel = getAccessTypeLabel(
+            serviceAccessTypes[`${item.kind}:${item.id}`],
+            {
+              menOnly: t("serviceAccessMenOnly"),
+              womenOnly: t("serviceAccessWomenOnly"),
+            },
+          );
+
+          return [item.title, accessTypeLabel].filter(Boolean).join(" · ");
+        })
+      : appointmentProcedureNames
+  ).join("\n");
   const appointmentSpecialists = appointmentMasterNicknames.length
     ? new Intl.ListFormat(locale, {
         style: "long",

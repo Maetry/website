@@ -1,4 +1,5 @@
 import type {
+  PublicCatalogItemAccessType,
   PublicPrice,
   PublicSalonCatalog,
   PublicSalonMaster,
@@ -43,6 +44,7 @@ export type BundleProcedureItem = {
 };
 
 export type Procedure = {
+  accessType: PublicCatalogItemAccessType;
   alias?: string;
   bundleDefinition?: NonNullable<PublicSalonCatalog>["bundles"][number];
   bundleItems?: BundleProcedureSelection[];
@@ -259,6 +261,7 @@ function buildBundleProcedure(
   ).size;
 
   return {
+    accessType: bundle.accessType,
     alias: bundle.title,
     bundleDefinition: bundle,
     bundleItems: selections,
@@ -302,6 +305,7 @@ export function adaptCatalogToProcedures(
       if (!executions.length) {
         return [
           {
+            accessType: procedure.accessType,
             alias: procedure.title,
             bundleItems: undefined,
             bundleSize: undefined,
@@ -334,6 +338,7 @@ export function adaptCatalogToProcedures(
             | undefined;
 
           return {
+            accessType: procedure.accessType,
             alias: procedure.title,
             bundleItems: undefined,
             bundleSize: undefined,

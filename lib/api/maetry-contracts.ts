@@ -14,6 +14,7 @@ import type {
   BillingSummary as SharedBillingSummary,
   BundlesHelpersBundleResponse,
   BundlesHelpersProcedureResponse,
+  CatalogItemAccessType,
   ClickParametersMagicLink,
   ClickResponsesMagicLink,
   MagicLinkKind,
@@ -42,6 +43,7 @@ export type PublicClickMetadata = ClickParametersMagicLink & {
 };
 
 export type PublicPrice = Price;
+export type PublicCatalogItemAccessType = CatalogItemAccessType;
 export type PublicAddress = Address;
 export type PublicSalonProfile = SalonResponsesProfile;
 export type PublicSalonMaster = SalonResponsesMaster;

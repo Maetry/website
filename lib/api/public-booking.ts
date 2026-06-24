@@ -23,6 +23,7 @@ import { isAbortError } from "./utils";
 export type {
   PublicAddress,
   PublicBookingCreatePayload,
+  PublicCatalogItemAccessType,
   PublicClickMetadata,
   PublicClickPayload,
   PublicClickResponse,
@@ -77,6 +78,11 @@ export type PublicBookingVisit = {
   procedureId?: string;
   procedureName?: string;
   procedureNames?: string[];
+  serviceItems?: Array<{
+    id: string;
+    kind: "bundle" | "procedure";
+    title: string;
+  }>;
   salonAddress?: string;
   salonId?: string;
   salonLogo?: string;
@@ -188,6 +194,19 @@ function adaptVisitToPublicBookingVisit(
   const procedureNames = visit.service.items.map((item) =>
     "procedure" in item ? item.procedure.title : item.bundle.title,
   );
+  const serviceItems = visit.service.items.map((item) =>
+    "procedure" in item
+      ? {
+          id: item.procedure.id,
+          kind: "procedure" as const,
+          title: item.procedure.title,
+        }
+      : {
+          id: item.bundle.id,
+          kind: "bundle" as const,
+          title: item.bundle.title,
+        },
+  );
   const masterNicknames = Array.from(
     new Set(
       selectedProcedures.flatMap((procedure) =>
@@ -214,6 +233,7 @@ function adaptVisitToPublicBookingVisit(
     salonId: visit.salon.id,
     salonLogo: visit.salon.logoUrl,
     salonName: visit.salon.name,
+    serviceItems,
     time:
       visit.startTime && visit.endTime
         ? {

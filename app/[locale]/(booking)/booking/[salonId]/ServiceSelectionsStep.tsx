@@ -12,6 +12,7 @@ import {
   YStack,
 } from "tamagui";
 
+import type { PublicCatalogItemAccessType } from "@/lib/api/public-booking";
 import type {
   Procedure,
   ProcedureGroup,
@@ -64,6 +65,20 @@ type ServiceSelectionsStepProps = {
   proceduresLoading: boolean;
   sections: BookingServiceSection[];
 };
+
+function getAccessTypeLabel(
+  accessType: PublicCatalogItemAccessType | undefined,
+  labels: { menOnly: string; womenOnly: string },
+) {
+  switch (accessType) {
+    case "menOnly":
+      return labels.menOnly;
+    case "womenOnly":
+      return labels.womenOnly;
+    default:
+      return undefined;
+  }
+}
 
 function SectionFooter({
   collapseLabel,
@@ -258,7 +273,6 @@ function SectionActionMenu({
 
 export function ServiceSelectionsStep({
   canAddAnotherService,
-  currentVisualStep,
   locale,
   onAddService,
   onRequestSectionAction,
@@ -337,6 +351,14 @@ export function ServiceSelectionsStep({
           : !section.selectedProcedure
             ? t("serviceSectionChooseMasterTitle", { number: sectionNumber })
             : t("serviceSectionSelectedTitle", { number: sectionNumber });
+        const selectedAccessTypeLabel = getAccessTypeLabel(
+          section.selectedProcedure?.accessType ??
+            section.selectedGroup?.procedures[0]?.accessType,
+          {
+            menOnly: t("serviceAccessMenOnly"),
+            womenOnly: t("serviceAccessWomenOnly"),
+          },
+        );
 
         return (
           <BookingSection
@@ -401,6 +423,26 @@ export function ServiceSelectionsStep({
                     durationValues.size > 1 && groupDurationValue
                       ? t("serviceValueFrom", { value: groupDurationValue })
                       : groupDurationValue;
+                  const accessTypeLabel = getAccessTypeLabel(
+                    group.procedures[0]?.accessType,
+                    {
+                      menOnly: t("serviceAccessMenOnly"),
+                      womenOnly: t("serviceAccessWomenOnly"),
+                    },
+                  );
+                  const specialistsLabel =
+                    group.procedures[0]?.kind === "bundle"
+                      ? t("serviceSpecialistsCount", {
+                          count: group.procedures[0].bundleSpecialistCount ?? 0,
+                        })
+                      : group.procedures.length > 1
+                        ? t("serviceSpecialistsCount", {
+                            count: group.procedures.length,
+                          })
+                        : undefined;
+                  const subtitle = [accessTypeLabel, specialistsLabel]
+                    .filter(Boolean)
+                    .join(" · ");
 
                   return (
                     <YStack key={group.id}>
@@ -420,19 +462,7 @@ export function ServiceSelectionsStep({
                         }
                         overlineUppercase={false}
                         platform={platform}
-                        subtitle={
-                          group.procedures[0]?.kind === "bundle"
-                            ? t("serviceSpecialistsCount", {
-                                count:
-                                  group.procedures[0].bundleSpecialistCount ??
-                                  0,
-                              })
-                            : group.procedures.length > 1
-                              ? t("serviceSpecialistsCount", {
-                                  count: group.procedures.length,
-                                })
-                            : undefined
-                        }
+                        subtitle={subtitle || undefined}
                         tall={group.procedures[0]?.kind === "bundle"}
                         title={group.title}
                       />
@@ -469,6 +499,15 @@ export function ServiceSelectionsStep({
                       >
                         {section.selectedGroup.title}
                       </Text>
+                      {selectedAccessTypeLabel ? (
+                        <Paragraph
+                          color="$textSecondary"
+                          fontSize={surface.row.subtitleFontSize}
+                          lineHeight={surface.row.subtitleLineHeight}
+                        >
+                          {selectedAccessTypeLabel}
+                        </Paragraph>
+                      ) : null}
                     </YStack>
 
                     <ServiceSummaryMeta
@@ -610,6 +649,7 @@ export function ServiceSelectionsStep({
                   ctaLabel={t("editSelectionShort")}
                   onPress={() => onSectionEditConfirm(section.id)}
                   platform={platform}
+                  subtitle={selectedAccessTypeLabel}
                   title={section.selectedGroup.title}
                 />
                 <SectionSeparator platform={platform} />
@@ -700,9 +740,14 @@ export function ServiceSelectionsStep({
                       fontSize={surface.row.subtitleFontSize}
                       lineHeight={surface.row.subtitleLineHeight}
                     >
-                      {section.selectedProcedure.masterNickname ??
-                        section.selectedProcedure.alias ??
-                        t("masterAny")}
+                      {[
+                        selectedAccessTypeLabel,
+                        section.selectedProcedure.masterNickname ??
+                          section.selectedProcedure.alias ??
+                          t("masterAny"),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </Paragraph>
                   </YStack>
 

@@ -39,6 +39,8 @@
     "servicePriceExact": "{value}",
     "serviceValueFrom": "от {value}",
     "serviceSpecialistsCount": "{count, plural, one {# специалист} few {# специалиста} many {# специалистов} other {# специалиста}}",
+    "serviceAccessMenOnly": "Только для мужчин",
+    "serviceAccessWomenOnly": "Только для женщин",
     "serviceSingleMaster": "Эту услугу выполняет {name}.",
     "masterTitle": "Выберите специалиста",
     "masterHint": "Специалисты отсортированы по доступности.",

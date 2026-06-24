@@ -645,7 +645,7 @@ export function useBookingFlow({
       const baseTitle =
         procedure.title?.trim() ?? procedure.alias?.trim() ?? procedure.id;
 
-      const key = `${procedure.kind}:${baseTitle.toLowerCase()}`;
+      const key = `${procedure.kind}:${procedure.accessType}:${baseTitle.toLowerCase()}`;
       const existing = groupsMap.get(key);
       const priceCandidate = procedure.price?.amount ?? null;
       const currencyCandidate = procedure.price?.currency ?? null;
@@ -1593,6 +1593,9 @@ export function useBookingFlow({
 
   const handleSubmitAppointment = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
 
     const trimmedName = clientName.trim();
     const normalizedPhone = normalizePhoneToE164(
