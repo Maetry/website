@@ -597,6 +597,14 @@
   "linkHandler": {
     "processing": "Processing link...",
     "pleaseWait": "Please wait while we open the right page",
+    "unavailable": {
+      "title": "This salon is no longer available",
+      "description": "The link may be outdated, but you can keep exploring with Maetry.",
+      "consumerDescription": "Discover salons, compare services and book your next visit in the Maetry app.",
+      "consumerAction": "Find a salon",
+      "businessDescription": "Run a beauty business? Join Maetry to manage bookings, your team and client relationships.",
+      "businessAction": "Get Maetry for Business"
+    },
     "errorTitle": "This link could not be opened",
     "errorCampaign": "We couldn't load the invitation or campaign data.",
     "errorUnknownType": "This link type is not supported.",

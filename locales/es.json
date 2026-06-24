@@ -658,6 +658,14 @@
   "linkHandler": {
     "processing": "Procesando enlace...",
     "pleaseWait": "Espera mientras abrimos la página correcta",
+    "unavailable": {
+      "title": "Este salón ya no está disponible",
+      "description": "Puede que el enlace esté desactualizado, pero puedes seguir explorando con Maetry.",
+      "consumerDescription": "Descubre salones, compara servicios y reserva tu próxima visita en la app de Maetry.",
+      "consumerAction": "Encontrar un salón",
+      "businessDescription": "¿Tienes un negocio de belleza? Únete a Maetry para gestionar reservas, equipo y clientes.",
+      "businessAction": "Maetry para negocios"
+    },
     "errorTitle": "No pudimos abrir este enlace",
     "errorCampaign": "No pudimos cargar los datos de la invitación o la campaña.",
     "errorUnknownType": "Este tipo de enlace no está soportado.",

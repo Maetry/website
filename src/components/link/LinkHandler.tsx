@@ -1,12 +1,19 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import { AlertCircle } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowUpRight,
+  BriefcaseBusiness,
+  MapPinOff,
+  Search,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button, Paragraph, Text, XStack, YStack } from "tamagui";
+import { Button, Paragraph, Text, XStack, YStack, useThemeName } from "tamagui";
 
-import { ApiError } from "@/lib/api/error-handler";
+import { ApiError, NotFoundError } from "@/lib/api/error-handler";
 import { resolveShortLink, type PublicClickResponse } from "@/lib/api/public-booking";
 import { detectPlatform } from "@/lib/userAgent/detectPlatform";
 import { usePlatform } from "@/lib/userAgent/PlatformProvider";
@@ -18,9 +25,14 @@ type LinkHandlerProps = {
 
 type LinkState =
   | { status: "loading" }
+  | { status: "unavailable" }
   | { status: "error"; message: string };
 
 const CANONICAL_CONSUMER_ORIGIN = "https://maetry.com";
+const CONSUMER_APP_STORE_URL =
+  "https://apps.apple.com/app/apple-store/id6746678571";
+const BUSINESS_APP_STORE_URL =
+  "https://apps.apple.com/app/apple-store/id6755662689";
 const SHORT_LINK_SPINNER_SIZE = 36;
 
 function ShortLinkSpinner() {
@@ -85,6 +97,13 @@ function resolveLinkError(error: unknown, fallbackMessage: string) {
   }
 
   return fallbackMessage;
+}
+
+function isUnavailableLinkError(error: unknown) {
+  return (
+    error instanceof NotFoundError ||
+    (error instanceof ApiError && (error.status === 404 || error.status === 410))
+  );
 }
 
 function isInviteKind(
@@ -332,6 +351,159 @@ function LinkStatusScreen({
   );
 }
 
+function AppStoreAction({
+  description,
+  icon,
+  label,
+  primary = false,
+  url,
+}: {
+  description: string;
+  icon: React.ReactNode;
+  label: string;
+  primary?: boolean;
+  url: string;
+}) {
+  return (
+    <YStack gap="$3" width="100%">
+      <XStack alignItems="flex-start" gap="$3">
+        <XStack
+          alignItems="center"
+          backgroundColor="$primarySoft"
+          borderRadius={14}
+          height={44}
+          justifyContent="center"
+          width={44}
+        >
+          <Text color="$primary">{icon}</Text>
+        </XStack>
+        <Paragraph
+          color="$textSecondary"
+          flex={1}
+          fontSize={15}
+          lineHeight={21}
+        >
+          {description}
+        </Paragraph>
+      </XStack>
+      <Button
+        backgroundColor={primary ? "$primary" : "$cardBackground"}
+        borderColor={primary ? "$primary" : "$separator"}
+        borderRadius={14}
+        borderWidth={primary ? 0 : 1}
+        minHeight={52}
+        onPress={() => window.location.assign(url)}
+        paddingHorizontal="$4"
+      >
+        <XStack alignItems="center" gap="$2">
+          <Text
+            color={primary ? "white" : "$textPrimary"}
+            fontSize={16}
+            fontWeight="700"
+          >
+            {label}
+          </Text>
+          <Text color={primary ? "white" : "$textSecondary"}>
+            <ArrowUpRight size={18} />
+          </Text>
+        </XStack>
+      </Button>
+    </YStack>
+  );
+}
+
+function UnavailableLinkScreen() {
+  const t = useTranslations("linkHandler.unavailable");
+  const themeName = useThemeName();
+  const isDarkTheme = themeName.includes("dark");
+
+  return (
+    <YStack
+      alignItems="center"
+      flex={1}
+      justifyContent="center"
+      minHeight="100dvh"
+      paddingBottom="max(32px, env(safe-area-inset-bottom))"
+      paddingHorizontal="$5"
+      paddingTop="max(32px, env(safe-area-inset-top))"
+      width="100%"
+    >
+      <YStack gap="$7" maxWidth={480} width="100%">
+        <YStack alignItems="center" gap="$5">
+          <Image
+            alt="Maetry"
+            height={22}
+            priority
+            src="/images/logo.svg"
+            style={{
+              display: "block",
+              filter: isDarkTheme ? "invert(1)" : undefined,
+              height: "auto",
+              width: 112,
+            }}
+            width={112}
+          />
+
+          <YStack alignItems="center" gap="$3">
+            <XStack
+              alignItems="center"
+              backgroundColor="$primarySoft"
+              borderRadius={999}
+              height={64}
+              justifyContent="center"
+              width={64}
+            >
+              <Text color="$primary">
+                <MapPinOff size={29} strokeWidth={1.8} />
+              </Text>
+            </XStack>
+            <YStack alignItems="center" gap="$2">
+              <Text
+                color="$textPrimary"
+                fontSize={28}
+                fontWeight="800"
+                lineHeight={34}
+                textAlign="center"
+              >
+                {t("title")}
+              </Text>
+              <Paragraph
+                color="$textSecondary"
+                fontSize={16}
+                lineHeight={23}
+                maxWidth={380}
+                textAlign="center"
+              >
+                {t("description")}
+              </Paragraph>
+            </YStack>
+          </YStack>
+        </YStack>
+
+        <YStack
+          gap="$5"
+          width="100%"
+        >
+          <AppStoreAction
+            description={t("consumerDescription")}
+            icon={<Search size={21} />}
+            label={t("consumerAction")}
+            primary
+            url={CONSUMER_APP_STORE_URL}
+          />
+          <YStack backgroundColor="$separator" height={1} width="100%" />
+          <AppStoreAction
+            description={t("businessDescription")}
+            icon={<BriefcaseBusiness size={21} />}
+            label={t("businessAction")}
+            url={BUSINESS_APP_STORE_URL}
+          />
+        </YStack>
+      </YStack>
+    </YStack>
+  );
+}
+
 export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
   const locale = useLocale();
   const t = useTranslations("linkHandler");
@@ -353,6 +525,11 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
         openAppWithFallback(response, locale);
       } catch (error) {
         if (controller.signal.aborted) {
+          return;
+        }
+
+        if (isUnavailableLinkError(error)) {
+          setState({ status: "unavailable" });
           return;
         }
 
@@ -379,6 +556,10 @@ export const LinkHandler = ({ nanoId }: LinkHandlerProps) => {
         description=""
       />
     );
+  }
+
+  if (state.status === "unavailable") {
+    return <UnavailableLinkScreen />;
   }
 
   if (state.status === "error") {
