@@ -1798,6 +1798,7 @@ export function useBookingFlow({
         : null,
     }),
     [
+      locale,
       sections,
       selectedProcedurePrice,
       selectedSlotSummaryTitle,

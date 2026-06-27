@@ -17,8 +17,8 @@ import { getBookingSurfaceStyle } from "@/src/features/booking/bookingSurface";
 import type { BookingPlatformVariant } from "@/src/features/booking/utils/platform";
 
 import { BookingSection } from "../../_shared/BookingSection";
-import { PhoneField } from "../../_shared/PhoneField";
 import { validatePhoneForCountry } from "../../_shared/phone";
+import { PhoneField } from "../../_shared/PhoneField";
 import { PrimaryAction } from "../../_shared/primitives";
 import { SectionSeparator } from "../../_shared/SectionSeparator";
 

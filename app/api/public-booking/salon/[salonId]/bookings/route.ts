@@ -9,8 +9,8 @@ import {
 } from "@/lib/api/maetry-sdk.server";
 import { handleValidationError } from "@/lib/api/route-handler";
 import { devError } from "@/lib/api/utils";
-import { setMonitoringContext } from "@/lib/monitoring";
 import { validateId } from "@/lib/api/validation";
+import { setMonitoringContext } from "@/lib/monitoring";
 import { monitoredRoute } from "@/lib/monitoring/server";
 
 import {
