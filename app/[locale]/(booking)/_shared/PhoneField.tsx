@@ -7,7 +7,7 @@ import { getCountries, getExampleNumber } from "libphonenumber-js";
 import examples from "libphonenumber-js/examples.mobile.json";
 import { ChevronsUpDown } from "lucide-react";
 import flags from "react-phone-number-input/flags";
-import { Input, XStack } from "tamagui";
+import { Input, XStack, useTheme } from "tamagui";
 
 import {
   formatNationalPhoneInput,
@@ -46,6 +46,7 @@ export function PhoneField({
   placeholderFallback,
   value,
 }: PhoneFieldProps) {
+  const theme = useTheme();
   const countryOptions = useMemo<CountryOption[]>(() => {
     const displayNames = new Intl.DisplayNames([locale], { type: "region" });
 
@@ -69,6 +70,7 @@ export function PhoneField({
     const exampleNumber = getExampleNumber(resolvedCountry, examples);
     return exampleNumber?.formatNational() ?? placeholderFallback;
   }, [placeholderFallback, resolvedCountry]);
+  const chevronColor = theme.textSecondary?.val ?? "#6B7280";
 
   const handleNationalChange = (event: ChangeEvent<HTMLInputElement>) => {
     onChange(formatNationalPhoneInput(event.target.value, resolvedCountry));
@@ -94,10 +96,10 @@ export function PhoneField({
                 {resolvedCountry}
               </span>
             )}
-            <XStack alignItems="center" color="$textSecondary" flexShrink={0}>
+            <XStack alignItems="center" flexShrink={0}>
               <ChevronsUpDown
                 aria-hidden
-                color="currentColor"
+                color={chevronColor}
                 size={14}
                 strokeWidth={2.25}
               />
