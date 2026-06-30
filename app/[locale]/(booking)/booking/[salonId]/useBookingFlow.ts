@@ -20,8 +20,6 @@ import { useTranslations } from "next-intl";
 import {
   createPublicBooking,
   waitForPublicBooking,
-  type PublicBookingCreatePayload,
-  type PublicSearchSlotsBody,
   type PublicSearchSlotsResponse,
   type PublicSalonProfile,
 } from "@/lib/api/public-booking";
@@ -31,6 +29,11 @@ import {
   publicSalonMastersQueryOptions,
   publicSalonProfileQueryOptions,
 } from "@/lib/api/public-booking.queries";
+import {
+  buildCreateSelectedServiceBody,
+  buildSelectedServiceBody,
+  normalizeSlotInterval,
+} from "@/lib/booking-create-payload";
 import { buildPlatformMapsUrl } from "@/lib/platform-links";
 import {
   adaptCatalogToProcedures,
@@ -369,125 +372,6 @@ function buildBundleProcedureSelections(
 
 function isSlotInFuture(slot: SlotInterval, nowTimestamp: number): boolean {
   return new Date(slot.start).getTime() > nowTimestamp;
-}
-
-function buildSelectedServiceSearchItem(
-  procedure: Procedure,
-): PublicSearchSlotsBody["items"][number] {
-  if (procedure.kind === "bundle") {
-    return {
-      bundle: {
-        bundleId: procedure.id,
-        items: (procedure.bundleItems ?? []).map((item) => ({
-          ...(item.executionId ? { executionId: item.executionId } : {}),
-          procedureId: item.procedureId,
-        })),
-      },
-    };
-  }
-
-  return {
-    procedure: {
-      ...(procedure.executionId ? { executionId: procedure.executionId } : {}),
-      procedureId: procedure.id,
-    },
-  };
-}
-
-function buildSelectedServiceBody(
-  procedures: Procedure[],
-): PublicSearchSlotsBody {
-  return {
-    items: procedures.map((procedure) => buildSelectedServiceSearchItem(procedure)),
-  };
-}
-
-function normalizeSlotInterval(slot: SlotInterval): SlotInterval {
-  return {
-    end: new Date(slot.end).toISOString(),
-    start: new Date(slot.start).toISOString(),
-  };
-}
-
-function findMatchingDetailedSlot(
-  slotsResponse: PublicSearchSlotsResponse | undefined,
-  selectedSlot: SlotInterval,
-) {
-  if (!slotsResponse || "intervals" in slotsResponse) {
-    return null;
-  }
-
-  return (
-    slotsResponse.slots.find(
-      (slot) =>
-        slot.total.start === selectedSlot.start && slot.total.end === selectedSlot.end,
-    ) ?? null
-  );
-}
-
-function buildCreateSelectedServiceItem(
-  procedure: Procedure,
-  selectedSlot: SlotInterval,
-  slotsResponse: PublicSearchSlotsResponse | undefined,
-): PublicBookingCreatePayload["selectedService"]["items"][number] {
-  const normalizedSelectedSlot = normalizeSlotInterval(selectedSlot);
-  const detailedSlot = findMatchingDetailedSlot(slotsResponse, selectedSlot);
-  const slotProcedureTimeByKey = new Map<string, SlotInterval>();
-  const slotProcedureTimeByProcedureId = new Map<string, SlotInterval>();
-
-  for (const item of detailedSlot?.procedures ?? []) {
-    slotProcedureTimeByKey.set(`${item.id}:${item.executorId}`, item.time);
-    if (!slotProcedureTimeByProcedureId.has(item.id)) {
-      slotProcedureTimeByProcedureId.set(item.id, item.time);
-    }
-  }
-
-  if (procedure.kind === "bundle") {
-    return {
-      bundle: {
-        bundleId: procedure.id,
-        items: (procedure.bundleItems ?? []).map((item) => {
-          const time =
-            slotProcedureTimeByKey.get(
-              `${item.procedureId}:${item.executionId ?? ""}`,
-            ) ??
-            slotProcedureTimeByProcedureId.get(item.procedureId) ??
-            undefined;
-
-          return {
-            ...(item.executionId ? { executionId: item.executionId } : {}),
-            procedureId: item.procedureId,
-            ...(time ? { time } : {}),
-          };
-        }),
-      },
-    };
-  }
-
-  const procedureTime =
-    slotProcedureTimeByKey.get(`${procedure.id}:${procedure.executionId ?? ""}`) ??
-    slotProcedureTimeByProcedureId.get(procedure.id) ??
-    normalizedSelectedSlot;
-
-  return {
-    procedure: {
-      ...(procedure.executionId ? { executionId: procedure.executionId } : {}),
-      procedureId: procedure.id,
-      time: procedureTime,
-    },
-  };
-}
-
-function buildCreateSelectedServiceBody(
-  procedures: Procedure[],
-  selectedSlot: SlotInterval,
-  slotsResponse: PublicSearchSlotsResponse | undefined,
-): PublicBookingCreatePayload["selectedService"] {
-  return {
-    items: procedures.map((procedure) =>
-      buildCreateSelectedServiceItem(procedure, selectedSlot, slotsResponse),
-    ),
-  };
 }
 
 function mapDraftSectionsToState(

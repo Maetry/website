@@ -45,3 +45,4 @@ public/.DS_Store
 /.cursor
 /.playwright-cli
 /output
+/.tmp

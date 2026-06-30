@@ -9,6 +9,7 @@
     "dev:prod": "API_TARGET=production node scripts/generate-billing-plan-features.mjs && API_TARGET=production next dev --turbopack",
     "build": "node scripts/generate-billing-plan-features.mjs && next build",
     "start": "next start",
+    "test:booking": "rm -rf .tmp/booking-create-payload-test && tsc tests/booking-create-payload.test.ts --target ES2022 --module commonjs --moduleResolution node --esModuleInterop --skipLibCheck --strict --noEmit false --outDir .tmp/booking-create-payload-test && node .tmp/booking-create-payload-test/tests/booking-create-payload.test.js",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --report-unused-disable-directives --max-warnings=0",
     "lint:check": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
